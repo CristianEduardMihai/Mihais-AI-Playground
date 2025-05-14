@@ -1,0 +1,1 @@
+reactpy[fastapi]==1.1.0
