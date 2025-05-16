@@ -1,0 +1,69 @@
+/* ai_recipe_maker.css */
+
+.recipe-maker {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 600px;
+    font-family: Arial, sans-serif;
+}
+.form-group {
+    margin-bottom: 1.5rem;
+}
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+input[type="text"], select {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+input[type="number"] {
+    width: 4rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    text-align: center;
+    margin-left: 0.5rem;
+}
+.generate-btn {
+    background-color: #6200ea;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+}
+.generate-btn:hover {
+    background-color: #3700b3;
+}
+.recipe-output {
+    margin-top: 2rem;
+    background: #f4f4f9;
+    border-radius: 6px;
+    padding: 1rem;
+}
+.pdf-btn {
+    background-color: #03a9f4;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    text-decoration: none;
+    display: inline-block;
+}
+.pdf-btn:hover {
+    background-color: #0288d1;
+}
