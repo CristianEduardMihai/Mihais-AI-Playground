@@ -1,7 +1,7 @@
 from reactpy import component, html, use_state
 import requests
 import json
-import markdown 
+import markdown
 
 @component
 def AIRecipeMaker():
@@ -11,8 +11,7 @@ def AIRecipeMaker():
     recipe_html, set_recipe_html = use_state("")
 
     def handle_generate_recipe(event):
-        # Clear previous output
-        set_recipe_html("")
+        set_recipe_html("")  # Clear previous output
         try:
             # Stream in Markdown from LLM
             response = requests.post(
@@ -21,7 +20,6 @@ def AIRecipeMaker():
                     "model": "llama3.2",
                     "prompt": (
                         "Please output a recipe in Markdown using this template:\n\n"
-                        "```\n"
                         "# Recipe Title\n\n"
                         "## Ingredients\n"
                         "- ingredient 1\n"
@@ -40,13 +38,13 @@ def AIRecipeMaker():
                         "## Alergens\n"
                         "- allergen 1\n"
                         "- allergen 2\n\n"
-                        "```\n\n"
+                        "\n\n"
                         f"Use these ingredients: {ingredients}\n"
                         "Assume the user also has common ingredients like sugar, salt, and flour.\n"
+                        "Explain the recipe in detail, including cooking times and methods, do not cheap down on words.\n"
                         "You don't have to use all the ingredients.\n\n"
                         f"Health level: {health_level}\n"
                         f"Servings: {servings}\n\n"
-                        "—\n\n"
                         "Fill in each section accordingly, using bullet lists and numbered steps exactly as above. "
                     )
                 },
@@ -72,20 +70,12 @@ def AIRecipeMaker():
         except Exception as e:
             set_recipe_html(f"<p style='color:red'>Error: {e}</p>")
 
-    def render_output():
-        if not recipe_html.strip():
-            return html.i({"style": {"color": "#888"}}, "No recipe generated yet.")
-        return html.div({
-            "dangerouslySetInnerHTML": {"__html": recipe_html},
-            "key": hash(recipe_html)
-        })
 
     return html.div(
         {},
-        # External CSS
+        # External CSS and background
         html.div({"className": "background-gradient-blur"}),
         html.link({"rel": "stylesheet", "href": "/static/ai_recipe_maker.css"}),
-        html.link({"rel": "icon", "href": "/static/favicon.ico", "type": "image/x-icon"}),
         html.nav(
             {"className": "navbar"},
             html.a({"href": "/", "className": "home-btn"}, "🏠 Home")
@@ -100,7 +90,7 @@ def AIRecipeMaker():
                 html.input({
                     "id": "ingredients", "type": "text", "value": ingredients,
                     "placeholder": "e.g. chicken, tomatoes, cheese",
-                    "onInput": lambda e: set_ingredients(e["target"]["value"])
+                    "onChange": lambda e: set_ingredients(e["target"]["value"])
                 }),
             ),
             # Health level
@@ -122,7 +112,7 @@ def AIRecipeMaker():
                 html.label({"for": "servings"}, "Servings:"),
                 html.input({
                     "id": "servings", "type": "number", "min": "1", "value": servings,
-                    "onInput": lambda e: set_servings(e["target"]["value"])
+                    "onChange": lambda e: set_servings(e["target"]["value"])
                 }),
                 html.span({"style": {"marginLeft": "0.5rem"}}, "people")
             ),
@@ -135,7 +125,14 @@ def AIRecipeMaker():
             html.div(
                 {"className": "recipe-output"},
                 html.h3("Generated Recipe:"),
-                render_output(),
+                (
+                    html.i({"style": {"color": "#888"}}, "No recipe generated yet.")
+                    if not recipe_html.strip()
+                    else html.div({
+                        "dangerouslySetInnerHTML": {"__html": recipe_html},
+                        "key": hash(recipe_html)
+                    })
+                ),
                 html.a(
                     {"className": "pdf-btn", "href": "javascript:window.print()"},
                     "Save as PDF"
