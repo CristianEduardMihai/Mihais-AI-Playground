@@ -61,3 +61,44 @@ footer {
     filter: blur(60px) brightness(1.15);
     opacity: 0.55;
 }
+
+
+@media (max-width: 700px) {
+    section {
+        padding: 1rem;
+    }
+    .card {
+        padding: 0.8rem;
+        margin-bottom: 1.2rem;
+    }
+    .section-title {
+        font-size: 1.15rem;
+    }
+    header h1 {
+        font-size: 1.4rem;
+    }
+    header p {
+        font-size: 1rem;
+    }
+    .card a {
+        width: 100%;
+        font-size: 1rem;
+        padding: 0.7rem 0;
+    }
+}
+
+@media (max-width: 500px) {
+    header h1 {
+        font-size: 1.1rem;
+    }
+    .card {
+        font-size: 0.97rem;
+        padding: 0.6rem;
+    }
+    .section-title {
+        font-size: 1rem;
+    }
+    section {
+        padding: 0.5rem;
+    }
+}

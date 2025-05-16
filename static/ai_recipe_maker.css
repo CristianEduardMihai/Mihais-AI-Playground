@@ -115,3 +115,59 @@ body, html {
     filter: blur(60px) brightness(1.15);
     opacity: 0.55;
 }
+
+@media (max-width: 700px) {
+    .recipe-maker {
+        max-width: 100vw;
+        width: 100vw;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0.5rem 0.5rem 1.5rem 0.5rem;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .generate-btn,
+    .pdf-btn {
+        width: 100%;
+        font-size: 1.05rem;
+        padding: 1rem 0;
+    }
+    .recipe-output {
+        padding: 0.7rem;
+        font-size: 1rem;
+    }
+    .home-btn {
+        width: 100%;
+        text-align: center;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        padding: 0.8rem 0;
+    }
+    input[type="text"], select, input[type="number"] {
+        font-size: 1.05rem;
+        padding: 0.7rem;
+    }
+    label {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 500px) {
+    .recipe-maker {
+        padding: 0.2rem 0.1rem 1rem 0.1rem;
+        font-size: 1.05rem;
+    }
+    .recipe-output {
+        padding: 0.4rem;
+        font-size: 0.97rem;
+    }
+    .home-btn {
+        font-size: 1rem;
+        padding: 0.7rem 0;
+    }
+    h2, h3 {
+        font-size: 1.1rem;
+    }
+}
