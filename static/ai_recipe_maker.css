@@ -67,3 +67,51 @@ input[type="number"] {
 .pdf-btn:hover {
     background-color: #0288d1;
 }
+
+.navbar {
+    margin-bottom: 1.5rem;
+}
+.home-btn {
+    background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
+    color: #fff;
+    padding: 0.6rem 1.4rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(123,47,242,0.08), 0 1.5px 4px rgba(243,87,168,0.10);
+    border: none;
+    outline: none;
+    display: inline-block;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    position: relative;
+    top: 0;
+}
+.home-btn:hover, .home-btn:focus {
+    background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
+    box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
+    transform: translateY(-2px) scale(1.04);
+    text-decoration: none;
+}
+
+body, html {
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.background-gradient-blur {
+    position: fixed;
+    z-index: -1;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    /* Gradient colors similar to your button, but more spread out */
+    background: radial-gradient(circle at 20% 30%, #7b2ff2 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, #f357a8 0%, transparent 60%),
+                linear-gradient(120deg, #7b2ff2 0%, #f357a8 100%);
+    filter: blur(60px) brightness(1.15);
+    opacity: 0.55;
+}
