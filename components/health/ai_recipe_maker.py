@@ -1,29 +1,36 @@
 from reactpy import component, html, use_state
 import requests
+import json
 
 @component
 def AIRecipeMaker():
-    # State variables for ingredients, health level, and the generated recipe
     ingredients, set_ingredients = use_state("")
     health_level, set_health_level = use_state("balanced")
     recipe, set_recipe = use_state("")
 
-    # Function to handle recipe generation
     def handle_generate_recipe(event):
-        # Call the AI model via Ollama
-        response = requests.post(
-            "http://localhost:11434/api/generate",  # Ollama's default endpoint
-            json={
-                "model": "llama3.2",
-                "prompt": f"Create a {health_level} recipe using these ingredients: {ingredients}. Format the recipe in Markdown."
-            }
-        )
-        if response.status_code == 200:
-            set_recipe(response.json().get("text", "Failed to generate recipe."))
-        else:
-            set_recipe("Error: Unable to connect to the AI model.")
+        try:
+            response = requests.post(
+                "http://localhost:11434/api/generate",
+                json={
+                    "model": "llama3.2",
+                    "prompt": f"Create a {health_level} recipe using these ingredients: {ingredients}. Format the recipe in Markdown."
+                },
+                stream=True
+            )
+            if response.status_code == 200:
+                recipe_text = ""
+                for line in response.iter_lines():
+                    if line:
+                        data = json.loads(line)
+                        # Ollama streams with "response" or "text" field
+                        recipe_text += data.get("response", data.get("text", ""))
+                set_recipe(recipe_text if recipe_text else "Failed to generate recipe.")
+            else:
+                set_recipe("Error: Unable to connect to the AI model.")
+        except Exception as e:
+            set_recipe(f"Exception: {e}")
 
-    # Return the ReactPy component structure
     return html.div(
         {"className": "recipe-maker"},
         html.h2("AI Recipe Maker"),
@@ -61,5 +68,5 @@ def AIRecipeMaker():
             {"className": "recipe-output"},
             html.h3("Generated Recipe:"),
             html.pre(recipe),
-        ),
+        )
     )
