@@ -1,173 +1,230 @@
 /* ai_recipe_maker.css */
 
+/* ======================
+   Desktop & Default
+   ====================== */
+body {
+  display: flex;
+  justify-content: center;
+  background: #f0f0f0;
+  margin: 0;
+  padding: 0;
+}
+
 .recipe-maker {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    padding: 2rem;
-    margin: 2rem auto;
-    max-width: 600px;
-    font-family: Arial, sans-serif;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 2rem;
+  margin: 2rem;
+  max-width: 600px;
+  width: 90%;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
+
 .form-group {
-    margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
 }
+
 label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: bold;
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-align: left;
 }
-input[type="text"], select {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-}
+
+input[type="text"],
+select,
 input[type="number"] {
-    width: 4rem;
-    padding: 0.5rem;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-    text-align: center;
-    margin-left: 0.5rem;
+  width: 100%;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1.1rem;
+  box-sizing: border-box;
 }
+
+input[type="number"] {
+  max-width: 100px;
+}
+
 .generate-btn {
-    background-color: #6200ea;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    margin-bottom: 1.5rem;
+  background-color: #6200ea;
+  color: #fff;
+  border: none;
+  padding: 1.2rem;
+  border-radius: 6px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  width: 100%;
+  max-width: 400px;
+  margin-top: 1rem;
+  transition: background 0.2s;
 }
 .generate-btn:hover {
-    background-color: #3700b3;
+  background-color: #3700b3;
 }
-.recipe-output {
-    margin-top: 2rem;
-    background: #f4f4f9;
-    border-radius: 6px;
-    padding: 1rem;
-}
+
 .pdf-btn {
-    background-color: #03a9f4;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    margin-top: 1rem;
-    text-decoration: none;
-    display: inline-block;
+  background-color: #03a9f4;
+  color: #fff;
+  border: none;
+  padding: 1rem;
+  border-radius: 6px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  width: 100%;
+  max-width: 400px;
+  margin-top: 1rem;
+  text-decoration: none;
+  transition: background 0.2s;
 }
 .pdf-btn:hover {
-    background-color: #0288d1;
+  background-color: #0288d1;
 }
 
-.navbar {
-    margin-bottom: 1.5rem;
-}
 .home-btn {
-    background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
-    color: #fff;
-    padding: 0.6rem 1.4rem;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1.05rem;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 8px rgba(123,47,242,0.08), 0 1.5px 4px rgba(243,87,168,0.10);
-    border: none;
-    outline: none;
-    display: inline-block;
-    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-    position: relative;
-    top: 0;
+  background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(123,47,242,0.08), 0 1.5px 4px rgba(243,87,168,0.10);
+  display: inline-block;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  margin-bottom: 1.5rem;
 }
 .home-btn:hover, .home-btn:focus {
-    background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
-    box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
-    transform: translateY(-2px) scale(1.04);
-    text-decoration: none;
+  background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
+  box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
+  transform: translateY(-2px) scale(1.04);
+  text-decoration: none;
 }
 
-body, html {
-    min-height: 100vh;
-    margin: 0;
-    padding: 0;
+.recipe-output {
+  margin-top: 2rem;
+  background: #f4f4f9;
+  border-radius: 6px;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  width: 100%;
 }
 
+/* Background blur gradient (desktop only) */
 .background-gradient-blur {
-    position: fixed;
-    z-index: -1;
-    top: 0; left: 0; right: 0; bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    /* Gradient colors similar to your button, but more spread out */
-    background: radial-gradient(circle at 20% 30%, #7b2ff2 0%, transparent 60%),
-                radial-gradient(circle at 80% 70%, #f357a8 0%, transparent 60%),
-                linear-gradient(120deg, #7b2ff2 0%, #f357a8 100%);
-    filter: blur(60px) brightness(1.15);
-    opacity: 0.55;
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 35% 40%, #7b2ff2 0%, transparent 50%),
+    radial-gradient(circle at 70% 60%, #f357a8 0%, transparent 55%),
+    linear-gradient(120deg, #7b2ff2 0%, #f357a8 100%);
+  filter: blur(40px) brightness(1.1);
+  opacity: 0.35;
 }
 
-@media (max-width: 700px) {
-    .background-gradient-blur {
-        display: none !important;
-    }
-    .recipe-maker {
-        max-width: 100vw;
-        width: 100vw;
-        margin: 0;
-        border-radius: 0;
-        box-shadow: none;
-        padding: 0.5rem 0.5rem 1.5rem 0.5rem;
-    }
-    .form-group {
-        margin-bottom: 1rem;
-    }
-    input[type="text"], select, input[type="number"] {
-        width: 100% !important;
-        font-size: 1.2rem !important;
-        padding: 0.9rem !important;
-        box-sizing: border-box;
-        margin-bottom: 0.7rem;
-    }
-    .generate-btn,
-    .pdf-btn {
-        width: 100% !important;
-        font-size: 1.2rem !important;
-        padding: 1.1rem 0 !important;
-    }
-    label {
-        font-size: 1.1rem !important;
-    }
-    .home-btn {
-        width: 100%;
-        text-align: center;
-        font-size: 1.1rem;
-        margin-bottom: 1rem;
-        padding: 0.8rem 0;
-    }
+/* ======================
+   Mobile First Styles
+   ====================== */
+@media (max-width: 1000px) {
+  body {
+    background: white;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+  }
+
+  .recipe-maker {
+    border-radius: 0;
+    box-shadow: none;
+    padding: 5vw;
+    margin: 0;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .form-group {
+    margin-bottom: 4vw;
+    width: 100%;
+  }
+
+  label {
+    font-size: 4.5vw;
+    margin-bottom: 1.5vw;
+  }
+
+  input[type="text"],
+  select,
+  input[type="number"] {
+    font-size: 5vw;
+    padding: 4vw;
+    margin-bottom: 3vw;
+    width: 100%;
+  }
+
+  .generate-btn,
+  .pdf-btn {
+    width: 100%;
+    font-size: 5vw;
+    padding: 5vw;
+    border-radius: 1vw;
+  }
+
+  .home-btn {
+    width: 100%;
+    text-align: center;
+    font-size: 4.5vw;
+    margin-bottom: 3vw;
+    padding: 4vw 0;
+    border-radius: 0;
+  }
+
+  .recipe-output {
+    font-size: 4.2vw;
+    padding: 4vw;
+    margin-top: 4vw;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Hide gradient on mobile */
+  .background-gradient-blur {
+    display: none !important;
+  }
 }
+
 
 @media (max-width: 500px) {
-    .recipe-maker {
-        padding: 0.2rem 0.1rem 1rem 0.1rem;
-        font-size: 1.08rem;
-    }
-    input[type="text"], select, input[type="number"] {
-        font-size: 1.15rem !important;
-        padding: 1rem !important;
-    }
-    .generate-btn,
-    .pdf-btn {
-        font-size: 1.15rem !important;
-        padding: 1.2rem 0 !important;
-    }
+  .recipe-maker {
+    padding: 1rem 0.5rem;
+    font-size: 1rem;
+  }
+  input[type="text"],
+  select,
+  input[type="number"] {
+    font-size: 1.35rem;
+    padding: 1.5rem;
+  }
+  .generate-btn,
+  .pdf-btn {
+    font-size: 1.5rem;
+    padding: 1.5rem;
+  }
 }
