@@ -1,0 +1,139 @@
+/* Glassmorphism and gradient background for chat */
+.background-gradient-blur {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 35% 40%, #7b2ff2 0%, transparent 50%),
+    radial-gradient(circle at 70% 60%, #f357a8 0%, transparent 55%),
+    linear-gradient(120deg, #7b2ff2 0%, #f357a8 100%);
+  filter: blur(40px) brightness(1.1);
+  opacity: 0.35;
+}
+
+.recipe-maker.chat-style {
+  background: rgba(255, 255, 255, 0.404);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 600px;
+  width: 90%;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* Chat window styles for roast battle */
+.chat-window {
+  width: 100%;
+  min-height: 320px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: rgba(255,255,255,0.18);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(123,47,242,0.08);
+  padding: 1.5rem 1rem;
+  margin: 2rem 0 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.chat-bubble {
+  display: flex;
+  align-items: flex-start;
+  padding: 1rem 1.2rem;
+  border-radius: 18px;
+  max-width: 80%;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  box-shadow: 0 1.5px 6px rgba(123,47,242,0.07);
+  background: rgba(255,255,255,0.7);
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+}
+
+.chat-bubble.bot1 {
+  align-self: flex-start;
+  background: linear-gradient(90deg, #f357a8 0%, #fff 100%);
+  color: #7b2ff2;
+}
+
+.chat-bubble.bot2 {
+  align-self: flex-end;
+  background: linear-gradient(90deg, #7b2ff2 0%, #fff 100%);
+  color: #f357a8;
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 1.1rem;
+  color: #888;
+  margin-left: 0.5rem;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  background: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 2px;
+  animation: blink 1.2s infinite both;
+}
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0.2; }
+  40% { opacity: 1; }
+}
+
+/* Responsive tweaks for chat */
+@media (max-width: 1000px) {
+  .recipe-maker.chat-style {
+    font-size: 2.4rem;
+    padding: 5vw;
+    margin: 0;
+    width: 100%;
+    min-height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .chat-window {
+    min-height: 200px;
+    max-height: 40vh;
+    padding: 2vw 2vw;
+    font-size: 2.2vw;
+  }
+  .chat-bubble {
+    font-size: 2.2vw;
+    padding: 2vw 3vw;
+    max-width: 95%;
+  }
+}
+
+@media (max-width: 500px) {
+  .recipe-maker.chat-style {
+    padding: 1rem 0.5rem;
+    font-size: 1rem;
+  }
+  .chat-window {
+    min-height: 120px;
+    max-height: 30vh;
+    font-size: 1.1rem;
+    padding: 1vw 1vw;
+  }
+  .chat-bubble {
+    font-size: 1.1rem;
+    padding: 1vw 2vw;
+  }
+}

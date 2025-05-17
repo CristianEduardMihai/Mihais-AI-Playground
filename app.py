@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from reactpy.backend.fastapi import configure, Options
 
 from components.health.ai_recipe_maker import AIRecipeMaker
+from components.fun.roast_battle import BotVsBotRoastBattle
 # 4 future
 # from components.health.calorie_tracker import CalorieTracker
 # from components.health.fun.roast_battle import RoastBattle
@@ -32,6 +33,13 @@ configure(
     app,
     AIRecipeMaker,
     Options(url_prefix="/health/recipe_maker"),
+)
+
+# Bot Vs Bot AI Roast Battle at /fun/roast-battle
+configure(
+    app,
+    BotVsBotRoastBattle,
+    Options(url_prefix="/fun/roast_battle"),
 )
 
 # for future
