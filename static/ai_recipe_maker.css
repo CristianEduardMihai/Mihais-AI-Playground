@@ -11,6 +11,10 @@ body {
   padding: 0;
 }
 
+body * {
+  box-sizing: border-box;
+}
+
 .recipe-maker {
   background: white;
   border-radius: 8px;
@@ -85,6 +89,7 @@ input[type="number"] {
   margin-top: 1rem;
   text-decoration: none;
   transition: background 0.2s;
+  display: inline-block;
 }
 .pdf-btn:hover {
   background-color: #0288d1;
@@ -148,9 +153,14 @@ input[type="number"] {
     min-height: 100vh;
   }
 
+  #app {
+    width: 100%;
+  }
+
   .recipe-maker {
     border-radius: 0;
     box-shadow: none;
+    font-size: 2.4rem;
     padding: 5vw;
     margin: 0;
     width: 100%;
@@ -158,6 +168,7 @@ input[type="number"] {
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-width: 100vw;
   }
 
   .form-group {
@@ -173,7 +184,7 @@ input[type="number"] {
   input[type="text"],
   select,
   input[type="number"] {
-    font-size: 5vw;
+    font-size: 2.4rem;
     padding: 4vw;
     margin-bottom: 3vw;
     width: 100%;
@@ -185,6 +196,7 @@ input[type="number"] {
     font-size: 5vw;
     padding: 5vw;
     border-radius: 1vw;
+    display: inline-block;
   }
 
   .home-btn {
@@ -210,7 +222,6 @@ input[type="number"] {
   }
 }
 
-
 @media (max-width: 500px) {
   .recipe-maker {
     padding: 1rem 0.5rem;
@@ -226,5 +237,6 @@ input[type="number"] {
   .pdf-btn {
     font-size: 1.5rem;
     padding: 1.5rem;
+    display: inline-block;
   }
 }
