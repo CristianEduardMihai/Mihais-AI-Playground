@@ -119,18 +119,17 @@ input[type="number"] {
 
 /* Background blur gradient (desktop only) */
 .background-gradient-blur {
-  position: fixed;
-  z-index: -1;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 35% 40%, #7b2ff2 0%, transparent 50%),
-    radial-gradient(circle at 70% 60%, #f357a8 0%, transparent 55%),
-    linear-gradient(120deg, #7b2ff2 0%, #f357a8 100%);
-  filter: blur(40px) brightness(1.1);
-  opacity: 0.35;
+    position: fixed;
+    z-index: -1;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    background: radial-gradient(circle at 20% 30%, #6201ff 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, #f357a8 0%, transparent 60%),
+                linear-gradient(120deg, #6200ff 0%, #f357a8 100%);
+    filter: blur(60px) brightness(1.15);
+    opacity: 0.55;
 }
 
 /* ======================

@@ -41,15 +41,40 @@ section {
 .card a {
     display: inline-block;
     margin-top: 1rem;
-    padding: 0.5rem 1rem;
-    background-color: #6200ea;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    text-align: center;
+    background: none;
+    border-radius: 0;
+    color: inherit;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    display: inline;
+    text-align: left;
 }
-.card a:hover {
-    background-color: #3700b3;
+.card a.btn-gradient {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
+    color: #fff;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.98em;
+    padding: 0.45em 1.2em;
+    border: none;
+    box-shadow: 0 2px 12px rgba(123,47,242,0.08);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    cursor: pointer;
+    text-decoration: none;
+    margin: 0.5rem 0 0 0;
+    width: max-content;
+    min-width: 120px;
+    max-width: 260px;
+}
+.card a.btn-gradient:hover, .card a.btn-gradient:focus {
+    background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
+    box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
+    transform: translateY(-2px) scale(1.04);
+    text-decoration: none;
 }
 footer {
     text-align: center;
@@ -71,11 +96,69 @@ footer {
     width: 100vw;
     height: 100vh;
     pointer-events: none;
-    background: radial-gradient(circle at 20% 30%, #7b2ff2 0%, transparent 60%),
+    background: radial-gradient(circle at 20% 30%, #6201ff 0%, transparent 60%),
                 radial-gradient(circle at 80% 70%, #f357a8 0%, transparent 60%),
-                linear-gradient(120deg, #7b2ff2 0%, #f357a8 100%);
+                linear-gradient(120deg, #6200ff 0%, #f357a8 100%);
     filter: blur(60px) brightness(1.15);
     opacity: 0.55;
+}
+
+.btn-gradient {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
+    color: #fff;
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    font-size: 1.1em;
+    padding: 0.75em 2em;
+    border: none;
+    box-shadow: 0 2px 12px rgba(123,47,242,0.08);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    cursor: pointer;
+    text-decoration: none;
+}
+.btn-gradient:hover, .btn-gradient:focus {
+    background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
+    box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
+    transform: translateY(-2px) scale(1.04);
+    text-decoration: none;
+}
+
+.card a, .home-btn, .card-btn {
+    background: none;
+    border-radius: 0;
+    color: inherit;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+}
+
+.card a.btn-gradient, .home-btn.btn-gradient, .card-btn.btn-gradient {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
+    color: #fff;
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    font-size: 1.1em;
+    padding: 0.75em 2em;
+    border: none;
+    box-shadow: 0 2px 12px rgba(123,47,242,0.08);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    cursor: pointer;
+    text-decoration: none;
+}
+.card a.btn-gradient:hover, .home-btn.btn-gradient:hover, .card-btn.btn-gradient:hover,
+.card a.btn-gradient:focus, .home-btn.btn-gradient:focus, .card-btn.btn-gradient:focus {
+    background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
+    box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
+    transform: translateY(-2px) scale(1.04);
+    text-decoration: none;
 }
 
 @media (max-width: 700px) {
@@ -99,6 +182,17 @@ footer {
         width: 100%;
         font-size: 1rem;
         padding: 0.7rem 0;
+    }
+    .btn-gradient, .card a.btn-gradient, .home-btn.btn-gradient, .card-btn.btn-gradient {
+        font-size: 1em;
+        padding: 0.7em 1.2em;
+    }
+    .card a.btn-gradient {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        font-size: 0.95em;
+        padding: 0.38em 0.9em;
     }
 }
 
