@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CONTAINER_NAME=mihais-ai-playground
-IMAGE_NAME=cristianeduardmihai/mihais-ai-playground:general
+IMAGE_NAME=cristianeduardmihai/mihais-ai-playground:latest
 
 echo "Stopping and removing old container (if exists)..."
 docker stop $CONTAINER_NAME 2>/dev/null || true
