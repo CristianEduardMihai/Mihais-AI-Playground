@@ -1,9 +1,17 @@
-body {
-    font-family: Arial, sans-serif;
+html, body {
+    height: 100%;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f9;
+}
+body {
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
     color: #333;
+    display: flex;
+    flex-direction: column;
+}
+main {
+    flex: 1 0 auto;
 }
 header {
     background-color: #6200ea;
@@ -40,12 +48,15 @@ section {
 }
 footer {
     text-align: center;
-    padding: 1rem;
-    background-color: #6200ea;
-    color: white;
-    position: fixed;
-    bottom: 0;
+    padding: 1rem 0;
+    background: transparent;
+    color: #888;
+    font-size: 0.95rem;
+    position: static;
+    bottom: auto;
+    left: auto;
     width: 100%;
+    flex-shrink: 0;
 }
 
 .background-gradient-blur {
@@ -61,7 +72,6 @@ footer {
     filter: blur(60px) brightness(1.15);
     opacity: 0.55;
 }
-
 
 @media (max-width: 700px) {
     section {
