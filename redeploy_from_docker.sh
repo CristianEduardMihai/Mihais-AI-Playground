@@ -14,6 +14,6 @@ echo "Pulling latest image..."
 docker pull $IMAGE_NAME
 
 echo "Starting new container..."
-docker run -d --name $CONTAINER_NAME -p 8084:8084 $IMAGE_NAME
+docker run -d --name $CONTAINER_NAME -p 8084:8084 $IMAGE_NAME --restart unless-stopped
 
 echo "Done. App should be running on port 8084."
