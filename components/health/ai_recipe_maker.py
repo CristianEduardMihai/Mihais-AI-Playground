@@ -13,58 +13,62 @@ def AIRecipeMaker():
     def handle_generate_recipe(event):
         set_recipe_html("")  # Clear previous output
         try:
-            # Stream in Markdown from LLM
+            prompt = (
+                "Please output a recipe in Markdown using this template:\n\n"
+                "# Recipe Title\n\n"
+                "## Ingredients\n"
+                "- ingredient 1\n"
+                "- ingredient 2\n\n"
+                "## Instructions\n"
+                "1. Step one\n"
+                "2. Step two\n\n"
+                "## Nutrition (per serving / per 100g)\n"
+                "| Nutrient     | per serving | per 100g |\n"
+                "|--------------|-------------|----------|\n"
+                "| Calories     |             |          |\n"
+                "| Protein      |             |          |\n"
+                "| Carbs        |             |          |\n"
+                "| Fat          |             |          |\n"
+                "*Note: Nutritional values are approximate and AI generated.*\n\n"
+                "## Alergens\n"
+                "- allergen 1\n"
+                "- allergen 2\n\n"
+                "\n\n"
+                f"Use these ingredients: {ingredients}\n"
+                "Assume the user also has common ingredients like sugar, salt, and flour.\n"
+                "Explain the recipe in detail, including cooking times and methods, do not cheap down on words.\n"
+                "You don't have to use all the ingredients.\n\n"
+                f"Health level: {health_level}\n"
+                f"Servings: {servings}\n\n"
+                "Fill in each section accordingly, using bullet lists and numbered steps exactly as above. "
+            )
+
             response = requests.post(
-                "http://localhost:11434/api/generate",
+                "https://ai.hackclub.com/chat/completions",
+                headers={"Content-Type": "application/json"},
                 json={
-                    "model": "llama3.2",
-                    "prompt": (
-                        "Please output a recipe in Markdown using this template:\n\n"
-                        "# Recipe Title\n\n"
-                        "## Ingredients\n"
-                        "- ingredient 1\n"
-                        "- ingredient 2\n\n"
-                        "## Instructions\n"
-                        "1. Step one\n"
-                        "2. Step two\n\n"
-                        "## Nutrition (per serving / per 100g)\n"
-                        "| Nutrient     | per serving | per 100g |\n"
-                        "|--------------|-------------|----------|\n"
-                        "| Calories     |             |          |\n"
-                        "| Protein      |             |          |\n"
-                        "| Carbs        |             |          |\n"
-                        "| Fat          |             |          |\n"
-                        "*Note: Nutritional values are approximate and AI generated.*\n"
-                        "## Alergens\n"
-                        "- allergen 1\n"
-                        "- allergen 2\n\n"
-                        "\n\n"
-                        f"Use these ingredients: {ingredients}\n"
-                        "Assume the user also has common ingredients like sugar, salt, and flour.\n"
-                        "Explain the recipe in detail, including cooking times and methods, do not cheap down on words.\n"
-                        "You don't have to use all the ingredients.\n\n"
-                        f"Health level: {health_level}\n"
-                        f"Servings: {servings}\n\n"
-                        "Fill in each section accordingly, using bullet lists and numbered steps exactly as above. "
-                    )
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are a helpful chef AI. "
+                                "Output ONLY the recipe in Markdown format, with no extra comments, explanations, or preamble. "
+                                "Do not include any text outside the Markdown recipe. "
+                                "Follow the provided template exactly."
+                            )
+                        },
+                        {"role": "user", "content": prompt}
+                    ]
                 },
-                stream=True,
                 timeout=60
             )
             if response.status_code != 200:
                 raise RuntimeError(f"AI model returned {response.status_code}")
 
-            # Accumulate Markdown
-            md = ""
-            for line in response.iter_lines():
-                if line:
-                    chunk = json.loads(line.decode("utf-8"))
-                    md += chunk.get("response", chunk.get("text", ""))
+            data = response.json()
+            md = data["choices"][0]["message"]["content"]
 
-            # Convert Markdown → HTML (enable tables)
             html_content = markdown.markdown(md, extensions=["tables"])
-
-            # Wrap in a container to scope styles if needed
             set_recipe_html(f"<div class='markdown-body'>{html_content}</div>")
 
         except Exception as e:
