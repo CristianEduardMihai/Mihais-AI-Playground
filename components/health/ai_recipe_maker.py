@@ -122,7 +122,7 @@ def AIRecipeMaker():
             ),
             # Generate button
             html.button(
-                {"className": "btn btn-primary", "onClick": handle_generate_recipe},
+                {"className": "btn btn-gradient", "onClick": handle_generate_recipe},
                 "Generate Recipe"
             ),
             # Output + Save as PDF
