@@ -56,60 +56,54 @@ input[type="number"] {
 }
 
 input[type="number"] {
-  max-width: 100px;
+  max-width: 160px;
 }
 
-.generate-btn {
-  background-color: #6200ea;
-  color: #fff;
-  border: none;
+/* Modular Button Styles */
+.btn {
+  width: 100%;
+  font-size: 1.2rem;
   padding: 1.2rem;
   border-radius: 6px;
-  font-size: 1.2rem;
+  border: none;
   cursor: pointer;
-  width: 100%;
-  max-width: 400px;
   margin-top: 1rem;
-  transition: background 0.2s;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(123,47,242,0.08), 0 1.5px 4px rgba(243,87,168,0.10);
 }
-.generate-btn:hover {
+
+/* Primary (Generate) */
+.btn-primary {
+  background-color: #6200ea;
+  color: #fff;
+}
+.btn-primary:hover {
   background-color: #3700b3;
 }
 
-.pdf-btn {
+/* Secondary (PDF) */
+.btn-secondary {
   background-color: #03a9f4;
   color: #fff;
-  border: none;
-  padding: 1rem;
-  border-radius: 6px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  width: 100%;
-  max-width: 400px;
-  margin-top: 1rem;
-  text-decoration: none;
-  transition: background 0.2s;
-  display: inline-block;
 }
-.pdf-btn:hover {
+.btn-secondary:hover {
   background-color: #0288d1;
 }
 
-.home-btn {
+/* Gradient (Home) */
+.btn-gradient {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
   color: #fff;
-  padding: 0.75rem 1.5rem;
   border-radius: 999px;
-  text-decoration: none;
-  font-weight: bold;
-  font-size: 1rem;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(123,47,242,0.08), 0 1.5px 4px rgba(243,87,168,0.10);
-  display: inline-block;
-  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
   margin-bottom: 1.5rem;
 }
-.home-btn:hover, .home-btn:focus {
+.btn-gradient:hover, .btn-gradient:focus {
   background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
   box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
   transform: translateY(-2px) scale(1.04);
@@ -190,8 +184,7 @@ input[type="number"] {
     width: 100%;
   }
 
-  .generate-btn,
-  .pdf-btn {
+  .btn {
     width: 100%;
     font-size: 5vw;
     padding: 5vw;
@@ -199,7 +192,7 @@ input[type="number"] {
     display: inline-block;
   }
 
-  .home-btn {
+  .btn-gradient {
     width: 100%;
     text-align: center;
     font-size: 4.5vw;
@@ -233,8 +226,7 @@ input[type="number"] {
     font-size: 1.35rem;
     padding: 1.5rem;
   }
-  .generate-btn,
-  .pdf-btn {
+  .btn {
     font-size: 1.5rem;
     padding: 1.5rem;
     display: inline-block;

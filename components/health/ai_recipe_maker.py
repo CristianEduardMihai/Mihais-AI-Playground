@@ -78,7 +78,7 @@ def AIRecipeMaker():
         html.link({"rel": "stylesheet", "href": "/static/ai_recipe_maker.css"}),
         html.nav(
             {"className": "navbar"},
-            html.a({"href": "/", "className": "home-btn"}, "🏠 Home")
+            html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")
         ),
         html.div(
             {"className": "recipe-maker"},
@@ -118,7 +118,7 @@ def AIRecipeMaker():
             ),
             # Generate button
             html.button(
-                {"className": "generate-btn", "onClick": handle_generate_recipe},
+                {"className": "btn btn-primary", "onClick": handle_generate_recipe},
                 "Generate Recipe"
             ),
             # Output + Save as PDF
@@ -134,7 +134,7 @@ def AIRecipeMaker():
                     })
                 ),
                 html.a(
-                    {"className": "pdf-btn", "href": "javascript:window.print()"},
+                    {"className": "btn btn-secondary", "href": "javascript:window.print()"},
                     "Save as PDF"
                 )
             )
