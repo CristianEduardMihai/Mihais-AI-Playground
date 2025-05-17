@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from reactpy.backend.fastapi import configure, Options
@@ -9,6 +9,13 @@ from components.health.ai_recipe_maker import AIRecipeMaker
 # from components.health.fun.roast_battle import RoastBattle
 
 app = FastAPI()
+
+# Middleware to set User-Agent header
+@app.middleware("http")
+async def add_user_agent_header(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["user-agent"] = "SlackID U08RP1Z64EN"
+    return response
 
 # Mount your static assets and pages
 app.mount("/static", StaticFiles(directory="static"), name="static")
