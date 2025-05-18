@@ -1,0 +1,114 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: transparent;
+}
+.background-gradient-blur {
+    position: fixed;
+    z-index: -1;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    background: radial-gradient(circle at 20% 30%, #6201ff 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, #f357a8 0%, transparent 60%),
+                linear-gradient(120deg, #6200ff 0%, #f357a8 100%);
+    filter: blur(60px) brightness(1.15);
+    opacity: 0.55;
+}
+.notfound-container {
+    max-width: 420px;
+    margin: 8vh auto 0 auto;
+    background: rgba(255,255,255,0.32);
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(123,47,242,0.10);
+    padding: 2.5rem 2rem 2.2rem 2rem;
+    text-align: center;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+.notfound-title {
+    font-size: 4.5rem;
+    font-weight: 900;
+    color: #7b2ff2;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: 0.05em;
+    text-shadow: 0 2px 12px rgba(123,47,242,0.10);
+}
+.notfound-subtitle {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #f357a8;
+    margin: 0 0 1.2rem 0;
+    letter-spacing: 0.01em;
+}
+.notfound-message {
+    font-size: 1.1rem;
+    color: #444;
+    margin-bottom: 2.2rem;
+}
+.btn-gradient.notfound-home-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
+    color: #fff;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 1.08em;
+    padding: 0.55em 1.6em;
+    border: none;
+    box-shadow: 0 2px 12px rgba(123,47,242,0.08);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    cursor: pointer;
+    text-decoration: none;
+    margin-top: 0.5rem;
+}
+.btn-gradient.notfound-home-btn:hover, .btn-gradient.notfound-home-btn:focus {
+    background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
+    box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
+    transform: translateY(-2px) scale(1.04);
+    text-decoration: none;
+}
+
+/* ======================
+   Mobile First Styles
+   ====================== */
+@media (max-width: 1000px) {
+    body, html {
+        height: 100vh;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .notfound-container {
+        max-width: 96vw;
+        min-height: 40vh;
+        padding: 2.2rem 0.7rem 2.2rem 0.7rem;
+        margin: 0 auto;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .notfound-title {
+        font-size: 5.2rem;
+    }
+    .notfound-subtitle {
+        font-size: 3.3rem;
+    }
+    .notfound-message {
+        font-size: 2.08rem;
+    }
+    .btn-gradient.notfound-home-btn {
+        font-size: 3.15em;
+        padding: 0.80em 1.6em;
+    }
+}
