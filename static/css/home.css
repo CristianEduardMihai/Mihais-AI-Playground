@@ -51,24 +51,28 @@ section {
     text-align: left;
 }
 .card a.btn-gradient {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
     color: #fff;
     border-radius: 999px;
     font-weight: 600;
-    font-size: 0.98em;
-    padding: 0.45em 1.2em;
+    font-size: 1.05em;
+    padding: 0.7em 1.6em;
     border: none;
     box-shadow: 0 2px 12px rgba(123,47,242,0.08);
     transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
     cursor: pointer;
     text-decoration: none;
     margin: 0.5rem 0 0 0;
-    width: max-content;
-    min-width: 120px;
-    max-width: 260px;
+    width: 220px;
+    min-width: 140px;
+    max-width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .card a.btn-gradient:hover, .card a.btn-gradient:focus {
     background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
@@ -191,8 +195,9 @@ footer {
         width: 100%;
         min-width: 0;
         max-width: 100%;
-        font-size: 0.95em;
-        padding: 0.38em 0.9em;
+        font-size: 1em;
+        padding: 0.7em 1.1em;
+        white-space: normal;
     }
 }
 
