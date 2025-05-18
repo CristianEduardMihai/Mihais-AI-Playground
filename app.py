@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from reactpy.backend.fastapi import configure
+from reactpy.backend.fastapi import configure, Options
+from reactpy import component, html
 
 from components.router import RootRouter
 
@@ -17,10 +18,17 @@ async def add_user_agent_header(request: Request, call_next):
 # Mount your static assets
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Mount the SPA router at root
-configure(app, RootRouter)
-
-# Apple icons and favicons at root for iOS/browser compatibility
+# Configure the ReactPy app
+configure(
+    app, RootRouter,
+    options=Options(
+        head=html.head(
+            html.title("Mihai's AI Playground"),
+            html.link({"rel": "icon", "type": "image/png", "href": "/static/favicon.ico"})
+        )
+    )
+)
+# Icons and favicons at root for iOS/browser compatibility
 @app.get("/favicon.ico")
 def favicon():
     return FileResponse("static/favicon.ico")
