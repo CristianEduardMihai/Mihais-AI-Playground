@@ -107,7 +107,7 @@ def BotVsBotRoastBattle():
         # navbar
         html.nav(
             {"className": "navbar"},
-            html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home"),
+            html.a({"href": "/", "className": "btn btn-home"}, "🏠 Home"),
         ),
 
         # main container
