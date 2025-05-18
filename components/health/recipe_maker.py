@@ -4,7 +4,7 @@ import json
 import markdown
 
 @component
-def AIRecipeMaker():
+def RecipeMaker():
     ingredients, set_ingredients = use_state("")
     health_level, set_health_level = use_state("balanced")
     servings, set_servings = use_state("2")

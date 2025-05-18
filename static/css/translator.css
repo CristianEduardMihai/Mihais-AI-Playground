@@ -1,0 +1,18 @@
+/* Translator uses the same layout and scaling as spell_check.css */
+@import url("spell_check.css");
+
+.spellcheck-main-container h2 {
+    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+/* Optionally, tweak the arrow and dropdown spacing for translator */
+.lang-select select {
+    min-width: 90px;
+}
+.lang-select span {
+    margin: 0 0.5em;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #7b2ff2;
+}
