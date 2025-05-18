@@ -22,3 +22,6 @@ Built for the [Hack Club](https://hackclub.com/) Neighborhood Hackatron, Mihai's
 - **AI Recipe Maker** 🍳: Get wild, detailed recipes (with nutrition & allergens) from whatever's in your fridge.
 - **Bot Vs Bot Roast Battle** 🤖🔥🤖: Watch two bots roast each other on any topic—no profanity, just clever, punchy fun!
 - **AI Spell Checker** 📝✨: Instantly fix your spelling & grammar in 30+ languages, with green highlights and flag selector.
+
+![hackatime](https://github-readme-stats.hackclub.dev/api/wakatime?username=2408&api_domain=hackatime.hackclub.com&theme=calm_pink&custom_title=Hackatime+Stats&layout=compact&cache_seconds=0&langs_count=8
+)
