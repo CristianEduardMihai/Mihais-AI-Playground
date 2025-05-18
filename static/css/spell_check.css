@@ -1,0 +1,206 @@
+/* Glassmorphism and gradient background for spell check */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    min-width: 100vw;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.background-gradient-blur {
+    position: fixed;
+    z-index: -1;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    background: radial-gradient(circle at 20% 30%, #6201ff 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, #f357a8 0%, transparent 60%),
+                linear-gradient(120deg, #6200ff 0%, #f357a8 100%);
+    filter: blur(60px) brightness(1.15);
+    opacity: 0.55;
+}
+
+@font-face {
+    font-family: NotoColorEmojiLimited;
+    unicode-range: U+1F1E6-1F1FF;
+    src: url(https://raw.githack.com/googlefonts/noto-emoji/main/fonts/NotoColorEmoji.ttf);
+}
+
+.spellcheck-main-container {
+    min-height: 100vh;
+    min-width: 100vw;
+    height: 100vh;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: stretch;
+    background: rgba(255,255,255,0.40);
+    font-family: 'NotoColorEmojiLimited', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    text-align: center;
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+}
+
+.spellcheck-main-container h2 {
+    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.spellcheck-form {
+    flex: 1 1 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem; /* Reduced from 1.5rem to 0.5rem for tighter spacing */
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.spellcheck-form > .btn {
+    margin: 0.25rem 0 0.25rem 0 !important;
+}
+
+.spellcheck-form > .form-group {
+    margin-bottom: 0.25rem;
+}
+
+.lang-select {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Reduced from 1rem to 0.5rem for tighter spacing */
+    justify-content: flex-start;
+}
+.lang-select label {
+    font-weight: bold;
+    font-size: 1.1rem;
+    font-family: 'NotoColorEmojiLimited', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+.lang-select select {
+    font-size: 1.1rem;
+    padding: 0.5em 1em;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    margin-left: 0.5em;
+    font-family: 'NotoColorEmojiLimited', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+.spellcheck-split {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    height: 100%;
+    gap: 0;
+    justify-content: stretch;
+    align-items: stretch;
+}
+
+.spellcheck-input, .spellcheck-output {
+    width: 50vw;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    font-size: 1.1rem;
+    border-radius: 0;
+    border: none;
+    padding: 2rem 1.5rem;
+    background: rgba(255,255,255,0.7);
+    box-shadow: none;
+    resize: none;
+    font-family: 'NotoColorEmojiLimited', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    overflow: auto;
+}
+
+.spellcheck-input {
+    border-right: 1px solid #ccc;
+}
+
+.spellcheck-output {
+    border-left: 1px solid #ccc;
+    text-align: left;
+    word-break: break-word;
+    display: block;
+    white-space: pre-wrap;
+}
+
+.placeholder {
+    color: #bbb;
+}
+.corrected {
+    color: #1dbf3a;
+    font-weight: bold;
+    background: rgba(29,191,58,0.08);
+    border-radius: 4px;
+    padding: 0 2px;
+}
+
+.btn.spellcheck-btn-small {
+    display: inline-block;
+    min-width: 120px;
+    max-width: 220px;
+    width: auto;
+    font-size: 1rem;
+    padding: 0.5em 1.2em;
+    border-radius: 6px;
+    margin: 0.5rem auto 0.5rem auto;
+    align-self: center;
+    box-shadow: 0 2px 8px rgba(123,47,242,0.08);
+}
+
+.spellcheck-form > .btn,
+.spellcheck-btn-small {
+    margin: 0.5rem auto 0.5rem auto !important;
+    align-self: center;
+    width: auto;
+    min-width: 120px;
+    max-width: 220px;
+    display: inline-block;
+}
+
+@media (max-width: 1000px) {
+    .spellcheck-split {
+        flex-direction: column;
+        width: 100vw;
+        height: 100vh;
+    }
+    .spellcheck-input, .spellcheck-output {
+        width: 100vw;
+        height: 50vh;
+        min-height: 0;
+        min-width: 0;
+        font-size: 1.8rem;
+        padding: 1rem;
+        border-radius: 0;
+    }
+    .spellcheck-input {
+        border-right: none;
+        border-bottom: 1px solid #ccc;
+    }
+    .spellcheck-output {
+        border-left: none;
+        border-top: 1px solid #ccc;
+    }
+}
+
+@media (max-width: 500px) {
+    .spellcheck-input, .spellcheck-output {
+        font-size: 0.95rem;
+        padding: 0.5rem;
+    }
+}

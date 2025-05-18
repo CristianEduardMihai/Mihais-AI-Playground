@@ -150,8 +150,8 @@ input[type="number"] {
 
   .recipe-maker {
     background: rgba(255, 255, 255, 0.404);
-    backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
     border-radius: 0;
     box-shadow: none;
     font-size: 2.4rem;

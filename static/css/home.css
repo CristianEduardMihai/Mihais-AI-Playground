@@ -15,8 +15,8 @@ main {
 }
 header {
     background: rgba(255, 255, 255, 0.20);
-    backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     color: #222;
     padding: 1rem;
     text-align: center;

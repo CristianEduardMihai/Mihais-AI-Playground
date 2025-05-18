@@ -18,7 +18,7 @@ def Home():
                     {"class": "card"},
                     html.h3("AI Recipe Maker"),
                     html.p("Input your ingredients and let AI suggest recipes. Customize how healthy the recipes should be!"),
-                    html.a({"class": "btn-gradient", "href": "/health/recipe_maker"}, "Go to AI Recipe Maker")
+                    html.a({"class": "btn-gradient", "href": "/health/recipe-maker"}, "Go to AI Recipe Maker")
                 ),
                 html.div(
                     {"class": "card"},
@@ -34,7 +34,7 @@ def Home():
                     {"class": "card"},
                     html.h3("AI Spell Check"),
                     html.p("Correct your writing, tone and much more."),
-                    html.a({"class": "btn-gradient", "href": "/fun/spell-check"}, "Go to AI Spell Check")
+                    html.a({"class": "btn-gradient", "href": "/qol/spell-check"}, "Go to AI Spell Check")
                 ),
             ),
             html.section(

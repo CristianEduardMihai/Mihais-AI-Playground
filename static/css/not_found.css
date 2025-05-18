@@ -26,8 +26,8 @@ body, html {
     box-shadow: 0 4px 24px rgba(123,47,242,0.10);
     padding: 2.5rem 2rem 2.2rem 2rem;
     text-align: center;
-    backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
 }
 .notfound-title {
     font-size: 4.5rem;
