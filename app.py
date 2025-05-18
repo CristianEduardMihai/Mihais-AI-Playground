@@ -1,13 +1,9 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from reactpy.backend.fastapi import configure, Options
+from reactpy.backend.fastapi import configure
 
-from components.health.ai_recipe_maker import AIRecipeMaker
-from components.fun.roast_battle import BotVsBotRoastBattle
-# 4 future
-# from components.health.calorie_tracker import CalorieTracker
-# from components.health.fun.roast_battle import RoastBattle
+from components.router import RootRouter
 
 app = FastAPI()
 
@@ -18,34 +14,11 @@ async def add_user_agent_header(request: Request, call_next):
     response.headers["user-agent"] = "SlackID U08RP1Z64EN"
     return response
 
-# Mount your static assets and pages
+# Mount your static assets
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@app.get("/", response_class=HTMLResponse)
-async def home():
-    with open("static/home.html", "r", encoding="utf-8") as file:
-        return HTMLResponse(content=file.read())
-
-# === ReactPy component routes ===
-
-# AI Recipe Maker at /health/recipe_maker
-configure(
-    app,
-    AIRecipeMaker,
-    Options(url_prefix="/health/recipe_maker"),
-)
-
-# Bot Vs Bot AI Roast Battle at /fun/roast-battle
-configure(
-    app,
-    BotVsBotRoastBattle,
-    Options(url_prefix="/fun/roast_battle"),
-)
-
-# for future
-# configure(app, CalorieTracker, Options(url_prefix="/health/calorie_tracker"))
-# configure(app, RoastBattle,  Options(url_prefix="/health/fun/roast-battle"))
-
+# Mount the SPA router at root
+configure(app, RootRouter)
 
 # Apple icons and favicons at root for iOS/browser compatibility
 @app.get("/favicon.ico")
