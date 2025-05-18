@@ -26,9 +26,11 @@ def BotVsBotRoastBattle():
             "content": (
                 "You are two witty, clever, and friendly AI bots having a roast battle. "
                 "You must never use profanity or offensive language. "
-                "Each bot should roast the other in a fun, creative, and clever way, "
+                "Each bot should argue with each other in a fun, creative, and clever way, "
                 "but always keep it clean. Each message should be a single roast, "
-                "and the bots should take turns. Output only your roast—keep it punchy (1–2 lines)."
+                "and the bots should take turns. Output only your roast—keep it punchy (1-2 lines)."
+                "If the input is something versus something, each bot should take the side of one of the two things. "
+                "If the input is a single thing, each bot should take a different side of that thing. "
             )
         }
         history = []
@@ -64,7 +66,7 @@ def BotVsBotRoastBattle():
                 roast = resp.json()["choices"][0]["message"]["content"].strip()
                 set_chat(lambda c: c + [(bot, roast)])
                 history.append((bot, roast))
-                await asyncio.sleep(2.2 + 0.7 * (turn % 2))
+                await asyncio.sleep(3.5 + 1.2 * (turn % 2))
                 set_is_typing(False)
             except Exception as e:
                 if not cancel_ref.current:
@@ -142,7 +144,6 @@ def BotVsBotRoastBattle():
                 "Start Roast Battle",
             ),
 
-            # chat window (fix typing indicator and remove persistent 'False')
             html.div(
                 {"className": "chat-window"},
                 *[
@@ -164,7 +165,7 @@ def BotVsBotRoastBattle():
                             html.span({"className": "dot"}),
                             html.span({"className": "dot"}),
                             html.span({"className": "dot"}),
-                            html.span("Alpha is typing...")
+                            html.span("Typing...")
                         )
                     ] if is_typing else []
                 )
