@@ -41,6 +41,12 @@ def Home():
                     html.h3("AI Translator 🌎"),
                     html.p("Translate text between multiple languages."),
                     html.a({"class": "btn-gradient", "href": "/qol/translator"}, "Go to AI Translator")
+                ),
+                html.div(
+                    {"class": "card"},
+                    html.h3("AI Text Summarizer 📚"),
+                    html.p("Summarize long texts into concise summaries."),
+                    html.a({"class": "btn-gradient", "href": "/qol/text-summarizer"}, "Go to AI Text Summarizer")
                 )
             ),
             html.section(

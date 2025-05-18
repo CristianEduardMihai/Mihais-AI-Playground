@@ -1,0 +1,42 @@
+@import url("/static/css/spell_check.css");
+
+/* You can add any text summarizer-specific tweaks below */
+
+.spellcheck-main-container h2 {
+    /* Differentiate the title for summarizer */
+    letter-spacing: 0.01em;
+}
+
+.spellcheck-btn-small {
+    background: linear-gradient(90deg, #f357a8 0%, #6201ff 100%);
+}
+
+/* Make summary style select smaller and inline */
+.summary-type-select {
+    width: auto;
+    min-width: 120px;
+    max-width: 220px;
+    display: inline-block;
+    font-size: 1rem;
+    padding: 0.4em 1em;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    margin-left: 0.5em;
+    text-align: center;
+}
+
+.lang-select {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center; /* Center the label and select */
+    margin-bottom: 0.5rem;
+}
+
+.lang-select label {
+    margin-right: 0.5em;
+    font-size: 1.05rem;
+    text-align: center;
+}
