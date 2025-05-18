@@ -113,13 +113,13 @@ body * {
 .chat-bubble.bot1 {
   align-self: flex-start;
   background: linear-gradient(90deg, #fff 0%, #f357a8 100%);
-  color: #7b2ff2;
+  color: #6200ff;
 }
 
 .chat-bubble.bot2 {
   align-self: flex-end;
   background: linear-gradient(90deg, #7b2ff2 0%, #fff 100%);
-  color: #f357a8;
+  color: #ff0084;
 }
 
 .chat-bubble.bot1 .bot-message {
@@ -176,7 +176,7 @@ body * {
     margin: 1.5rem 0 1rem 0;
   }
   .chat-bubble {
-    font-size: 2.2rem;
+    font-size: 2.8rem;
     padding: 3vw 4vw;
     max-width: 100%;
   }
