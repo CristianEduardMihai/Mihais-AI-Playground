@@ -1,18 +1,11 @@
 # Mihai's AI Playground 🎉🤖
 
-<table>
-    <tr>
-        <td valign="top" align="left">
-            <img src="static/assets/ai-playground-logo.png" alt="AI Playground Logo" width="250" />
-        </td>
-        <td valign="top">
+<img src="static/assets/ai-playground-logo.png" alt="AI Playground Logo" width="120" align="left" style="margin-right: 20px;"/>
 
 **Welcome to the most playful, glassy, and AI-powered playground on the web!  
-Built for the [Hack Club](https://hackclub.com/) Neighborhood Hackatron, Mihai's AI Playground is your one-stop shop for fun, creativity, and clever AI tools - all wrapped in a pink-purple glassmorphic vibe. ✨**
+Built for the [Hack Club](https://hackclub.com/) Neighborhood Hackatron, Mihai's AI Playground is your one-stop shop for fun, creativity, and clever AI tools—all wrapped in a pink-purple glassmorphic vibe. ✨**
 
-</td>
-    </tr>
-</table>
+![GitHub Repo Size](https://img.shields.io/github/repo-size/cristianeduardmihai/mihais-ai-playground?style=flat-square&logo=github&label=Repo%20Size&color=8B5CF6&labelColor=1E1E2D) ![GitHub Stars](https://img.shields.io/github/stars/cristianeduardmihai/mihais-ai-playground?style=social)
 
 ### 🌐 **Live at:** [mihais-ai-playground.xyz](https://mihais-ai-playground.xyz/)
 
