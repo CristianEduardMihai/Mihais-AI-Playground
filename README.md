@@ -1,14 +1,24 @@
 # Mihai's AI Playground 🎉🤖
 
-Welcome to the most playful, glassy, and AI-powered playground on the web!
-Built for the [Hack Club](https://hackclub.com/) Neighborhood Hackatron, Mihai's AI Playground is your one-stop shop for fun, creativity, and clever AI tools - all wrapped in a pink-purple glassmorphic vibe. ✨
+<table>
+    <tr>
+        <td valign="top" align="left">
+            <img src="static/assets/ai-playground-logo.png" alt="AI Playground Logo" width="250" />
+        </td>
+        <td valign="top">
+
+**Welcome to the most playful, glassy, and AI-powered playground on the web!  
+Built for the [Hack Club](https://hackclub.com/) Neighborhood Hackatron, Mihai's AI Playground is your one-stop shop for fun, creativity, and clever AI tools - all wrapped in a pink-purple glassmorphic vibe. ✨**
+
+</td>
+    </tr>
+</table>
 
 ### 🌐 **Live at:** [mihais-ai-playground.xyz](https://mihais-ai-playground.xyz/)
 
 ### 🐳 **Docker Hub:** [cristianeduardmihai/mihais-ai-playground](https://hub.docker.com/repository/docker/cristianeduardmihai/mihais-ai-playground)
 
 > ⚠️ **Note:** This app uses the Hack Club AI API, which is only for Hack Club projects. Please don't self-host unless you're part of the club!
----
 
 ## 🦄 Features
 
