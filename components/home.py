@@ -47,6 +47,12 @@ def Home():
                     html.h3("AI Text Summarizer 📚"),
                     html.p("Summarize long texts into concise summaries."),
                     html.a({"class": "btn-gradient", "href": "/qol/text-summarizer"}, "Go to AI Text Summarizer")
+                ),
+                html.div(
+                    {"class": "card"},
+                    html.h3("AI PC Part Picker 🖥️"),
+                    html.p("Get AI-generated recommendations for PC parts based on your preferences."),
+                    html.a({"class": "btn-gradient", "href": "/qol/pc-part-picker"}, "Go to AI PC Part Picker")
                 )
             ),
             html.section(
