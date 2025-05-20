@@ -84,10 +84,9 @@ def LanguageBuddy():
         {},
         html.div({"className": "background-gradient-blur"}),
         html.link({"rel": "stylesheet", "href": "/static/css/language_buddy.css"}),
-
-        html.nav(
-            {"className": "navbar"},
-            html.a({"href": "/", "className": "btn btn-home"}, "🏠 Home"),
+        html.div(
+            {"className": "home-btn-row"},
+            html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")
         ),
 
         html.div(

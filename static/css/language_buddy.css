@@ -40,7 +40,11 @@ body * {
   color: #fff;
   border-radius: 999px;
   margin-bottom: 1.2rem;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
 }
+
 .btn-gradient:hover, .btn-gradient:focus {
   background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
   box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
@@ -203,6 +207,64 @@ select, input[type="text"] {
   font-weight: bold;
   margin-top: 1rem;
 }
+
+.home-btn-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 1.2rem 0 0.7rem 0;
+}
+
+.home-btn-row .btn-gradient {
+  font-size: 1.2rem;
+  padding: 1.2rem;
+  max-width: 600px;
+  min-width: 120px;
+  margin-bottom: 1.5rem;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(123,47,242,0.08);
+}
+
+@media (max-width: 1000px) {
+  .btn-gradient {
+    max-width: 100vw;
+    font-size: 2.2rem;
+    padding: 1.3em 0.7em;
+    border-radius: 0.9em;
+  }
+  .home-btn-row {
+    margin: 2vw 0 2vw 0;
+  }
+  .home-btn-row .btn-gradient {
+    font-size: 2.2rem;
+    padding: 1.3em 0.7em;
+    max-width: 100vw;
+    min-width: 90px;
+    margin-bottom: 3vw;
+  }
+}
+
+@media (max-width: 500px) {
+  .btn-gradient {
+    max-width: 99vw;
+    font-size: 1.05rem;
+    padding: 0.8em 0.4em;
+    border-radius: 0.7em;
+  }
+  .home-btn-row {
+    margin: 1vw 0 1vw 0;
+  }
+  .home-btn-row .btn-gradient {
+    font-size: 1.05rem;
+    padding: 0.8em 0.4em;
+    max-width: 99vw;
+    min-width: 70px;
+    margin-bottom: 1vw;
+  }
+}
+
+/* ...existing code... */
 
 @media (max-width: 1000px) {
   .language-buddy.chat-style {
