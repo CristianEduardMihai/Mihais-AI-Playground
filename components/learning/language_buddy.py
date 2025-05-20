@@ -50,8 +50,10 @@ def LanguageBuddy():
                     f"in {target_lang} (native: {native_lang}), and has been learning for "
                     f"{learning_time or 'an unknown amount of'} time. Help them practice, "
                     "correct mistakes, and encourage them. Keep it fun and supportive. "
-                    "If they make a mistake, gently correct it and explain. Use the target "
-                    "language as much as possible, but explain in their native language if needed."
+                    "Chat with the user primarily in the target language, at a level appropriate for their skills. "
+                    "Only use their native language to explain something if they are clearly confused or ask for clarification. "
+                    "Do not mix languages in the same sentence unless absolutely necessary for understanding. "
+                    "If the user makes a mistake, gently correct it and explain why, but keep the conversation mostly in the target language."
                 )},
                 *[
                     {

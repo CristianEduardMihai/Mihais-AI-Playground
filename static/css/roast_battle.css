@@ -133,21 +133,21 @@ body * {
 
 .chat-bubble.bot1 {
   align-self: flex-start;
-  background: linear-gradient(90deg, #fff 0%, #f357a8 100%);
-  color: #6200ff;
+  background: linear-gradient(90deg, #da65e0 0%, #b71bbf 100%);
+  color: #ffffff;
 }
 
 .chat-bubble.bot2 {
   align-self: flex-end;
-  background: linear-gradient(90deg, #7b2ff2 0%, #fff 100%);
-  color: #ff0084;
+  background: linear-gradient(90deg, #6f21b8 0%, #aa6de3 100%);
+  color: #ffffff;
 }
 
 .chat-bubble.bot1 .bot-message {
-  color: #7b2ff2 !important; /* purple */
+  color: #ffffff !important; /* purple */
 }
 .chat-bubble.bot2 .bot-message {
-  color: #f357a8 !important; /* pink */
+  color: #ffffff !important; /* pink */
 }
 
 .typing-indicator {
