@@ -10,9 +10,23 @@ def RecipeMaker():
     servings, set_servings = use_state("2")
     recipe_html, set_recipe_html = use_state("")
 
+    cooking_methods = [
+        "Frying", "Baking", "Boiling", "Microwave", "Grilling", "Air Fryer"
+    ]
+    selected_methods, set_selected_methods = use_state(cooking_methods[:])
+
+    def handle_method_change(e):
+        value = e["target"]["value"]
+        checked = e["target"].get("checked", False)
+        if checked:
+            set_selected_methods(lambda prev: prev + [value] if value not in prev else prev)
+        else:
+            set_selected_methods(lambda prev: [m for m in prev if m != value])
+
     def handle_generate_recipe(event):
         set_recipe_html("")  # Clear previous output
         try:
+            methods_str = ", ".join(selected_methods) if selected_methods else "any method"
             prompt = (
                 "Please output a recipe in Markdown using this template:\n\n"
                 "# Recipe Title\n\n"
@@ -36,6 +50,8 @@ def RecipeMaker():
                 "\n\n"
                 f"Use these ingredients: {ingredients}\n"
                 "Assume the user also has common ingredients like sugar, salt, and flour.\n"
+                f"Allowed cooking methods: {methods_str}. Do not use any other methods. If no method is possible, or if the ingredients are obviously for a salad or similar, you may use a no-cook recipe as a last resort.\n"
+                "If the ingredients make sense as a main dish and a side (for example, chicken and potatoes as a main, cabbage and lemon as a salad), you may split them into a main and a side dish, and describe both in the recipe.\n"
                 "Explain the recipe in detail, including cooking times and methods, do not cheap down on words.\n"
                 "You don't have to use all the ingredients.\n\n"
                 f"Health level: {health_level}\n"
@@ -87,6 +103,26 @@ def RecipeMaker():
         html.div(
             {"className": "recipe-maker"},
             html.h2("AI Recipe Maker"),
+            # Cooking methods
+            html.div(
+                {"className": "form-group"},
+                html.label({"for": "cooking-methods"}, "Cooking Methods You Can Use:"),
+                html.div(
+                    {"id": "cooking-methods", "className": "cooking-methods-boxes"},
+                    *[
+                        html.label(
+                            {"className": "cooking-method-label"},
+                            html.input({
+                                "type": "checkbox",
+                                "value": method,
+                                "checked": method in selected_methods,
+                                "onChange": handle_method_change
+                            }),
+                            method
+                        ) for method in cooking_methods
+                    ]
+                )
+            ),
             # Ingredients
             html.div(
                 {"className": "form-group"},

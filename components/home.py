@@ -12,6 +12,16 @@ def Home():
         ),
         html.main(
             html.section(
+                {"id": "learning"},
+                html.h2({"class": "section-title"}, "Learning 📚"),
+                html.div(
+                    {"class": "card"},
+                    html.h3("AI Language Buddy 🌍"),
+                    html.p("Practice your target language with an AI buddy!"),
+                    html.a({"class": "btn-gradient", "href": "/learning/language-buddy"}, "Go to AI Language Buddy")
+                )
+            ),
+            html.section(
                 {"id": "health"},
                 html.h2({"class": "section-title"}, "Health 🥗"),
                 html.div(
@@ -64,6 +74,12 @@ def Home():
                     html.p("Watch two AI bots engage in a hilarious roast battle!"),
                     html.a({"class": "btn-gradient", "href": "/fun/roast-battle"}, "Go to AI Roast Battle")
                 ),
+                html.div(
+                    {"class": "card"},
+                    html.h3("AI Personality Quiz 🎭"),
+                    html.p("Answer fun questions and get a playful AI-generated personality analysis!"),
+                    html.a({"class": "btn-gradient", "href": "/fun/personality-quiz"}, "Go to AI Personality Quiz")
+                )
             ),
         ),
         html.footer(

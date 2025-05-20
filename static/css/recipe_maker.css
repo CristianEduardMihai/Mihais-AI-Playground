@@ -178,10 +178,11 @@ input[type="number"] {
   input[type="text"],
   select,
   input[type="number"] {
-    font-size: 2.4rem;
-    padding: 4vw;
+    font-size: 3.2rem;
+    padding: 6vw;
     margin-bottom: 3vw;
     width: 100%;
+    min-height: 5.5rem;
   }
 
   .btn {
@@ -225,6 +226,29 @@ input[type="number"] {
     filter: blur(40px) brightness(1.1);
     opacity: 0.35;
   }
+
+  .cooking-methods-boxes {
+    gap: 2vw 3vw;
+    margin-top: 2vw;
+  }
+  .cooking-method-label {
+    font-size: 2.2rem;
+    padding: 1vw 0.5vw;
+  }
+  .cooking-method-label input[type="checkbox"] {
+    width: 2.2rem;
+    height: 2.2rem;
+    margin-right: 1vw;
+  }
+    .cooking-method-label {
+    font-size: 1.2rem;
+    padding: 0.5rem 0.2rem;
+  }
+  .cooking-method-label input[type="checkbox"] {
+    width: 1.3rem;
+    height: 1.3rem;
+    margin-right: 0.5vw;
+  }
 }
 
 @media (max-width: 500px) {
@@ -235,8 +259,9 @@ input[type="number"] {
   input[type="text"],
   select,
   input[type="number"] {
-    font-size: 1.35rem;
-    padding: 1.5rem;
+    font-size: 2.1rem;
+    padding: 2.5rem;
+    min-height: 3.2rem;
   }
   .btn {
     font-size: 1.5rem;
