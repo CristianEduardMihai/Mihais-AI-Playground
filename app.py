@@ -2,9 +2,12 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from reactpy.backend.fastapi import configure, Options
-from reactpy import component, html
+from reactpy import html
+import os
+import time
+import asyncio
 
-from components.router import RootRouter
+from components.common.router import RootRouter
 
 app = FastAPI()
 
@@ -29,6 +32,39 @@ configure(
         )
     )
 )
+
+# Clean up old tts files in static/assets/tts_temp (max age: 1 hour)
+dir_path = "static/assets/tts_temp"
+MAX_AGE_SECONDS = 60 * 60  # 1 hour
+CLEANUP_INTERVAL = 60 * 60  # 1 hour
+
+def cleanup_old_wavs():
+    if os.path.exists(dir_path):
+        now = time.time()
+        removed = 0
+        for f in os.listdir(dir_path):
+            fpath = os.path.join(dir_path, f)
+            if os.path.isfile(fpath) and f.endswith('.wav'):
+                try:
+                    if now - os.path.getmtime(fpath) > MAX_AGE_SECONDS:
+                        os.remove(fpath)
+                        removed += 1
+                except Exception:
+                    pass
+        if removed:
+            print(f"Cleaned up {removed} old .wav files in {dir_path}.")
+    else:
+        print(f"{dir_path} does not exist, no cleanup needed.")
+
+async def periodic_cleanup():
+    while True:
+        cleanup_old_wavs()
+        await asyncio.sleep(CLEANUP_INTERVAL)
+
+@app.on_event("startup")
+async def start_periodic_cleanup():
+    asyncio.create_task(periodic_cleanup())
+
 # Icons and favicons at root for iOS/browser compatibility
 @app.get("/favicon.ico")
 def favicon():
