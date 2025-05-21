@@ -2,7 +2,7 @@ from reactpy import component, html, use_state
 import json
 import os
 
-with open(os.path.join(os.path.dirname(__file__), "../../static/assets/country-codes.json"), encoding="utf-8") as f:
+with open(os.path.join(os.path.dirname(__file__), "../../static/assets/language-codes.json"), encoding="utf-8") as f:
     LANGUAGES = json.load(f)
 
 @component
@@ -75,6 +75,13 @@ def Translator():
         except Exception as e:
             raise Exception(f"Translation failed: {e}")
 
+    def render_lang_option(lang):
+        # lang is a dict with 'code' and 'label' (label is '🇺🇸 English')
+        # Output: EN - 🇺🇸 English
+        code = lang["code"].upper()
+        flag_and_name = lang["label"]
+        return html.option({"value": lang["code"]}, f"{code} - {flag_and_name}")
+
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
@@ -98,7 +105,7 @@ def Translator():
                             "value": src_lang,
                             "onChange": handle_src_lang,
                         },
-                        *[html.option({"value": l["code"]}, l["label"]) for l in LANGUAGES]
+                        *[render_lang_option(l) for l in LANGUAGES]
                     ),
                     html.span({"style": {"fontWeight": "bold", "fontSize": "1.3em", "margin": "0 0.5em"}}, "→"),
                     html.select(
@@ -107,7 +114,7 @@ def Translator():
                             "value": tgt_lang,
                             "onChange": handle_tgt_lang,
                         },
-                        *[html.option({"value": l["code"]}, l["label"]) for l in LANGUAGES]
+                        *[render_lang_option(l) for l in LANGUAGES]
                     ),
                 ),
                 html.button(

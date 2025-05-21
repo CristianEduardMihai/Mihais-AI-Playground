@@ -1,6 +1,3 @@
-import reactpy.config
-reactpy.config.REACTPY_DEBUG_MODE.current = True
-
 from reactpy import component, html, use_state
 import requests
 import markdown

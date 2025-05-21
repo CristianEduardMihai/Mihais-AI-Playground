@@ -410,13 +410,11 @@ def PCPartPicker():
     # Fetch currency list on mount
     def fetch_currencies():
         try:
-            resp = requests.get("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies.min.json", timeout=10)
-            if resp.status_code == 200:
-                data = resp.json()
+            with open("static/assets/currencies.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+                # data is a dict: code -> name (with flag)
                 currency_options = sorted([(k, v) for k, v in data.items()], key=lambda x: x[1].lower())
                 set_currency_list(currency_options)
-            else:
-                set_currency_list([("eur", "Euro"), ("usd", "US Dollar")])
         except Exception as e:
             set_currency_list([("eur", "Euro"), ("usd", "US Dollar")])
     use_effect(fetch_currencies, [])

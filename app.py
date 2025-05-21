@@ -24,7 +24,8 @@ configure(
     options=Options(
         head=html.head(
             html.title("Mihai's AI Playground"),
-            html.link({"rel": "icon", "type": "image/png", "href": "/static/favicon.ico"})
+            html.link({"rel": "icon", "type": "image/png", "href": "/static/favicon.ico"}),
+            html.link({"rel": "apple-touch-icon", "href": "/apple-touch-icon.png"})
         )
     )
 )

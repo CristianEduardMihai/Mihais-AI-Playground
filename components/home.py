@@ -79,6 +79,12 @@ def Home():
                     html.h3("AI Personality Quiz 🎭"),
                     html.p("Answer fun questions and get a playful AI-generated personality analysis!"),
                     html.a({"class": "btn-gradient", "href": "/fun/personality-quiz"}, "Go to AI Personality Quiz")
+                ),
+                html.div(
+                    {"class": "card"},
+                    html.h3("Reddit-like Storyteller 📖"),
+                    html.p("Generate stories in the style of your favorite subreddits."),
+                    html.a({"class": "btn-gradient", "href": "/fun/reddit-like-storyteller"}, "Go to AI Storyteller")
                 )
             ),
         ),

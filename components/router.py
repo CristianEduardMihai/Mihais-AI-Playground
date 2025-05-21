@@ -9,6 +9,7 @@ from components.qol.text_summarizer import TextSummarizer
 from components.qol.pc_part_picker import PCPartPicker
 from components.fun.roast_battle import BotVsBotRoastBattle
 from components.fun.personality_quiz import PersonalityQuiz
+from components.fun.reddit_like_storyyteller import RedditLikeStoryteller
 from components.common.not_found import NotFound
 
 @component
@@ -21,7 +22,8 @@ def RootRouter():
         route("/qol/translator", Translator()),
         route("/qol/text-summarizer", TextSummarizer()),
         route("/qol/pc-part-picker", PCPartPicker()),
-        route("/fun/personality-quiz", PersonalityQuiz()),
         route("/fun/roast-battle", BotVsBotRoastBattle()),
+        route("/fun/personality-quiz", PersonalityQuiz()),
+        route("/fun/reddit-like-storyteller", RedditLikeStoryteller()),
         route("{404:any}", NotFound())
     )

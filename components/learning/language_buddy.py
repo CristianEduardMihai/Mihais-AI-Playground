@@ -1,13 +1,13 @@
 from reactpy import component, html, use_state, use_effect
 import requests
 import asyncio
+import json
+import os
 
-LANGUAGES = [
-    "English", "Spanish", "French", "German", "Italian", "Portuguese", "Russian",
-    "Chinese", "Japanese", "Korean", "Arabic", "Hindi", "Dutch", "Turkish", "Polish",
-    "Romanian", "Greek", "Swedish", "Czech", "Finnish", "Hebrew", "Hungarian",
-    "Indonesian", "Norwegian", "Thai", "Ukrainian", "Vietnamese", "Other"
-]
+LANGUAGES_PATH = os.path.join(os.path.dirname(__file__), '../../static/assets/languages-en.json')
+with open(LANGUAGES_PATH, encoding='utf-8') as f:
+    LANGUAGES = json.load(f)
+
 LEVELS = ["Beginner", "Intermediate", "Advanced", "Fluent"]
 
 @component
@@ -82,6 +82,14 @@ def LanguageBuddy():
     # Reset chat whenever setup options change
     use_effect(lambda: set_chat([]), [native_lang, target_lang, level, learning_time])
 
+    def render_language_option(lang):
+        # lang is a dict with 'name', 'flag', and optionally 'code'
+        code = lang.get("code")
+        if not code:
+            # fallback: use first two letters of name
+            code = lang["name"][:2].upper() if len(lang["name"]) >= 2 else lang["name"].upper()
+        return html.option({"value": lang["name"]}, f"{code} - {lang['flag']} {lang['name']}")
+
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
@@ -90,12 +98,10 @@ def LanguageBuddy():
             {"className": "home-btn-row"},
             html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")
         ),
-
         html.div(
             {"className": "language-buddy chat-style"},
             html.h2("Language Buddy"),
             html.p({"className": "desc"}, "Practice your target language with an AI buddy!"),
-
             # --- Setup UI (no False leak) ---
             None if started else html.div(
                 {"className": "setup-form"},
@@ -110,7 +116,7 @@ def LanguageBuddy():
                             "onChange": lambda e: set_native_lang(e["target"]["value"]),
                         },
                         [html.option({"value": "", "disabled": True}, "Select...")]
-                        + [html.option({"value": lang}, lang) for lang in LANGUAGES],
+                        + [render_language_option(lang) for lang in LANGUAGES],
                     ),
                 ),
                 # target language
@@ -124,7 +130,7 @@ def LanguageBuddy():
                             "onChange": lambda e: set_target_lang(e["target"]["value"]),
                         },
                         [html.option({"value": "", "disabled": True}, "Select...")]
-                        + [html.option({"value": lang}, lang) for lang in LANGUAGES],
+                        + [render_language_option(lang) for lang in LANGUAGES],
                     ),
                 ),
                 # level
@@ -162,7 +168,6 @@ def LanguageBuddy():
                     "Start Chatting!"
                 ),
             ),
-
             # --- Chat UI (no False leak) ---
             None if not started else html.div(
                 {},

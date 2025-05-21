@@ -2,7 +2,7 @@ from reactpy import component, html, use_state, use_effect
 import json
 import os
 
-with open(os.path.join(os.path.dirname(__file__), "../../static/assets/country-codes.json"), encoding="utf-8") as f:
+with open(os.path.join(os.path.dirname(__file__), "../../static/assets/language-codes.json"), encoding="utf-8") as f:
     LANGUAGES = json.load(f)
 
 @component
@@ -68,6 +68,13 @@ def SpellCheck():
         except Exception as e:
             raise Exception(f"Spell check failed: {e}")
 
+    def render_lang_option(lang):
+        # lang is a dict with 'code' and 'label' (label is '🇺🇸 English')
+        # Output: EN - 🇺🇸 English
+        code = lang["code"].upper()
+        flag_and_name = lang["label"]
+        return html.option({"value": lang["code"]}, f"{code} - {flag_and_name}")
+
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
@@ -92,9 +99,7 @@ def SpellCheck():
                             "value": lang,
                             "onChange": handle_lang,
                         },
-                        *[
-                            html.option({"value": l["code"]}, l["label"]) for l in LANGUAGES
-                        ]
+                        *[render_lang_option(l) for l in LANGUAGES]
                     ),
                 ),
                 html.button(
