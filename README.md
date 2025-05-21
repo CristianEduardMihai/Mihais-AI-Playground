@@ -21,20 +21,21 @@ Built for the [Hack Club](https://hackclub.com/) Neighborhood Hackatron, Mihai's
 
 ### Learning 📚
 - **Language Buddy** 🗣️: Practice your target language with an AI buddy! Choose your native language, the language you want to learn, your level, and how long you've been learning. Get supportive, interactive practice in a chat-style UI.
+- **AI Spell Check** 📝: Correct your writing, tone, and much more.
+- **AI Translator** 🌎: Translate text between multiple languages.
+- **AI Text Summarizer** 📚: Summarize long texts into concise summaries.
 
 #### Health 🥗
-- **AI Recipe Maker** 🍳: Get wild, detailed recipes (with nutrition & allergens) from whatever's in your fridge. Choose healthiness, servings, and cooking methods.
+- **AI Recipe Maker** 🍳: Input your ingredients and let AI suggest recipes. Customize how healthy the recipes should be!
 - ~~**AI Calorie Tracker** 🔢: Track your daily calorie intake with the help of AI.~~
 
 #### Quality of Life ✨
-- **AI Spell Checker** 📝✨: Instantly fix your spelling & grammar in 30+ languages.
-- **AI Translator** 🌎: Translate text between multiple languages.
-- **AI Text Summarizer** 📚: Summarize long texts into concise summaries.
-- **AI PC Part Picker** 🖥️: Get AI-generated recommendations for PC parts based on your preferences, budget, and use case. Multi-currency, novice-friendly, and robust.
+- **AI PC Part Picker** 🖥️: Get AI-generated recommendations for PC parts based on your preferences.
 
 #### Fun 🤖
 - **Bot Vs Bot Roast Battle** 🔥: Watch two AI bots engage in a hilarious roast battle! No profanity, just clever, punchy fun.
-- **Personality Quiz** 🧠: Take a fun quiz to discover your personality type.
+- **Personality Quiz** 🎭: Answer fun questions and get a playful AI-generated personality analysis!
+- **Reddit-like Storyteller** 📖: Generate stories in the style of your favorite subreddits. With the option to have them read to you.
 
 
 ![hackatime](https://github-readme-stats.hackclub.dev/api/wakatime?username=2408&api_domain=hackatime.hackclub.com&theme=calm_pink&custom_title=Hackatime+Stats&layout=compact&cache_seconds=0&langs_count=8)
