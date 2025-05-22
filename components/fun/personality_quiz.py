@@ -19,6 +19,19 @@ def PersonalityQuiz():
     error, set_error = use_state("")
 
     # --- handlers ---
+    def handle_name_blur(e):
+        set_name(e["target"]["value"])
+    def handle_age_blur(e):
+        set_age(e["target"]["value"])
+    def handle_mood_blur(e):
+        set_mood(e["target"]["value"])
+    def handle_color_blur(e):
+        set_color(e["target"]["value"])
+    def handle_animal_blur(e):
+        set_animal(e["target"]["value"])
+    def handle_hobby_blur(e):
+        set_hobby(e["target"]["value"])
+
     def handle_submit(_event=None):
         # Kick off the request
         set_loading(True)
@@ -89,7 +102,7 @@ def PersonalityQuiz():
                 html.input({
                     "id": "name", "type": "text", "value": name,
                     "placeholder": "e.g. Alex",
-                    "onChange": lambda e: set_name(e["target"]["value"])
+                    "onBlur": handle_name_blur
                 }),
             ),
             # age
@@ -98,7 +111,7 @@ def PersonalityQuiz():
                 html.input({
                     "id": "age", "type": "text", "value": age,
                     "placeholder": "e.g. 21",
-                    "onChange": lambda e: set_age(e["target"]["value"])
+                    "onBlur": handle_age_blur
                 }),
             ),
             # gender
@@ -122,7 +135,7 @@ def PersonalityQuiz():
                 html.input({
                     "id": "mood", "type": "text", "value": mood,
                     "placeholder": "e.g. Excited, sleepy, etc.",
-                    "onChange": lambda e: set_mood(e["target"]["value"])
+                    "onBlur": handle_mood_blur
                 }),
             ),
             # color
@@ -131,7 +144,7 @@ def PersonalityQuiz():
                 html.input({
                     "id": "color", "type": "text", "value": color,
                     "placeholder": "e.g. Blue",
-                    "onChange": lambda e: set_color(e["target"]["value"])
+                    "onBlur": handle_color_blur
                 }),
             ),
             # animal
@@ -140,7 +153,7 @@ def PersonalityQuiz():
                 html.input({
                     "id": "animal", "type": "text", "value": animal,
                     "placeholder": "e.g. Cat",
-                    "onChange": lambda e: set_animal(e["target"]["value"])
+                    "onBlur": handle_animal_blur
                 }),
             ),
             # hobby
@@ -149,7 +162,7 @@ def PersonalityQuiz():
                 html.input({
                     "id": "hobby", "type": "text", "value": hobby,
                     "placeholder": "e.g. Painting, gaming",
-                    "onChange": lambda e: set_hobby(e["target"]["value"])
+                    "onBlur": handle_hobby_blur
                 }),
             ),
             # social

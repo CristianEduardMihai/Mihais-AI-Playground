@@ -24,19 +24,19 @@ def Home():
                     {"class": "card"},
                     html.h3("AI Spell Check 📝"),
                     html.p("Correct your writing, tone and much more."),
-                    html.a({"class": "btn-gradient", "href": "/qol/spell-check"}, "Go to AI Spell Check")
+                    html.a({"class": "btn-gradient", "href": "/learning/spell-check"}, "Go to AI Spell Check")
                 ),
                 html.div(
                     {"class": "card"},
                     html.h3("AI Translator 🌎"),
                     html.p("Translate text between multiple languages."),
-                    html.a({"class": "btn-gradient", "href": "/qol/translator"}, "Go to AI Translator")
+                    html.a({"class": "btn-gradient", "href": "/learning/translator"}, "Go to AI Translator")
                 ),
                 html.div(
                     {"class": "card"},
                     html.h3("AI Text Summarizer 📚"),
                     html.p("Summarize long texts into concise summaries."),
-                    html.a({"class": "btn-gradient", "href": "/qol/text-summarizer"}, "Go to AI Text Summarizer")
+                    html.a({"class": "btn-gradient", "href": "/learning/text-summarizer"}, "Go to AI Text Summarizer")
                 )
             ),
             html.section(

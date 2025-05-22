@@ -9,7 +9,7 @@ def TextSummarizer():
     error, set_error = use_state("")
     summary_type, set_summary_type = use_state("bullets")  # 'bullets' or 'plain'
 
-    def handle_text(e):
+    def handle_text_blur(e):
         set_text(e["target"]["value"])
 
     def handle_type(e):
@@ -119,7 +119,7 @@ def TextSummarizer():
                         {
                             "className": "spellcheck-input",
                             "value": text,
-                            "onChange": handle_text,
+                            "onBlur": handle_text_blur,
                             "placeholder": "Paste or type your text here...",
                             "rows": 10,
                             "autoFocus": True,
