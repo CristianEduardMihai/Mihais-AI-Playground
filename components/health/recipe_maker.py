@@ -116,7 +116,7 @@ def RecipeMaker():
                                 "type": "checkbox",
                                 "value": method,
                                 "checked": method in selected_methods,
-                                "onChange": handle_method_change
+                                "onBlur": handle_method_change
                             }),
                             method
                         ) for method in cooking_methods
@@ -130,7 +130,7 @@ def RecipeMaker():
                 html.input({
                     "id": "ingredients", "type": "text", "value": ingredients,
                     "placeholder": "e.g. chicken, tomatoes, cheese",
-                    "onChange": lambda e: set_ingredients(e["target"]["value"])
+                    "onBlur": lambda e: set_ingredients(e["target"]["value"])
                 }),
             ),
             # Health level
@@ -139,7 +139,7 @@ def RecipeMaker():
                 html.label({"for": "health-level"}, "Health Level:"),
                 html.select({
                     "id": "health-level", "value": health_level,
-                    "onChange": lambda e: set_health_level(e["target"]["value"])
+                    "onBlur": lambda e: set_health_level(e["target"]["value"])
                 },
                     html.option({"value": "balanced"}, "Balanced"),
                     html.option({"value": "healthy"}, "Healthy"),
@@ -152,7 +152,7 @@ def RecipeMaker():
                 html.label({"for": "servings"}, "Servings:"),
                 html.input({
                     "id": "servings", "type": "number", "min": "1", "value": servings,
-                    "onChange": lambda e: set_servings(e["target"]["value"])
+                    "onBlur": lambda e: set_servings(e["target"]["value"])
                 }),
                 html.span({"style": {"marginLeft": "0.5rem"}}, "people")
             ),

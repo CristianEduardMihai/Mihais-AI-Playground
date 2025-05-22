@@ -121,7 +121,7 @@ def PCPartPicker():
                 {
                     "id": id_,
                     "value": value,
-                    "onChange": lambda e: set_value(e["target"]["value"])
+                    "onBlur": lambda e: set_value(e["target"]["value"])
                 },
                 *[html.option({"value": o}, o) for o in options]
             )
@@ -137,7 +137,7 @@ def PCPartPicker():
                 "type": "text",
                 "id": id_,
                 "value": value,
-                "onChange": lambda e: set_value(e["target"]["value"]),
+                "onBlur": lambda e: set_value(e["target"]["value"]),
                 "placeholder": "e.g. Intel, NVIDIA, Corsair"
             })
         )
@@ -152,7 +152,7 @@ def PCPartPicker():
                 "type": "text",
                 "id": id_,
                 "value": value,
-                "onChange": lambda e: set_value(e["target"]["value"]),
+                "onBlur": lambda e: set_value(e["target"]["value"]),
                 "placeholder": "e.g. Cyberpunk 2077, Fortnite, Valorant"
             })
         )
@@ -451,12 +451,12 @@ def PCPartPicker():
                 "id": "budget",
                 "min": 1,
                 "value": budget,
-                "onChange": handle_budget_change
+                "onBlur": handle_budget_change
             }),
             html.select({
                 "id": "currency",
                 "value": currency,
-                "onChange": lambda e: set_currency(e["target"]["value"])
+                "onBlur": lambda e: set_currency(e["target"]["value"])
             }, *[
                 html.option({"value": code}, f"{code.upper()} - {name}") for code, name in currency_list
             ])
@@ -766,12 +766,12 @@ def PCPartPicker():
                 "id": "budget",
                 "min": 1,
                 "value": budget,
-                "onChange": handle_budget_change
+                "onBlur": handle_budget_change
             }),
             html.select({
                 "id": "currency",
                 "value": currency,
-                "onChange": lambda e: set_currency(e["target"]["value"])
+                "onBlur": lambda e: set_currency(e["target"]["value"])
             }, *[
                 html.option({"value": code}, f"{code.upper()} - {name}") for code, name in currency_list
             ])

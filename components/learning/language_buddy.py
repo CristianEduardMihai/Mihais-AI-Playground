@@ -113,7 +113,7 @@ def LanguageBuddy():
                         {
                             "id": "native-lang",
                             "value": native_lang,
-                            "onChange": lambda e: set_native_lang(e["target"]["value"]),
+                            "onBlur": lambda e: set_native_lang(e["target"]["value"]),
                         },
                         [html.option({"value": "", "disabled": True}, "Select...")]
                         + [render_language_option(lang) for lang in LANGUAGES],
@@ -127,7 +127,7 @@ def LanguageBuddy():
                         {
                             "id": "target-lang",
                             "value": target_lang,
-                            "onChange": lambda e: set_target_lang(e["target"]["value"]),
+                            "onBlur": lambda e: set_target_lang(e["target"]["value"]),
                         },
                         [html.option({"value": "", "disabled": True}, "Select...")]
                         + [render_language_option(lang) for lang in LANGUAGES],
@@ -141,7 +141,7 @@ def LanguageBuddy():
                         {
                             "id": "level",
                             "value": level,
-                            "onChange": lambda e: set_level(e["target"]["value"]),
+                            "onBlur": lambda e: set_level(e["target"]["value"]),
                         },
                         [html.option({"value": l}, l) for l in LEVELS],
                     ),
@@ -154,7 +154,7 @@ def LanguageBuddy():
                         "id": "learning-time",
                         "type": "text",
                         "value": learning_time,
-                        "onChange": lambda e: set_learning_time(e["target"]["value"]),
+                        "onBlur": lambda e: set_learning_time(e["target"]["value"]),
                         "placeholder": "e.g. 6 months",
                     }),
                 ),
@@ -196,7 +196,7 @@ def LanguageBuddy():
                     html.input({
                         "type": "text",
                         "value": user_input,
-                        "onChange": lambda e: set_user_input(e["target"]["value"]),
+                        "onBlur": lambda e: set_user_input(e["target"]["value"]),
                         "onKeyDown": handle_keydown,
                         "placeholder": f"Type in {target_lang}…",
                         "disabled": is_typing

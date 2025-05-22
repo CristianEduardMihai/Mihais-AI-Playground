@@ -14,20 +14,20 @@ def Translator():
     loading, set_loading = use_state(False)
     error, set_error = use_state("")
 
-    def handle_text_blur(e):
+    def handle_text(e):
         set_text(e["target"]["value"])
 
     def handle_src_lang(e):
-        new_src = e["target"]["value"]
-        set_src_lang(new_src)
-        if new_src == tgt_lang:
-            set_tgt_lang(next(l["code"] for l in LANGUAGES if l["code"] != new_src))
+        set_src_lang(e["target"]["value"])
+        # Prevent same language selection
+        if e["target"]["value"] == tgt_lang:
+            set_tgt_lang(next(l["code"] for l in LANGUAGES if l["code"] != e["target"]["value"]))
 
     def handle_tgt_lang(e):
-        new_tgt = e["target"]["value"]
-        set_tgt_lang(new_tgt)
-        if new_tgt == src_lang:
-            set_src_lang(next(l["code"] for l in LANGUAGES if l["code"] != new_tgt))
+        set_tgt_lang(e["target"]["value"])
+        # Prevent same language selection
+        if e["target"]["value"] == src_lang:
+            set_src_lang(next(l["code"] for l in LANGUAGES if l["code"] != e["target"]["value"]))
 
     async def translate():
         set_loading(True)
@@ -76,6 +76,8 @@ def Translator():
             raise Exception(f"Translation failed: {e}")
 
     def render_lang_option(lang):
+        # lang is a dict with 'code' and 'label' (label is '🇺🇸 English')
+        # Output: EN - 🇺🇸 English
         code = lang["code"].upper()
         flag_and_name = lang["label"]
         return html.option({"value": lang["code"]}, f"{code} - {flag_and_name}")
@@ -101,7 +103,7 @@ def Translator():
                         {
                             "id": "src-lang",
                             "value": src_lang,
-                            "onChange": handle_src_lang,
+                            "onBlur": handle_src_lang,
                         },
                         *[render_lang_option(l) for l in LANGUAGES]
                     ),
@@ -110,7 +112,7 @@ def Translator():
                         {
                             "id": "tgt-lang",
                             "value": tgt_lang,
-                            "onChange": handle_tgt_lang,
+                            "onBlur": handle_tgt_lang,
                         },
                         *[render_lang_option(l) for l in LANGUAGES]
                     ),
@@ -130,7 +132,7 @@ def Translator():
                         {
                             "className": "spellcheck-input",
                             "value": text,
-                            "onBlur": handle_text_blur,
+                            "onBlur": handle_text,
                             "placeholder": "Paste or type your text here...",
                             "rows": 10,
                             "autoFocus": True,

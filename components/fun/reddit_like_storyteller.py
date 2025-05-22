@@ -103,6 +103,16 @@ def RedditLikeStoryteller():
         text = re.sub(r'^[-*]\s+', '', text, flags=re.MULTILINE)
         return text.strip()
 
+    # Detect architecture and set piper_bin_dir
+    import platform
+    arch = platform.machine().lower()
+    if arch in ("x86_64", "amd64"):
+        piper_bin_dir = os.path.join("server-assets", "piper", "amd64")
+    elif arch in ("aarch64", "arm64"):
+        piper_bin_dir = os.path.join("server-assets", "piper", "arm64")
+    else:
+        piper_bin_dir = os.path.join("server-assets", "piper", "amd64")  # fallback
+
     def handle_generate_audio(_event=None):
         set_audio_loading(True)
         set_audio_error("")
@@ -121,7 +131,7 @@ def RedditLikeStoryteller():
             ts = int(time.time() * 1000)
             wav_path = os.path.join(temp_dir, f"tts_story_{ts}.wav")
             # Piper binary and model paths
-            piper_bin = os.path.join("server-assets", "piper", "piper")
+            piper_bin = os.path.join(piper_bin_dir, "piper")
             tars_model = os.path.join("server-assets", "piper", "TARS", "en_US-tars-v2-medium.onnx")
             tars_config = os.path.join("server-assets", "piper", "TARS", "en_US-tars-v2-medium.onnx.json")
             import subprocess
@@ -166,7 +176,7 @@ def RedditLikeStoryteller():
                     {
                         "id": "subreddit",
                         "value": subreddit,
-                        "onChange": lambda e: set_subreddit(e["target"]["value"])
+                        "onBlur": lambda e: set_subreddit(e["target"]["value"])
                     },
                     *[
                         html.option({"value": k}, f"{k} – {v}")
@@ -182,7 +192,7 @@ def RedditLikeStoryteller():
                     "type": "text",
                     "value": theme,
                     "placeholder": "e.g. haunted house, awkward family dinner…",
-                    "onChange": lambda e: set_theme(e["target"]["value"])
+                    "onBlur": lambda e: set_theme(e["target"]["value"])
                 })
             ),
             html.button(

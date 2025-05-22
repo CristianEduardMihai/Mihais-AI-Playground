@@ -128,7 +128,7 @@ def BotVsBotRoastBattle():
                         "type": "text",
                         "value": topic,
                         "placeholder": "e.g. programming, pizza, Mondays",
-                        "onChange": lambda e: set_topic(e["target"]["value"]),
+                        "onBlur": lambda e: set_topic(e["target"]["value"]),
                         "disabled": started,
                     }
                 ),

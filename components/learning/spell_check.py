@@ -13,7 +13,7 @@ def SpellCheck():
     loading, set_loading = use_state(False)
     error, set_error = use_state("")
 
-    def handle_text_blur(e):
+    def handle_text(e):
         set_text(e["target"]["value"])
 
     def handle_lang(e):
@@ -92,11 +92,12 @@ def SpellCheck():
                 {"onSubmit": lambda e: False, "className": "spellcheck-form"},
                 html.div(
                     {"className": "form-group lang-select"},
+#                    html.label({"for": "lang"}, "Language:"),
                     html.select(
                         {
                             "id": "lang",
                             "value": lang,
-                            "onChange": handle_lang,
+                            "onBlur": handle_lang,
                         },
                         *[render_lang_option(l) for l in LANGUAGES]
                     ),
@@ -116,7 +117,7 @@ def SpellCheck():
                         {
                             "className": "spellcheck-input",
                             "value": text,
-                            "onBlur": handle_text_blur,
+                            "onBlur": handle_text,
                             "placeholder": "Paste or type your text here...",
                             "rows": 10,
                             "autoFocus": True,

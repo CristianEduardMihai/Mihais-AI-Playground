@@ -19,19 +19,6 @@ def PersonalityQuiz():
     error, set_error = use_state("")
 
     # --- handlers ---
-    def handle_name_blur(e):
-        set_name(e["target"]["value"])
-    def handle_age_blur(e):
-        set_age(e["target"]["value"])
-    def handle_mood_blur(e):
-        set_mood(e["target"]["value"])
-    def handle_color_blur(e):
-        set_color(e["target"]["value"])
-    def handle_animal_blur(e):
-        set_animal(e["target"]["value"])
-    def handle_hobby_blur(e):
-        set_hobby(e["target"]["value"])
-
     def handle_submit(_event=None):
         # Kick off the request
         set_loading(True)
@@ -102,7 +89,7 @@ def PersonalityQuiz():
                 html.input({
                     "id": "name", "type": "text", "value": name,
                     "placeholder": "e.g. Alex",
-                    "onBlur": handle_name_blur
+                    "onBlur": lambda e: set_name(e["target"]["value"])
                 }),
             ),
             # age
@@ -111,7 +98,7 @@ def PersonalityQuiz():
                 html.input({
                     "id": "age", "type": "text", "value": age,
                     "placeholder": "e.g. 21",
-                    "onBlur": handle_age_blur
+                    "onBlur": lambda e: set_age(e["target"]["value"])
                 }),
             ),
             # gender
@@ -119,7 +106,7 @@ def PersonalityQuiz():
                 html.label({"htmlFor": "gender"}, "Gender"),
                 html.select({
                     "id": "gender", "value": gender,
-                    "onChange": lambda e: set_gender(e["target"]["value"])
+                    "onBlur": lambda e: set_gender(e["target"]["value"])
                 },
                     html.option({"value": ""}, "Select..."),
                     html.option({"value": "Male"}, "Male"),
@@ -135,7 +122,7 @@ def PersonalityQuiz():
                 html.input({
                     "id": "mood", "type": "text", "value": mood,
                     "placeholder": "e.g. Excited, sleepy, etc.",
-                    "onBlur": handle_mood_blur
+                    "onBlur": lambda e: set_mood(e["target"]["value"])
                 }),
             ),
             # color
@@ -144,7 +131,7 @@ def PersonalityQuiz():
                 html.input({
                     "id": "color", "type": "text", "value": color,
                     "placeholder": "e.g. Blue",
-                    "onBlur": handle_color_blur
+                    "onBlur": lambda e: set_color(e["target"]["value"])
                 }),
             ),
             # animal
@@ -153,7 +140,7 @@ def PersonalityQuiz():
                 html.input({
                     "id": "animal", "type": "text", "value": animal,
                     "placeholder": "e.g. Cat",
-                    "onBlur": handle_animal_blur
+                    "onBlur": lambda e: set_animal(e["target"]["value"])
                 }),
             ),
             # hobby
@@ -162,7 +149,7 @@ def PersonalityQuiz():
                 html.input({
                     "id": "hobby", "type": "text", "value": hobby,
                     "placeholder": "e.g. Painting, gaming",
-                    "onBlur": handle_hobby_blur
+                    "onBlur": lambda e: set_hobby(e["target"]["value"])
                 }),
             ),
             # social
@@ -170,7 +157,7 @@ def PersonalityQuiz():
                 html.label({"htmlFor": "social"}, "How social are you?"),
                 html.select({
                     "id": "social", "value": social,
-                    "onChange": lambda e: set_social(e["target"]["value"])
+                    "onBlur": lambda e: set_social(e["target"]["value"])
                 },
                     html.option({"value": ""}, "Select..."),
                     html.option({"value": "Introvert"}, "Introvert"),
@@ -183,7 +170,7 @@ def PersonalityQuiz():
                 html.label({"htmlFor": "risk"}, "Risk Tolerance"),
                 html.select({
                     "id": "risk", "value": risk,
-                    "onChange": lambda e: set_risk(e["target"]["value"])
+                    "onBlur": lambda e: set_risk(e["target"]["value"])
                 },
                     html.option({"value": "Low"}, "Low"),
                     html.option({"value": "Medium"}, "Medium"),
