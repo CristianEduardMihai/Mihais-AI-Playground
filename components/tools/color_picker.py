@@ -11,21 +11,33 @@ def AIColorPicker():
     loading, set_loading = use_state(False)
     error, set_error = use_state("")
     copied_idx, set_copied_idx = use_state(None)
+    color_meanings, set_color_meanings = use_state([])
     import time
 
     def handle_generate_palette(event):
+        # Limit the number of colors to 12 for safety
+        try:
+            n = int(num_colors)
+            if n < 2:
+                n = 2
+            elif n > 12:
+                n = 12
+            set_num_colors(str(n))
+        except Exception:
+            set_num_colors("5")
+            n = 5
         set_loading(True)
         set_palette([])
         set_ai_message("")
         set_error("")
+        set_color_meanings([])
         try:
             prompt = (
-                "You are a helpful AI color palette generator. "
+                "You are an expert and helpful AI color palette designer. "
                 "Given a project description and a number of colors, generate a harmonious color palette. "
                 "Reply ONLY with a JSON object like this: "
-                '{"colors": ["#HEX1", "#HEX2", ...], "message": "A short friendly message about the palette."} '
-                f"Project description: {description}\n"
-                f"Number of colors: {num_colors}\n"
+                '{"colors": ["#HEX1", ...], "message": "A short friendly message about the palette.", "meanings": ["short meaning for color 1", ...]} '
+                "For each color, provide a very short (1 phrase) meaning or feeling it represents, in the 'meanings' array, same order as 'colors'. "
                 "Do not include any text outside the JSON object."
             )
             response = requests.post(
@@ -33,9 +45,11 @@ def AIColorPicker():
                 headers={"Content-Type": "application/json"},
                 json={
                     "messages": [
-                        {"role": "system", "content": "You are an expert color palette designer AI."},
-                        {"role": "user", "content": prompt}
-                    ]
+                        {"role": "system", "content": prompt},
+                        {"role": "user", "content": 
+                            f"Project description: {description}\n"
+                            f"Number of colors: {n}\n"}
+                        ]
                 },
                 timeout=60
             )
@@ -52,6 +66,7 @@ def AIColorPicker():
             palette_data = json.loads(json_str)
             set_palette(palette_data.get("colors", []))
             set_ai_message(palette_data.get("message", ""))
+            set_color_meanings(palette_data.get("meanings", []))
         except Exception as e:
             set_error(f"Error: {e}")
         set_loading(False)
@@ -67,6 +82,9 @@ def AIColorPicker():
             except Exception:
                 pass
         set_copied_idx(idx)
+        # Show color meaning in ai-message
+        if color_meanings and idx < len(color_meanings):
+            set_ai_message(color_meanings[idx])
         def clear():
             time.sleep(1.1)
             set_copied_idx(None)
