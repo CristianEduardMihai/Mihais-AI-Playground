@@ -1,2 +1,2 @@
-Contains assets i got from the piper repo: https://github.com/rhasspy/piper
+Contains assets I got from the piper repo: https://github.com/rhasspy/piper
 MIT license
