@@ -29,8 +29,9 @@ Built for the [Hack Club](https://hackclub.com/) Neighborhood Hackatron, Mihai's
 - **AI Recipe Maker** 🍳: Input your ingredients and let AI suggest recipes. Customize how healthy the recipes should be!
 - ~~**AI Calorie Tracker** 🔢: Track your daily calorie intake with the help of AI.~~
 
-#### Quality of Life ✨
+#### Quality of Life Tools ✨
 - **AI PC Part Picker** 🖥️: Get AI-generated recommendations for PC parts based on your preferences.
+- **AI Color Palette Picker** 🎨: Describe your project and get a beautiful, AI-generated color palette with HEX codes and friendly explanations.
 
 #### Fun 🤖
 - **Bot Vs Bot Roast Battle** 🔥: Watch two AI bots engage in a hilarious roast battle! No profanity, just clever, punchy fun.
