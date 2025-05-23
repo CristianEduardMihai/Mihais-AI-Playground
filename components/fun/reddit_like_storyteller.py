@@ -5,6 +5,8 @@ from bs4 import BeautifulSoup
 import re
 import os
 import time
+import reactpy
+reactpy.config.REACTPY_DEBUG_MODE.current = True
 
 # Popular story-based subreddits and their descriptions
 STORY_SUBREDDITS = {
@@ -25,6 +27,10 @@ STORY_SUBREDDITS = {
     "r/PettyRevenge": "Small-scale, satisfying revenge stories.",
     "r/Confession": "Anonymous confessions of all kinds.",
 }
+
+import platform
+arch = platform.machine().lower()
+system = platform.system().lower()
 
 @component
 def RedditLikeStoryteller():
@@ -104,10 +110,7 @@ def RedditLikeStoryteller():
         text = re.sub(r'^[-*]\s+', '', text, flags=re.MULTILINE)
         return text.strip()
 
-    # Detect architecture and set piper_bin_dir
-    import platform
-    arch = platform.machine().lower()
-    system = platform.system().lower()
+    # Set piper_bin_dir
     if system == "windows":
         piper_bin_dir = os.path.join("server-assets", "piper", "win-amd64")
     elif system == "linux":
@@ -145,7 +148,6 @@ def RedditLikeStoryteller():
                 piper_bin = os.path.join(piper_bin_dir, "piper.exe")
             else:
                 piper_bin = os.path.join(piper_bin_dir, "piper")
-
             import subprocess
             try:
                 result = subprocess.run(
@@ -163,9 +165,19 @@ def RedditLikeStoryteller():
                 set_audio_error(f"Piper execution failed: {e}")
                 set_audio_loading(False)
                 return
-            # Set audio URL for playback
-            rel_url = f"/static/assets/tts_temp/tts_story_{ts}.wav"
-            set_audio_url(rel_url)
+            # Set audio URL for playback, but check file exists and is non-empty
+            import time as _time
+            for _ in range(10):  # Wait up to 1s for file to be written
+                if os.path.exists(wav_path) and os.path.getsize(wav_path) > 1000:
+                    break
+                _time.sleep(0.1)
+            if not os.path.exists(wav_path) or os.path.getsize(wav_path) == 0:
+                set_audio_error("Audio file was not created or is empty.")
+            else:
+                # Add a small delay to ensure file is ready before setting URL
+                _time.sleep(0.15)
+                rel_url = f"/static/assets/tts_temp/tts_story_{ts}.wav"
+                set_audio_url(rel_url)
         except Exception as e:
             set_audio_error(f"Audio generation failed: {e}")
         set_audio_loading(False)
@@ -207,39 +219,51 @@ def RedditLikeStoryteller():
                     "onBlur": lambda e: set_theme(e["target"]["value"])
                 })
             ),
-            html.button(
-                {
-                    "className": "btn btn-gradient",
-                    "onClick": handle_generate_story,
-                    "disabled": loading or not subreddit
-                },
-                loading and "Generating…" or "Generate Story"
+            # Button area: show Generate Story or Generate Audio depending on state
+            html.div(
+                {"className": "button-area"},
+                (
+                    (not story_html and not error) or loading
+                )
+                and html.button(
+                    {
+                        "className": "btn btn-gradient",
+                        "onClick": handle_generate_story,
+                        "disabled": loading or not subreddit
+                    },
+                    loading and "Generating…" or "Generate Story"
+                )
+                or (
+                    story_html and not loading
+                )
+                and html.button(
+                    {
+                        "className": "btn btn-blue-gradient",
+                        "onClick": handle_generate_audio,
+                        "disabled": audio_loading
+                    },
+                    audio_loading and "Generating Audio…" or "🔊 Generate Audio"
+                )
+            ),
+            # Audio player and error, above the story markdown
+            (audio_loading or audio_url or audio_error) and html.div(
+                {"className": "audio-area"},
+                audio_loading and html.div({"className": "audio-loading"}, "Generating audio…") or None,
+                audio_error and html.p({"style": {"color": "red"}}, audio_error) or None,
+                audio_url and html.audio({
+                    "controls": True,
+                    "src": audio_url,
+                    "key": audio_url,  # Force re-mount on new audio
+                    "style": {"marginTop": "1rem", "width": "100%"},
+                    "onError": lambda e: set_audio_error("Audio failed to load. Try again or check file permissions.")
+                }) or None
             ),
             html.div(
                 {"className": "story-output"},
                 html.h3("Generated Story:"),
                 (not story_html and not error) and html.i({"style": {"color": "#888"}}, "No story generated yet.")
                 or (story_html and html.div({"dangerouslySetInnerHTML": {"__html": story_html}, "key": hash(story_html)}))
-                or html.p({"style": {"color": "red"}}, f"Error: {error}"),
-
-                # Audio controls
-                story_html and html.div(
-                    {},
-                    html.button(
-                        {
-                            "className": "btn btn-gradient",
-                            "onClick": handle_generate_audio,
-                            "disabled": audio_loading
-                        },
-                        audio_loading and "Generating Audio…" or "🔊 Generate Audio"
-                    ),
-                    audio_error and html.p({"style": {"color": "red"}}, audio_error),
-                    audio_url and html.audio({
-                        "controls": True,
-                        "src": audio_url,
-                        "style": {"marginTop": "1rem", "width": "100%"}
-                    })
-                )
+                or html.p({"style": {"color": "red"}}, f"Error: {error}")
             )
         )
     )

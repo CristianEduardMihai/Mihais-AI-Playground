@@ -82,6 +82,67 @@ select {
   text-decoration: none;
 }
 
+.audio-area {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1.5rem 0 0.5rem 0;
+}
+
+.audio-area audio {
+  width: 100%;
+  max-width: 600px;
+  min-height: 70px; /* Make the player controls taller */
+  border-radius: 12px;
+  background: transparent;
+  box-shadow: 0 2px 8px rgba(123,47,242,0.10);
+  outline: none;
+  border: 2px solid #7b2ff2;
+  padding: 6px 0;
+}
+
+audio {
+  width: 100%;
+  max-width: 600px;
+  margin: 1.2rem 0 0.5rem 0;
+  border-radius: 12px;
+  background: transparent !important;
+  box-shadow: 0 2px 8px rgba(123,47,242,0.10);
+  outline: none;
+  border: none !important;
+}
+
+audio:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.btn-blue-gradient {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(90deg, #2196f3 0%, #21cbf3 100%);
+  color: #fff;
+  border-radius: 999px;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+.btn-blue-gradient:hover, .btn-blue-gradient:focus {
+  background: linear-gradient(90deg, #21cbf3 0%, #2196f3 100%);
+  box-shadow: 0 4px 16px rgba(33,150,243,0.15), 0 3px 8px rgba(33,203,243,0.18);
+  transform: translateY(-2px) scale(1.04);
+  text-decoration: none;
+}
+
 .story-output {
   margin-top: 2rem;
   background: #f4f4f9;
@@ -128,7 +189,7 @@ select {
 .navbar {
   width: 100%;
   display: flex;
-  justify-content: center; /* Center the Home button horizontally */
+  justify-content: center;
   align-items: center;
   margin-bottom: 1.5rem;
   background: none;
@@ -231,19 +292,6 @@ select {
     padding: 0.8em 0.4em;
     border-radius: 0.7em;
   }
-}
-
-/* Style the HTML5 audio player for Reddit Storyteller */
-audio {
-  width: 100%;
-  max-width: 600px;
-  margin: 1.2rem 0 0.5rem 0;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.7);
-  box-shadow: 0 2px 8px rgba(123,47,242,0.10);
-  outline: none;
-  /* Remove default border in some browsers */
-  border: none;
 }
 
 /* Chrome/Edge/Opera: style progress bar */
