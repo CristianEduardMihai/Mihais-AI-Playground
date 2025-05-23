@@ -46,6 +46,7 @@ def RedditLikeStoryteller():
                 "You are a creative Reddit storyteller AI. "
                 "Write a story in the style of the given subreddit, and if any, given theme. "
                 "Format it as a Reddit post, with a title, body, and (if appropriate) comments or responses. "
+                "Make the names of the comments and users realistic, but do not use real Reddit usernames. "
                 "Stay true to the tone, tropes, and conventions of the selected subreddit. "
                 "Output only the story in Markdown, no extra commentary, explanations, or preamble. "
                 "Do not include any text outside the Markdown story. "
@@ -119,6 +120,9 @@ def RedditLikeStoryteller():
     else:
         piper_bin_dir = os.path.join("server-assets", "piper", "linux-amd64")  # fallback
 
+    voice_model = os.path.join("server-assets", "piper", "lessac-medium", "en_US-lessac-medium.onnx")
+    voice_config = os.path.join("server-assets", "piper", "lessac-medium", "en_US-lessac-medium.onnx.json")
+
     def handle_generate_audio(_event=None):
         set_audio_loading(True)
         set_audio_error("")
@@ -141,12 +145,11 @@ def RedditLikeStoryteller():
                 piper_bin = os.path.join(piper_bin_dir, "piper.exe")
             else:
                 piper_bin = os.path.join(piper_bin_dir, "piper")
-            tars_model = os.path.join("server-assets", "piper", "TARS", "en_US-tars-v2-medium.onnx")
-            tars_config = os.path.join("server-assets", "piper", "TARS", "en_US-tars-v2-medium.onnx.json")
+
             import subprocess
             try:
                 result = subprocess.run(
-                    [piper_bin, "--model", tars_model, "--config", tars_config, "--output_file", wav_path],
+                    [piper_bin, "--model", voice_model, "--config", voice_config, "--output_file", wav_path],
                     input=text.encode("utf-8"),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
