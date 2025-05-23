@@ -21,6 +21,7 @@ def LanguageBuddy():
     is_typing, set_is_typing = use_state(False)
     error, set_error = use_state("")
     started, set_started = use_state(False)
+    feedback, set_feedback = use_state("")
 
     def handle_start(_event=None):
         set_started(True)
@@ -53,8 +54,13 @@ def LanguageBuddy():
                     "Chat with the user primarily in the target language, at a level appropriate for their skills. "
                     "Only use their native language to explain something if they are clearly confused or ask for clarification. "
                     "Do not mix languages in the same sentence unless absolutely necessary for understanding. "
-                    "If the user makes a mistake, gently correct it and explain why, but keep the conversation mostly in the target language."
-                )},
+                    "If the user makes a mistake, gently correct it and explain why, but keep the conversation mostly in the target language.\n"
+                    "When you reply, always return a JSON object with two fields: 'reply' (your chat message in the target language) and 'feedback' \n"
+                    "(a short, friendly tip or correction for the user, focusing on how they can improve their language skills, such as grammar, vocabulary, or pronunciation. \n"
+                    "Do NOT provide possible responses to the user's question; only give feedback on their language use and how to improve their typing or writing in the target language. \n"
+                    "Give the feedback in the user's native language, but do not use it in your chat message. \n"
+                    "Example: {\"reply\": \"Salut! Cum te simti azi?\", \"feedback\": \"Great job using the present tense! Try to use accents correctly in future messages.\"}")
+                },
                 *[
                     {
                         "role": "user" if speaker == "You" else "assistant",
@@ -73,8 +79,24 @@ def LanguageBuddy():
                 timeout=60,
             )
             resp.raise_for_status()
-            reply = resp.json()["choices"][0]["message"]["content"].strip()
+            content = resp.json()["choices"][0]["message"]["content"].strip()
+            import re
+            # Extract the first JSON object from the response
+            match = re.search(r'\{.*?\}', content, re.DOTALL)
+            if match:
+                json_str = match.group(0)
+                try:
+                    data = json.loads(json_str)
+                    reply = data.get("reply", "")
+                    feedback_msg = data.get("feedback", "")
+                except Exception:
+                    reply = content
+                    feedback_msg = ""
+            else:
+                reply = content
+                feedback_msg = ""
             set_chat(lambda c: c + [("Buddy", reply)])
+            set_feedback(feedback_msg)
         except Exception as e:
             set_error(f"Error: {e}")
         set_is_typing(False)
@@ -168,49 +190,65 @@ def LanguageBuddy():
                     "Start Chatting!"
                 ),
             ),
-            # --- Chat UI (no False leak) ---
+            # --- Chat + Feedback UI ---
             None if not started else html.div(
-                {},
-                # messages
+                {"className": "chat-feedback-row"},
+                # Chat window and input
                 html.div(
-                    {"className": "chat-window"},
-                    *[
-                        html.div(
-                            {"className": "chat-bubble user"} if speaker == "You"
-                            else {"className": "chat-bubble buddy"},
-                            html.div({"className": "bot-message"}, message)
-                        )
-                        for speaker, message in chat
-                    ],
-                    # typing indicator only if typing
-                    html.div({"className": "typing-indicator"}, 
-                             html.span({"className": "dot"}), 
-                             html.span({"className": "dot"}),
-                             html.span({"className": "dot"}), 
-                             html.span("Buddy is typing...")
-                    ) if is_typing else None,
-                ),
-                # input + send
-                html.div(
-                    {"className": "input-form"},
-                    html.input({
-                        "type": "text",
-                        "value": user_input,
-                        "onBlur": lambda e: set_user_input(e["target"]["value"]),
-                        "onKeyDown": handle_keydown,
-                        "placeholder": f"Type in {target_lang}…",
-                        "disabled": is_typing
-                    }),
-                    html.button(
-                        {
-                            "className": "btn btn-gradient",
-                            "onClick": handle_send,
-                            "disabled": not user_input.strip() or is_typing,
-                        },
-                        "Send"
+                    {"className": "chat-col"},
+                    html.div(
+                        {"className": "chat-window"},
+                        *[
+                            html.div(
+                                {"className": "chat-bubble user"} if speaker == "You"
+                                else {"className": "chat-bubble buddy"},
+                                html.div({"className": "bot-message"}, message)
+                            )
+                            for speaker, message in chat
+                        ],
+                        html.div({"className": "typing-indicator"}, 
+                                 html.span({"className": "dot"}), 
+                                 html.span({"className": "dot"}),
+                                 html.span({"className": "dot"}), 
+                                 html.span("Buddy is typing...")
+                        ) if is_typing else None,
                     ),
-                    # error message if any
-                    html.p({"className": "error-message"}, error) if error else None,
+                    html.div(
+                        {"className": "input-form"},
+                        html.input({
+                            "type": "text",
+                            "value": user_input,
+                            "onChange": lambda e: set_user_input(e["target"]["value"]),
+                            "onBlur": lambda e: None,  # Keep onBlur for future logic if needed
+                            "onKeyDown": handle_keydown,
+                            "placeholder": f"Type in {target_lang}…",
+                            "disabled": is_typing
+                        }),
+                        html.button(
+                            {
+                                "className": "btn btn-gradient",
+                                "onClick": handle_send,
+                                "disabled": not user_input.strip() or is_typing,
+                            },
+                            "Send"
+                        ),
+                        html.p({"className": "error-message"}, error) if error else None,
+                    ),
+                ),
+                # Feedback Box (separate column on desktop, below on mobile)
+                html.div(
+                    {"className": "feedback-col"},
+                    html.div(
+                        {"className": "feedback-box"},
+                        html.label(
+                            {"htmlFor": "feedback", "className": "feedback-label"},
+                            "AI Feedback & Suggestions:"
+                        ),
+                        html.div(
+                            {"className": "feedback-content", "id": "feedback"},
+                            feedback or html.span({"style": {"color": "#888"}}, "Feedback and suggestions will appear here after you send a message.")
+                        )
+                    )
                 )
             ),
         )

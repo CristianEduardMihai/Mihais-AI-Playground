@@ -63,6 +63,12 @@ def Home():
                     html.h3("AI PC Part Picker 🖥️"),
                     html.p("Get AI-generated recommendations for PC parts based on your preferences."),
                     html.a({"class": "btn-gradient", "href": "/qol/pc-part-picker"}, "Go to AI PC Part Picker")
+                ),
+                html.div(
+                    {"class": "card"},
+                    html.h3("AI Color Palette Picker 🎨"),
+                    html.p("Generate color palettes for your projects with AI."),
+                    html.a({"class": "btn-gradient", "href": "/qol/color-picker"}, "Go to AI Color Palette Picker")
                 )
             ),
             html.section(
