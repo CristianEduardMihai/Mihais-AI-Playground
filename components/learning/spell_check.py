@@ -97,7 +97,7 @@ def SpellCheck():
                         {
                             "id": "lang",
                             "value": lang,
-                            "onBlur": handle_lang,
+                            "onChange": handle_lang,
                         },
                         *[render_lang_option(l) for l in LANGUAGES]
                     ),

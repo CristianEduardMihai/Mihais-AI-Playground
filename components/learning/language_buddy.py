@@ -135,7 +135,7 @@ def LanguageBuddy():
                         {
                             "id": "native-lang",
                             "value": native_lang,
-                            "onBlur": lambda e: set_native_lang(e["target"]["value"]),
+                            "onChange": lambda e: set_native_lang(e["target"]["value"]),
                         },
                         [html.option({"value": "", "disabled": True}, "Select...")]
                         + [render_language_option(lang) for lang in LANGUAGES],
@@ -149,7 +149,7 @@ def LanguageBuddy():
                         {
                             "id": "target-lang",
                             "value": target_lang,
-                            "onBlur": lambda e: set_target_lang(e["target"]["value"]),
+                            "onChange": lambda e: set_target_lang(e["target"]["value"]),
                         },
                         [html.option({"value": "", "disabled": True}, "Select...")]
                         + [render_language_option(lang) for lang in LANGUAGES],
@@ -163,7 +163,7 @@ def LanguageBuddy():
                         {
                             "id": "level",
                             "value": level,
-                            "onBlur": lambda e: set_level(e["target"]["value"]),
+                            "onChange": lambda e: set_level(e["target"]["value"]),
                         },
                         [html.option({"value": l}, l) for l in LEVELS],
                     ),

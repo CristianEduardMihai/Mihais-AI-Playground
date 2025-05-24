@@ -97,7 +97,7 @@ def TextSummarizer():
                         {
                             "id": "summary-type",
                             "value": summary_type,
-                            "onBlur": handle_type,
+                            "onChange": handle_type,
                             "className": "summary-type-select"
                         },
                         html.option({"value": "bullets"}, "Bullet Points / List"),

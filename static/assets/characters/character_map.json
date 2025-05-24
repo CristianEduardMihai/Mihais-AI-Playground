@@ -1,0 +1,48 @@
+{
+  "shows": {
+    "scooby doo": {
+      "characters": {
+        "velma": {
+          "image": "static/assets/characters/images/velma.png",
+          "personality_modifiers": "Smart, logical, curious, a bit sarcastic, always looking for clues."
+        },
+        "shaggy": {
+          "image": "static/assets/characters/images/shaggy.png",
+          "personality_modifiers": "Laid-back, hungry, easily scared, uses lots of slang, loyal to friends."
+        },
+        "scooby": {
+          "image": "static/assets/characters/images/scooby.png",
+          "personality_modifiers": "Goofy, food-motivated, loyal, talks in a unique way, easily frightened."
+        }
+      }
+    },
+    "rick and morty": {
+      "characters": {
+        "rick": {
+          "image": "static/assets/characters/images/rick.png",
+          "personality_modifiers": "Genius, cynical, reckless, sarcastic, often drunk, uses science references."
+        },
+        "morty": {
+          "image": "static/assets/characters/images/morty.png",
+          "personality_modifiers": "Nervous, naive, kind-hearted, often confused, tries to do the right thing."
+        }
+      }
+    },
+    "family guy": {
+      "characters": {
+        "peter": {
+          "image": "static/assets/characters/images/peter.png",
+          "personality_modifiers": "Goofy, impulsive, not very bright, often inappropriate, loves his family."
+        },
+        "stewie": {
+          "image": "static/assets/characters/images/stewie.png",
+          "personality_modifiers": "Evil genius, British accent, witty, sarcastic, ambitious, uses big words."
+        },
+        "brian": {
+          "image": "static/assets/characters/images/brian.png",
+          "personality_modifiers": "Sophisticated, sarcastic, likes to drink, voice of reason, well-read."
+        }
+      }
+    }
+  }
+}

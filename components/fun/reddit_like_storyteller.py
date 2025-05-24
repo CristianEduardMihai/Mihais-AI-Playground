@@ -195,21 +195,6 @@ def RedditLikeStoryteller():
             html.h2("Reddit-style Storyteller"),
             html.div(
                 {"className": "form-group"},
-                html.label({"for": "subreddit"}, "Choose a subreddit style:"),
-                html.select(
-                    {
-                        "id": "subreddit",
-                        "value": subreddit,
-                        "onBlur": lambda e: set_subreddit(e["target"]["value"])
-                    },
-                    *[
-                        html.option({"value": k}, f"{k} – {v}")
-                        for k, v in STORY_SUBREDDITS.items()
-                    ]
-                )
-            ),
-            html.div(
-                {"className": "form-group"},
                 html.label({"for": "theme"}, "Theme or prompt for the story:"),
                 html.input({
                     "id": "theme",
@@ -218,6 +203,21 @@ def RedditLikeStoryteller():
                     "placeholder": "e.g. haunted house, awkward family dinner…",
                     "onBlur": lambda e: set_theme(e["target"]["value"])
                 })
+            ),
+            html.div(
+                {"className": "form-group"},
+                html.label({"for": "subreddit"}, "Choose a subreddit style:"),
+                html.select(
+                    {
+                        "id": "subreddit",
+                        "value": subreddit,
+                        "onChange": lambda e: set_subreddit(e["target"]["value"])
+                    },
+                    *[
+                        html.option({"value": k}, f"{k} – {v}")
+                        for k, v in STORY_SUBREDDITS.items()
+                    ]
+                )
             ),
             # Button area: show Generate Story or Generate Audio depending on state
             html.div(

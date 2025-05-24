@@ -106,7 +106,7 @@ def PersonalityQuiz():
                 html.label({"htmlFor": "gender"}, "Gender"),
                 html.select({
                     "id": "gender", "value": gender,
-                    "onBlur": lambda e: set_gender(e["target"]["value"])
+                    "onChange": lambda e: set_gender(e["target"]["value"])
                 },
                     html.option({"value": ""}, "Select..."),
                     html.option({"value": "Male"}, "Male"),
@@ -157,7 +157,7 @@ def PersonalityQuiz():
                 html.label({"htmlFor": "social"}, "How social are you?"),
                 html.select({
                     "id": "social", "value": social,
-                    "onBlur": lambda e: set_social(e["target"]["value"])
+                    "onChange": lambda e: set_social(e["target"]["value"])
                 },
                     html.option({"value": ""}, "Select..."),
                     html.option({"value": "Introvert"}, "Introvert"),
@@ -170,7 +170,7 @@ def PersonalityQuiz():
                 html.label({"htmlFor": "risk"}, "Risk Tolerance"),
                 html.select({
                     "id": "risk", "value": risk,
-                    "onBlur": lambda e: set_risk(e["target"]["value"])
+                    "onChange": lambda e: set_risk(e["target"]["value"])
                 },
                     html.option({"value": "Low"}, "Low"),
                     html.option({"value": "Medium"}, "Medium"),

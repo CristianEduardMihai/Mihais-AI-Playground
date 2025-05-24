@@ -121,7 +121,7 @@ def PCPartPicker():
                 {
                     "id": id_,
                     "value": value,
-                    "onBlur": lambda e: set_value(e["target"]["value"])
+                    "onChange": lambda e: set_value(e["target"]["value"])
                 },
                 *[html.option({"value": o}, o) for o in options]
             )
@@ -456,7 +456,7 @@ def PCPartPicker():
             html.select({
                 "id": "currency",
                 "value": currency,
-                "onBlur": lambda e: set_currency(e["target"]["value"])
+                "onChange": lambda e: set_currency(e["target"]["value"])
             }, *[
                 html.option({"value": code}, f"{code.upper()} - {name}") for code, name in currency_list
             ])
@@ -771,7 +771,7 @@ def PCPartPicker():
             html.select({
                 "id": "currency",
                 "value": currency,
-                "onBlur": lambda e: set_currency(e["target"]["value"])
+                "onChange": lambda e: set_currency(e["target"]["value"])
             }, *[
                 html.option({"value": code}, f"{code.upper()} - {name}") for code, name in currency_list
             ])

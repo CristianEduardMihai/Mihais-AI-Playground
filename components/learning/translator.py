@@ -103,7 +103,7 @@ def Translator():
                         {
                             "id": "src-lang",
                             "value": src_lang,
-                            "onBlur": handle_src_lang,
+                            "onChange": handle_src_lang,
                         },
                         *[render_lang_option(l) for l in LANGUAGES]
                     ),
@@ -112,7 +112,7 @@ def Translator():
                         {
                             "id": "tgt-lang",
                             "value": tgt_lang,
-                            "onBlur": handle_tgt_lang,
+                            "onChange": handle_tgt_lang,
                         },
                         *[render_lang_option(l) for l in LANGUAGES]
                     ),

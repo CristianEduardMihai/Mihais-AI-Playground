@@ -116,7 +116,7 @@ def RecipeMaker():
                                 "type": "checkbox",
                                 "value": method,
                                 "checked": method in selected_methods,
-                                "onBlur": handle_method_change
+                                "onChange": handle_method_change
                             }),
                             method
                         ) for method in cooking_methods
@@ -139,7 +139,7 @@ def RecipeMaker():
                 html.label({"for": "health-level"}, "Health Level:"),
                 html.select({
                     "id": "health-level", "value": health_level,
-                    "onBlur": lambda e: set_health_level(e["target"]["value"])
+                    "onChange": lambda e: set_health_level(e["target"]["value"])
                 },
                     html.option({"value": "balanced"}, "Balanced"),
                     html.option({"value": "healthy"}, "Healthy"),
