@@ -1,0 +1,358 @@
+/* ======================
+   Desktop & Default
+   ====================== */
+body {
+  display: flex;
+  justify-content: center;
+  background: #f0f0f0;
+  margin: 0;
+  padding: 0;
+}
+
+body * {
+  box-sizing: border-box;
+}
+
+.interview-prep {
+  background: rgba(255, 255, 255, 0.404);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 2rem;
+  margin: 2rem;
+  max-width: 800px;
+  width: 90%;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-align: left;
+}
+
+input[type="text"],
+select,
+textarea {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1.1rem;
+  box-sizing: border-box;
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Modular Button Styles */
+.btn {
+  width: 100%;
+  font-size: 1.2rem;
+  padding: 1.2rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  margin-top: 1rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(47,123,242,0.08), 0 1.5px 4px rgba(87,168,243,0.10);
+}
+
+/* Primary (Generate) */
+.btn-primary {
+  background-color: #2f7bf2;
+  color: #fff;
+}
+.btn-primary:hover {
+  background-color: #1b5ed9;
+}
+
+/* Secondary (PDF) */
+.btn-secondary {
+  background-color: #03a9f4;
+  color: #fff;
+}
+.btn-secondary:hover {
+  background-color: #0288d1;
+}
+
+/* Gradient (Home) */
+.btn-gradient {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(90deg, #2f7bf2 0%, #57a8f3 100%);
+  color: #fff;
+  border-radius: 999px;
+  margin-bottom: 1.5rem;
+}
+.btn-gradient:hover, .btn-gradient:focus {
+  background: linear-gradient(90deg, #57a8f3 0%, #2f7bf2 100%);
+  box-shadow: 0 4px 16px rgba(47,123,242,0.15), 0 3px 8px rgba(87,168,243,0.18);
+  transform: translateY(-2px) scale(1.04);
+  text-decoration: none;
+}
+
+.interview-output {
+  margin-top: 2rem;
+  background: #f4f4f9;
+  border-radius: 6px;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  text-align: left;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Markdown styling */
+.markdown-body {
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
+}
+
+.markdown-body h1 {
+  color: #2f7bf2;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e1e4e8;
+  padding-bottom: 0.3em;
+}
+
+.markdown-body h2 {
+  color: #444;
+  font-size: 1.4rem;
+  margin: 1.5rem 0 1rem;
+  border-bottom: 1px solid #e1e4e8;
+  padding-bottom: 0.3em;
+}
+
+.markdown-body h3 {
+  color: #666;
+  font-size: 1.2rem;
+  margin: 1.2rem 0 0.8rem;
+}
+
+.markdown-body ul, 
+.markdown-body ol {
+  margin: 0.8rem 0;
+  padding-left: 2rem;
+}
+
+.markdown-body li {
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+/* Nested lists styling */
+.markdown-body li > ul,
+.markdown-body li > ol {
+  margin: 0.3rem 0;
+}
+
+.markdown-body p {
+  margin: 0.8rem 0;
+  line-height: 1.6;
+}
+
+/* Question-specific styling */
+.markdown-body ol > li {
+  font-weight: bold;
+}
+
+.markdown-body ol > li > ul {
+  font-weight: normal;
+}
+
+.interview-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.category-label {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background: #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.category-label:hover {
+  background: #e0e0e0;
+}
+
+.category-label input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+/* Background blur gradient (desktop only) */
+.background-gradient-blur {
+    position: fixed;
+    z-index: -1;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    background: radial-gradient(circle at 20% 30%, #2f7bf2 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, #57a8f3 0%, transparent 60%),
+                linear-gradient(120deg, #2f7bf2 0%, #57a8f3 100%);
+    filter: blur(60px) brightness(1.15);
+    opacity: 0.55;
+}
+
+/* ======================
+   Mobile First Styles
+   ====================== */
+@media (max-width: 1000px) {
+  body {
+    background: white;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+  }
+
+  #app {
+    width: 100%;
+  }
+
+  .interview-prep {
+    background: rgba(255, 255, 255, 0.404);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    border-radius: 0;
+    box-shadow: none;
+    font-size: 2.4rem;
+    padding: 5vw;
+    margin: 0;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100vw;
+  }
+
+  .form-group {
+    margin-bottom: 4vw;
+    width: 100%;
+  }
+
+  label {
+    font-size: 4.5vw;
+    margin-bottom: 1.5vw;
+  }
+
+  input[type="text"],
+  select,
+  textarea {
+    font-size: 3.2rem;
+    padding: 6vw;
+    margin-bottom: 3vw;
+    width: 100%;
+    min-height: 5.5rem;
+  }
+
+  .btn {
+    width: 100%;
+    font-size: 5vw;
+    padding: 5vw;
+    border-radius: 1vw;
+    display: inline-block;
+  }
+
+  .btn-gradient {
+    width: 100%;
+    text-align: center;
+    font-size: 4.5vw;
+    margin-bottom: 3vw;
+    padding: 4vw 0;
+    border-radius: 0;
+  }
+
+  .interview-output {
+    font-size: 4.2vw;
+    padding: 4vw;
+    margin-top: 4vw;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Gradient on mobile */
+  .background-gradient-blur {
+    display: block !important;
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 35% 40%, #2f7bf2 0%, transparent 50%),
+      radial-gradient(circle at 70% 60%, #57a8f3 0%, transparent 55%),
+      linear-gradient(120deg, #2f7bf2 0%, #57a8f3 100%);
+    filter: blur(40px) brightness(1.1);
+    opacity: 0.35;
+  }
+
+  .interview-categories {
+    gap: 2vw;
+  }
+  
+  .category-label {
+    font-size: 2.2rem;
+    padding: 2vw;
+  }
+  
+  .category-label input[type="checkbox"] {
+    width: 2.2rem;
+    height: 2.2rem;
+    margin-right: 1vw;
+  }
+}
+
+@media (max-width: 500px) {
+  .interview-prep {
+    padding: 1rem 0.5rem;
+    font-size: 1rem;
+  }
+  
+  input[type="text"],
+  select,
+  textarea {
+    font-size: 2.1rem;
+    padding: 2.5rem;
+    min-height: 3.2rem;
+  }
+  
+  .btn {
+    font-size: 1.5rem;
+    padding: 1.5rem;
+    display: inline-block;
+  }
+  
+  .category-label {
+    font-size: 1.2rem;
+    padding: 1rem;
+  }
+}

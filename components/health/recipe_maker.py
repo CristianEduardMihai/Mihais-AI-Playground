@@ -28,7 +28,15 @@ def RecipeMaker():
         try:
             methods_str = ", ".join(selected_methods) if selected_methods else "any method"
             prompt = (
-                "Please output a recipe in Markdown using this template:\n\n"
+                "You are a helpful chef AI. "
+                "Output ONLY the recipe in Markdown format, with no extra comments, explanations, or preamble. "
+                "Do not include any text outside the Markdown recipe. "
+                "Assume the user also has common ingredients like sugar, salt, and flour.\n"
+                "Do not use any other cooking methods outside of the specified ones. If no method is possible, or if the ingredients are obviously for a salad or similar, you may use a no-cook recipe as a last resort.\n"
+                "If the ingredients make sense as a main dish and a side (for example, chicken and potatoes as a main, cabbage and lemon as a salad), you may split them into a main and a side dish, and describe both in the recipe.\n"
+                "Explain the recipe in detail, including cooking times and methods, do not cheap down on words.\n"
+                "You don't have to use all the ingredients.\n\n"
+                "Follow the provided template exactly:\n\n"
                 "# Recipe Title\n\n"
                 "## Ingredients\n"
                 "- ingredient 1\n"
@@ -48,14 +56,7 @@ def RecipeMaker():
                 "- allergen 1\n"
                 "- allergen 2\n\n"
                 "\n\n"
-                f"Use these ingredients: {ingredients}\n"
-                "Assume the user also has common ingredients like sugar, salt, and flour.\n"
-                f"Allowed cooking methods: {methods_str}. Do not use any other methods. If no method is possible, or if the ingredients are obviously for a salad or similar, you may use a no-cook recipe as a last resort.\n"
-                "If the ingredients make sense as a main dish and a side (for example, chicken and potatoes as a main, cabbage and lemon as a salad), you may split them into a main and a side dish, and describe both in the recipe.\n"
-                "Explain the recipe in detail, including cooking times and methods, do not cheap down on words.\n"
-                "You don't have to use all the ingredients.\n\n"
-                f"Health level: {health_level}\n"
-                f"Servings: {servings}\n\n"
+                
                 "Fill in each section accordingly, using bullet lists and numbered steps exactly as above. "
             )
 
@@ -66,14 +67,15 @@ def RecipeMaker():
                     "messages": [
                         {
                             "role": "system",
-                            "content": (
-                                "You are a helpful chef AI. "
-                                "Output ONLY the recipe in Markdown format, with no extra comments, explanations, or preamble. "
-                                "Do not include any text outside the Markdown recipe. "
-                                "Follow the provided template exactly."
+                            "content": prompt},
+                        {
+                            "role": "user", "content": (
+                            f"Use these ingredients: {ingredients}\n"
+                            f"Allowed cooking methods: {methods_str}."
+                            f"Health level: {health_level}\n"
+                            f"Servings: {servings}\n\n"
                             )
-                        },
-                        {"role": "user", "content": prompt}
+                        }
                     ]
                 },
                 timeout=60
