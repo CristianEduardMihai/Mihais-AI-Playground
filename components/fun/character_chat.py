@@ -75,7 +75,10 @@ def CharacterChat():
 
     def get_char_image():
         if selected_show and selected_char:
-            return CHAR_MAP[selected_show]["characters"][selected_char]["image"]
+            img_path = CHAR_MAP[selected_show]["characters"][selected_char]["image"]
+            if img_path.startswith("static/"):
+                return "/" + img_path
+            return img_path
         return None
 
     # Fix: Use class instead of className for HTML attributes
