@@ -206,13 +206,25 @@ footer {
     cursor: pointer;
     margin: 0 0.1em;
     box-shadow: 0 2px 8px rgba(123,47,242,0.08);
-    transition: background 0.2s, box-shadow 0.2s, transform 0.12s;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s, color 0.2s;
+    outline: none;
+    position: relative;
+    z-index: 1;
+}
+.home-tab-btn:hover, .home-tab-btn:focus {
+    background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
+    color: #fff;
+    box-shadow: 0 6px 24px 0 rgba(243,87,168,0.18), 0 2px 8px rgba(123,47,242,0.12);
+    transform: translateY(-4px) scale(1.07);
     outline: none;
 }
-.home-tab-btn.active, .home-tab-btn:focus {
-    background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
-    box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
-    transform: translateY(-2px) scale(1.04);
+.home-tab-btn.active {
+    background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
+    color: #fff;
+    box-shadow: 0 6px 24px 0 rgba(123,47,242,0.18), 0 2px 8px rgba(243,87,168,0.12);
+    transform: translateY(-4px) scale(1.07);
+    outline: none;
+    z-index: 2;
 }
 @media (max-width: 700px) {
     section {
