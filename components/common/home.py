@@ -36,27 +36,27 @@ def Home():
     # Module data for easier filtering
     modules = {
         "learning": [
-            {"title": "AI Language Buddy 🌍", "desc": "Practice your target language with an AI buddy!", "href": "/learning/language-buddy"},
-            {"title": "AI Spell Check 📝", "desc": "Correct your writing, tone and much more.", "href": "/learning/spell-check"},
-            {"title": "AI Translator 🌎", "desc": "Translate text between multiple languages.", "href": "/learning/translator"},
-            {"title": "AI Text Summarizer 📚", "desc": "Summarize long texts into concise summaries.", "href": "/learning/text-summarizer"},
+            {"title": "Language Buddy 🌍", "desc": "Practice your target language with an AI buddy!", "href": "/learning/language-buddy"},
+            {"title": "Spell Check 📝", "desc": "Correct your writing, tone and much more.", "href": "/learning/spell-check"},
+            {"title": "Translator 🌎", "desc": "Translate text between multiple languages.", "href": "/learning/translator"},
+            {"title": "Text Summarizer 📚", "desc": "Summarize long texts into concise summaries.", "href": "/learning/text-summarizer"},
         ],
         "health": [
-            {"title": "AI Recipe Maker 🍳", "desc": "Input your ingredients and let AI suggest recipes. Customize how healthy the recipes should be!", "href": "/health/recipe-maker"},
-            {"title": "AI Calorie Tracker 🔢", "desc": "Track your daily calorie intake with the help of AI.", "href": "/health/calorie-tracker"},
+            {"title": "Recipe Maker 🍳", "desc": "Input your ingredients and let AI suggest recipes. Customize how healthy the recipes should be!", "href": "/health/recipe-maker"},
+#            {"title": "Calorie Tracker 🔢", "desc": "Track your daily calorie intake with the help of AI.", "href": "/health/calorie-tracker"},
         ],
         "tools": [
-            {"title": "AI PC Part Picker 🖥️", "desc": "Get AI-generated recommendations for PC parts based on your preferences.", "href": "/tools/pc-part-picker"},
-            {"title": "AI Color Palette Picker 🎨", "desc": "Generate color palettes for your projects with AI.", "href": "/tools/color-picker"},
-            {"title": "AI Interview Prep Assistant 🎤", "desc": "Prepare for your next job interview with AI-generated questions and tips.", "href": "/tools/interview-prep"},
+            {"title": "PC Part Picker 🖥️", "desc": "Get AI-generated recommendations for PC parts based on your preferences.", "href": "/tools/pc-part-picker"},
+            {"title": "Color Palette Picker 🎨", "desc": "Generate color palettes for your projects with AI.", "href": "/tools/color-picker"},
+            {"title": "Interview Prep Assistant 🎤", "desc": "Prepare for your next job interview with AI-generated questions and tips.", "href": "/tools/interview-prep"},
             {"title": "HTML5 Portfolio Builder 🖼️", "desc": "Create a beautiful HTML5 portfolio to showcase your work, with AI assistance.", "href": "/tools/html5-portfolio-builder"},
         ],
         "fun": [
-            {"title": "Bot Vs Bot AI Roast Battle 🔥", "desc": "Watch two AI bots engage in a hilarious roast battle!", "href": "/fun/roast-battle"},
-            {"title": "AI Personality Quiz 🎭", "desc": "Answer fun questions and get a playful AI-generated personality analysis!", "href": "/fun/personality-quiz"},
+            {"title": "Bot Vs Bot Roast Battle 🔥", "desc": "Watch two AI bots engage in a hilarious roast battle!", "href": "/fun/roast-battle"},
+            {"title": "Personality Quiz 🎭", "desc": "Answer fun questions and get a playful AI-generated personality analysis!", "href": "/fun/personality-quiz"},
             {"title": "Reddit-like Storyteller 📖", "desc": "Generate stories in the style of your favorite subreddits.", "href": "/fun/reddit-like-storyteller"},
             {"title": "Character Chat 🤖", "desc": "Chat with your favorite cartoon characters!", "href": "/fun/character-chat"},
-            {"title": "AI Coder Profile 🧑‍💻", "desc": "Upload your code and get a playful coder personality analysis!", "href": "/fun/coder-profile"},
+            {"title": "Coder Profile 🧑‍💻", "desc": "Upload your code and get a playful coder personality analysis!", "href": "/fun/coder-profile"},
         ]
     }
     categories = [

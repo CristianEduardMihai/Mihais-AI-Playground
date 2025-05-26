@@ -6,9 +6,9 @@ html, body {
 body {
   display: flex;
   justify-content: center;
-  background: radial-gradient(circle at 20% 30%, #7b2ff2 0%, transparent 60%),
-              radial-gradient(circle at 80% 70%, #f357a8 0%, transparent 60%),
-              linear-gradient(120deg, #7b2ff2 0%, #f357a8 100%);
+  background: radial-gradient(circle at 20% 30%, #ab0a0a 0%, transparent 60%),
+              radial-gradient(circle at 80% 70%, #e06441 0%, transparent 60%),
+              linear-gradient(120deg, #ab0a0a 0%, #e06441 100%);
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -27,24 +27,17 @@ body * {
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.10);
   padding: 2rem;
-  margin: 2rem;
-  max-width: 900px;
-  width: 95vw;
+  margin: 3rem auto;
+  max-width: 1100px;
+  width: calc(100vw - 6rem);
   font-family: Arial, sans-serif;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  min-height: 100vh;
+  min-height: calc(100vh - 6rem);
   height: auto;
-  width: 100vw;
-  max-width: none;
-  margin: 0;
-  padding: 0 0 2rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: flex-start;
 }
 
@@ -84,12 +77,15 @@ textarea {
   display: inline-block;
   transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(123,47,242,0.08), 0 1.5px 4px rgba(243,87,168,0.10);
-  background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
+  background: linear-gradient(90deg, #e06441 0%, #ab0a0a 100%);
   color: #fff;
+  box-shadow: 0 2px 8px rgba(171,10,10,0.08), 0 1.5px 4px rgba(224,100,65,0.10);
 }
 .btn:hover, .btn:focus {
-  background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
+  background: linear-gradient(90deg, #ab0a0a 0%, #e06441 100%);
+  box-shadow: 0 4px 16px rgba(171,10,10,0.15), 0 3px 8px rgba(224,100,65,0.18);
+  transform: translateY(-2px) scale(1.04);
+  text-decoration: none;
 }
 
 .btn-secondary {
@@ -107,14 +103,14 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
+  background: linear-gradient(90deg, #e06441 0%, #ab0a0a 100%);
   color: #fff;
   border-radius: 999px;
   margin-bottom: 1.5rem;
 }
 .btn-gradient:hover, .btn-gradient:focus {
-  background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
-  box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
+  background: linear-gradient(90deg, #ab0a0a 0%, #e06441 100%);
+  box-shadow: 0 4px 16px rgba(171,10,10,0.15), 0 3px 8px rgba(224,100,65,0.18);
   transform: translateY(-2px) scale(1.04);
   text-decoration: none;
 }
@@ -189,9 +185,9 @@ a.btn, a.btn-gradient, a.btn-home {
     width: 100vw;
     height: 100vh;
     pointer-events: none;
-    background: radial-gradient(circle at 20% 30%, #7b2ff2 0%, transparent 60%),
-                radial-gradient(circle at 80% 70%, #f357a8 0%, transparent 60%),
-                linear-gradient(120deg, #7b2ff2 0%, #f357a8 100%);
+    background: radial-gradient(circle at 20% 30%, #ab0a0a 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, #e06441 0%, transparent 60%),
+                linear-gradient(120deg, #ab0a0a 0%, #e06441 100%);
     filter: blur(60px) brightness(1.15);
     opacity: 0.55;
 }
@@ -262,8 +258,9 @@ a.btn, a.btn-gradient, a.btn-home {
     padding: 5vw;
     border-radius: 1vw;
     display: inline-block;
-    background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
+    background: linear-gradient(90deg, #e06441 0%, #ab0a0a 100%);
     color: #fff;
+    box-shadow: 0 2px 8px rgba(171,10,10,0.08), 0 1.5px 4px rgba(224,100,65,0.10);
   }
 
   .btn-gradient {
@@ -292,9 +289,9 @@ a.btn, a.btn-gradient, a.btn-home {
     height: 100vh;
     pointer-events: none;
     background:
-      radial-gradient(circle at 35% 40%, #7b2ff2 0%, transparent 50%),
-      radial-gradient(circle at 70% 60%, #f357a8 0%, transparent 55%),
-      linear-gradient(120deg, #7b2ff2 0%, #f357a8 100%);
+      radial-gradient(circle at 35% 40%, #ab0a0a 0%, transparent 50%),
+      radial-gradient(circle at 70% 60%, #e06441 0%, transparent 55%),
+      linear-gradient(120deg, #ab0a0a 0%, #e06441 100%);
     filter: blur(40px) brightness(1.1);
     opacity: 0.35;
   }
@@ -415,6 +412,24 @@ a.btn, a.btn-gradient, a.btn-home {
   margin-bottom: 1.5rem;
   overflow: auto;
   display: block;
+}
+
+.ai-refine-options {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.2rem;
+  text-align: left;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+}
+
+.ai-refine-checkbox {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: normal;
+  gap: 0.5rem;
 }
 
 @media (hover: hover) and (pointer: fine) {

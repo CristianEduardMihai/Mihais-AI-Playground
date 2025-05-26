@@ -5,8 +5,8 @@ from bs4 import BeautifulSoup
 import re
 import os
 import time
-import reactpy
-reactpy.config.REACTPY_DEBUG_MODE.current = True
+#import reactpy
+#reactpy.config.REACTPY_DEBUG_MODE.current = True
 
 # Popular story-based subreddits and their descriptions
 STORY_SUBREDDITS = {
