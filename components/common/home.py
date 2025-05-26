@@ -55,6 +55,7 @@ def Home():
             {"title": "AI Personality Quiz 🎭", "desc": "Answer fun questions and get a playful AI-generated personality analysis!", "href": "/fun/personality-quiz"},
             {"title": "Reddit-like Storyteller 📖", "desc": "Generate stories in the style of your favorite subreddits.", "href": "/fun/reddit-like-storyteller"},
             {"title": "Character Chat 🤖", "desc": "Chat with your favorite cartoon characters!", "href": "/fun/character-chat"},
+            {"title": "AI Coder Profile 🧑‍💻", "desc": "Upload your code and get a playful coder personality analysis!", "href": "/fun/coder-profile"},
         ]
     }
     categories = [

@@ -13,6 +13,7 @@ from components.fun.roast_battle import BotVsBotRoastBattle
 from components.fun.personality_quiz import PersonalityQuiz
 from components.fun.reddit_like_storyteller import RedditLikeStoryteller
 from components.fun.character_chat import CharacterChat
+from components.fun.coder_profile import CoderProfile
 from components.common.not_found import NotFound
 
 @component
@@ -31,5 +32,6 @@ def RootRouter():
         route("/fun/personality-quiz", PersonalityQuiz()),
         route("/fun/reddit-like-storyteller", RedditLikeStoryteller()),
         route("/fun/character-chat", CharacterChat()),
+        route("/fun/coder-profile", CoderProfile()),
         route("{404:any}", NotFound())
     )
