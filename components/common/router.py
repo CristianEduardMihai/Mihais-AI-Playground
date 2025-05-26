@@ -9,6 +9,7 @@ from components.learning.text_summarizer import TextSummarizer
 from components.tools.pc_part_picker import PCPartPicker
 from components.tools.color_picker import AIColorPicker
 from components.tools.interview_prep import InterviewPrep
+from components.tools.HTML5_portfolio_builder import HTML5PortfolioBuilder
 from components.fun.roast_battle import BotVsBotRoastBattle
 from components.fun.personality_quiz import PersonalityQuiz
 from components.fun.reddit_like_storyteller import RedditLikeStoryteller
@@ -28,6 +29,7 @@ def RootRouter():
         route("/tools/pc-part-picker", PCPartPicker()),
         route("/tools/color-picker", AIColorPicker()),
         route("/tools/interview-prep", InterviewPrep()),
+        route("/tools/html5-portfolio-builder", HTML5PortfolioBuilder()),
         route("/fun/roast-battle", BotVsBotRoastBattle()),
         route("/fun/personality-quiz", PersonalityQuiz()),
         route("/fun/reddit-like-storyteller", RedditLikeStoryteller()),

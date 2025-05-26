@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>__PORTFOLIO_TITLE__</title>
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, __BG_COLOR1__, __BG_COLOR2__);
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 900px;
+      width: 95vw;
+      margin: 2rem auto;
+      background: rgba(255,255,255,0.85);
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      padding: 2.5rem 2rem 2rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.01em;
+    }
+    .subtitle {
+      color: #666;
+      font-size: 1.2rem;
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+    .projects {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .project {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      padding: 1.5rem 1.2rem;
+      transition: box-shadow 0.2s, transform 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .project:hover {
+      box-shadow: 0 6px 24px rgba(0,0,0,0.13);
+      transform: translateY(-4px) scale(1.03);
+    }
+    .project-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: __ACCENT_COLOR__;
+    }
+    .project-desc {
+      font-size: 1.08rem;
+      margin-bottom: 0.6rem;
+      color: #333;
+    }
+    .project-link {
+      color: __ACCENT_COLOR__;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1.05rem;
+      transition: text-decoration 0.2s, color 0.2s;
+    }
+    .project-link:hover {
+      text-decoration: underline;
+      color: #222;
+    }
+    @media (max-width: 700px) {
+      .container {
+        padding: 1.2rem 0.5rem;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      .project {
+        padding: 1rem 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>__PORTFOLIO_TITLE__</h1>
+    <div class="subtitle">__PORTFOLIO_SUBTITLE__</div>
+    <div class="projects">
+      <!-- PROJECTS START -->
+      __PROJECTS_HTML__
+      <!-- PROJECTS END -->
+    </div>
+  </div>
+</body>
+</html>
