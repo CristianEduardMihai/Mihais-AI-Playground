@@ -85,7 +85,7 @@ def CharacterChat():
     return html.div(
         {},
         html.div({"class": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": "/static/css/character_chat.css"}),
+        html.link({"rel": "stylesheet", "href": "/static/css/fun/character_chat.css"}),
         html.div(
             {"class": "home-btn-row"},
             html.a({"href": "/", "class": "btn btn-gradient"}, "🏠 Home")

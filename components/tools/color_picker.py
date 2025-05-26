@@ -116,7 +116,7 @@ def AIColorPicker():
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": "/static/css/color_picker.css"}),
+        html.link({"rel": "stylesheet", "href": "/static/css/tools/color_picker.css"}),
         html.nav(
             {"className": "navbar"},
             html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")

@@ -4,7 +4,10 @@
 body {
   display: flex;
   justify-content: center;
-  background: #f0f0f0;
+  /* Tools category background gradient */
+  background: radial-gradient(circle at 20% 30%, #ab0a0a 0%, transparent 60%),
+              radial-gradient(circle at 80% 70%, #e06441 0%, transparent 60%),
+              linear-gradient(120deg, #ab0a0a 0%, #e06441 100%);
   margin: 0;
   padding: 0;
 }
@@ -71,25 +74,23 @@ textarea {
   display: inline-block;
   transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(47,123,242,0.08), 0 1.5px 4px rgba(87,168,243,0.10);
-}
-
-/* Primary (Generate) */
-.btn-primary {
-  background-color: #2f7bf2;
+  box-shadow: 0 2px 8px rgba(171,10,10,0.08), 0 1.5px 4px rgba(224,100,65,0.10);
+  /* Gradient (Tools category) */
+  background: linear-gradient(90deg, #e06441 0%, #ab0a0a 100%);
   color: #fff;
 }
-.btn-primary:hover {
-  background-color: #1b5ed9;
+.btn:hover, .btn:focus {
+  background: linear-gradient(90deg, #ab0a0a 0%, #e06441 100%);
 }
 
 /* Secondary (PDF) */
 .btn-secondary {
-  background-color: #03a9f4;
+  background: #e06441;
   color: #fff;
 }
 .btn-secondary:hover {
-  background-color: #0288d1;
+  background: #ab0a0a;
+  color: #fff;
 }
 
 /* Gradient (Home) */
@@ -97,16 +98,20 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(90deg, #2f7bf2 0%, #57a8f3 100%);
+  background: linear-gradient(90deg, #e06441 0%, #ab0a0a 100%);
   color: #fff;
   border-radius: 999px;
   margin-bottom: 1.5rem;
 }
 .btn-gradient:hover, .btn-gradient:focus {
-  background: linear-gradient(90deg, #57a8f3 0%, #2f7bf2 100%);
-  box-shadow: 0 4px 16px rgba(47,123,242,0.15), 0 3px 8px rgba(87,168,243,0.18);
+  background: linear-gradient(90deg, #ab0a0a 0%, #e06441 100%);
+  box-shadow: 0 4px 16px rgba(171,10,10,0.15), 0 3px 8px rgba(224,100,65,0.18);
   transform: translateY(-2px) scale(1.04);
   text-decoration: none;
+}
+
+a.btn, a.btn-gradient, a.btn-home {
+  text-decoration: none !important;
 }
 
 .interview-output {
@@ -213,9 +218,10 @@ textarea {
     width: 100vw;
     height: 100vh;
     pointer-events: none;
-    background: radial-gradient(circle at 20% 30%, #2f7bf2 0%, transparent 60%),
-                radial-gradient(circle at 80% 70%, #57a8f3 0%, transparent 60%),
-                linear-gradient(120deg, #2f7bf2 0%, #57a8f3 100%);
+    /* Tools category background gradient */
+    background: radial-gradient(circle at 20% 30%, #ab0a0a 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, #e06441 0%, transparent 60%),
+                linear-gradient(120deg, #ab0a0a 0%, #e06441 100%);
     filter: blur(60px) brightness(1.15);
     opacity: 0.55;
 }
@@ -279,6 +285,9 @@ textarea {
     padding: 5vw;
     border-radius: 1vw;
     display: inline-block;
+    /* Gradient (Tools category) */
+    background: linear-gradient(90deg, #e06441 0%, #ab0a0a 100%);
+    color: #fff;
   }
 
   .btn-gradient {
@@ -307,10 +316,11 @@ textarea {
     width: 100vw;
     height: 100vh;
     pointer-events: none;
+    /* Tools category background gradient */
     background:
-      radial-gradient(circle at 35% 40%, #2f7bf2 0%, transparent 50%),
-      radial-gradient(circle at 70% 60%, #57a8f3 0%, transparent 55%),
-      linear-gradient(120deg, #2f7bf2 0%, #57a8f3 100%);
+      radial-gradient(circle at 35% 40%, #ab0a0a 0%, transparent 50%),
+      radial-gradient(circle at 70% 60%, #e06441 0%, transparent 55%),
+      linear-gradient(120deg, #ab0a0a 0%, #e06441 100%);
     filter: blur(40px) brightness(1.1);
     opacity: 0.35;
   }

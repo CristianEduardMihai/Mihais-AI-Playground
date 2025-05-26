@@ -780,7 +780,7 @@ def PCPartPicker():
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": "/static/css/pc_part_picker.css"}),
+        html.link({"rel": "stylesheet", "href": "/static/css/tools/pc_part_picker.css"}),
         html.nav(
             {"className": "navbar"},
             html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")

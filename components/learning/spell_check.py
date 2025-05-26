@@ -78,7 +78,7 @@ def SpellCheck():
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": "/static/css/spell_check.css"}),
+        html.link({"rel": "stylesheet", "href": "/static/css/learning/spell_check.css"}),
         html.nav(
             {"className": "navbar"},
             html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home"),

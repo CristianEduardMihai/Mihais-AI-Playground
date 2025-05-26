@@ -5,7 +5,7 @@ def NotFound():
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": "/static/css/not_found.css"}),
+        html.link({"rel": "stylesheet", "href": "/static/css/common/not_found.css"}),
         html.div({"className": "notfound-container"},
             html.h1({"className": "notfound-title"}, "404"),
             html.h2({"className": "notfound-subtitle"}, "Page Not Found"),

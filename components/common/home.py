@@ -164,7 +164,7 @@ def Home():
     return html.div(
         {},
         html.div(get_bg_style()),
-        html.link({"rel": "stylesheet", "href": "/static/css/home.css"}),
+        html.link({"rel": "stylesheet", "href": "/static/css/common/home.css"}),
         html.header(
             html.h1("Mihai's AI Playground"),
             html.p("Explore fun and useful AI-powered tools!")

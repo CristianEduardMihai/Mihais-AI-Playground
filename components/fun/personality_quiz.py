@@ -79,7 +79,7 @@ def PersonalityQuiz():
     # --- render ---
     return html.div(
         {"className": "personality-quiz"},
-        html.link({"rel": "stylesheet", "href": "/static/css/personality_quiz.css"}),
+        html.link({"rel": "stylesheet", "href": "/static/css/fun/personality_quiz.css"}),
         html.div({"className": "background-gradient-blur"}),
         html.nav(
             {"className": "navbar"},

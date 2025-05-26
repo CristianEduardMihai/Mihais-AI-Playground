@@ -185,7 +185,7 @@ def RedditLikeStoryteller():
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": "/static/css/reddit_like_storyteller.css"}),
+        html.link({"rel": "stylesheet", "href": "/static/css/fun/reddit_like_storyteller.css"}),
         html.nav(
             {"className": "navbar"},
             html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")

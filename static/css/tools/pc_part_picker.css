@@ -2,7 +2,10 @@
 body {
   display: flex;
   justify-content: center;
-  background: #f0f0f0;
+  /* Tools category background gradient */
+  background: radial-gradient(circle at 20% 30%, #ab0a0a 0%, transparent 60%),
+              radial-gradient(circle at 80% 70%, #e06441 0%, transparent 60%),
+              linear-gradient(120deg, #ab0a0a 0%, #e06441 100%);
   margin: 0;
   padding: 0;
 }
@@ -18,9 +21,9 @@ body * {
   width: 100vw;
   height: 100vh;
   pointer-events: none;
-  background: radial-gradient(circle at 20% 30%, #6201ff 0%, transparent 60%),
-              radial-gradient(circle at 80% 70%, #f357a8 0%, transparent 60%),
-              linear-gradient(120deg, #6200ff 0%, #f357a8 100%);
+  background: radial-gradient(circle at 20% 30%, #ab0a0a 0%, transparent 60%),
+              radial-gradient(circle at 80% 70%, #e06441 0%, transparent 60%),
+              linear-gradient(120deg, #ab0a0a 0%, #e06441 100%);
   filter: blur(60px) brightness(1.15);
   opacity: 0.55;
 }
@@ -39,7 +42,7 @@ body * {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
+  background: linear-gradient(90deg, #e06441 0%, #ab0a0a 100%);
   color: #fff;
   border-radius: 999px;
   margin: 1rem 0 1.5rem 1rem;
@@ -52,7 +55,7 @@ body * {
   transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
 }
 .btn-gradient:hover, .btn-gradient:focus {
-  background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
+  background: linear-gradient(90deg, #ab0a0a 0%, #e06441 100%);
   box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
   transform: translateY(-2px) scale(1.04);
   text-decoration: none;

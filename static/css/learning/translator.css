@@ -11,6 +11,10 @@ body {
     height: 100vh;
     width: 100vw;
     overflow: hidden;
+    /* Learning category background gradient */
+    background: radial-gradient(circle at 20% 30%, #3a8dde 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, #b388ff 0%, transparent 60%),
+                linear-gradient(120deg, #3a8dde 0%, #b388ff 100%);
 }
 
 .background-gradient-blur {
@@ -172,7 +176,7 @@ body {
     justify-content: center;
     transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
     font-weight: bold;
-    box-shadow: 0 2px 8px rgba(123,47,242,0.08), 0 1.5px 4px rgba(243,87,168,0.10);
+    box-shadow: 0 2px 8px rgba(58,141,222,0.08), 0 1.5px 4px rgba(179,136,255,0.10);
     padding: 0.9rem 2.5rem;
     font-size: 1.2rem;
     margin-left: auto;
@@ -183,7 +187,7 @@ body {
 .btn-gradient:hover, .btn-gradient:focus,
 .btn-home:hover, .btn-home:focus {
     background: linear-gradient(90deg, #3a8dde 0%, #b388ff 100%);
-    box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
+    box-shadow: 0 4px 16px rgba(58,141,222,0.15), 0 3px 8px rgba(179,136,255,0.18);
     transform: translateY(-2px) scale(1.04);
     text-decoration: none;
 }

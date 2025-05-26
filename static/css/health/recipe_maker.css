@@ -4,7 +4,10 @@
 body {
   display: flex;
   justify-content: center;
-  background: #f0f0f0;
+  /* Health category background gradient */
+  background: radial-gradient(circle at 20% 30%, #30ba40 0%, transparent 60%),
+              radial-gradient(circle at 80% 70%, #e1fc56 0%, transparent 60%),
+              linear-gradient(120deg, #30ba40 0%, #e1fc56 100%);
   margin: 0;
   padding: 0;
 }
@@ -70,25 +73,28 @@ input[type="number"] {
   display: inline-block;
   transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(123,47,242,0.08), 0 1.5px 4px rgba(243,87,168,0.10);
+  box-shadow: 0 2px 8px rgba(48,186,64,0.08), 0 1.5px 4px rgba(225,252,86,0.10);
+  background: linear-gradient(90deg, #e1fc56 0%, #30ba40 100%);
+  color: #222;
 }
 
 /* Primary (Generate) */
 .btn-primary {
-  background-color: #6200ea;
-  color: #fff;
+  /* Use health button gradient */
+  background: linear-gradient(90deg, #e1fc56 0%, #30ba40 100%);
+  color: #222;
 }
 .btn-primary:hover {
-  background-color: #3700b3;
+  background: linear-gradient(90deg, #30ba40 0%, #e1fc56 100%);
 }
 
-/* Secondary (PDF) */
 .btn-secondary {
-  background-color: #03a9f4;
-  color: #fff;
+  background: #e1fc56;
+  color: #30ba40;
 }
 .btn-secondary:hover {
-  background-color: #0288d1;
+  background: #30ba40;
+  color: #e1fc56;
 }
 
 /* Gradient (Home) */
@@ -96,16 +102,20 @@ input[type="number"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
-  color: #fff;
+  background: linear-gradient(90deg, #e1fc56 0%, #30ba40 100%);
+  color: #222;
   border-radius: 999px;
   margin-bottom: 1.5rem;
 }
 .btn-gradient:hover, .btn-gradient:focus {
-  background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
-  box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
+  background: linear-gradient(90deg, #30ba40 0%, #e1fc56 100%);
+  box-shadow: 0 4px 16px rgba(48,186,64,0.15), 0 3px 8px rgba(225,252,86,0.18);
   transform: translateY(-2px) scale(1.04);
   text-decoration: none;
+}
+
+a.btn, a.btn-gradient, a.btn-home {
+  text-decoration: none !important;
 }
 
 .recipe-output {
@@ -125,9 +135,9 @@ input[type="number"] {
     width: 100vw;
     height: 100vh;
     pointer-events: none;
-    background: radial-gradient(circle at 20% 30%, #6201ff 0%, transparent 60%),
-                radial-gradient(circle at 80% 70%, #f357a8 0%, transparent 60%),
-                linear-gradient(120deg, #6200ff 0%, #f357a8 100%);
+    background: radial-gradient(circle at 20% 30%, #30ba40 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, #e1fc56 0%, transparent 60%),
+                linear-gradient(120deg, #30ba40 0%, #e1fc56 100%);
     filter: blur(60px) brightness(1.15);
     opacity: 0.55;
 }
@@ -220,9 +230,9 @@ input[type="number"] {
     height: 100vh;
     pointer-events: none;
     background:
-      radial-gradient(circle at 35% 40%, #7b2ff2 0%, transparent 50%),
-      radial-gradient(circle at 70% 60%, #f357a8 0%, transparent 55%),
-      linear-gradient(120deg, #7b2ff2 0%, #f357a8 100%);
+      radial-gradient(circle at 35% 40%, #30ba40 0%, transparent 50%),
+      radial-gradient(circle at 70% 60%, #e1fc56 0%, transparent 55%),
+      linear-gradient(120deg, #30ba40 0%, #e1fc56 100%);
     filter: blur(40px) brightness(1.1);
     opacity: 0.35;
   }

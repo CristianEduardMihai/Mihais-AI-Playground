@@ -102,7 +102,7 @@ def BotVsBotRoastBattle():
         html.div({"className": "background-gradient-blur"}),
 
         # stylesheet
-        html.link({"rel": "stylesheet", "href": "/static/css/roast_battle.css"}),
+        html.link({"rel": "stylesheet", "href": "/static/css/fun/roast_battle.css"}),
 
         # navbar
         html.nav(

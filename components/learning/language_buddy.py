@@ -115,7 +115,7 @@ def LanguageBuddy():
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": "/static/css/language_buddy.css"}),
+        html.link({"rel": "stylesheet", "href": "/static/css/learning/language_buddy.css"}),
         html.div(
             {"className": "home-btn-row"},
             html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")

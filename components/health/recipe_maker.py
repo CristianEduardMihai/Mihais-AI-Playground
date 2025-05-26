@@ -97,7 +97,7 @@ def RecipeMaker():
         {},
         # External CSS and background
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": "/static/css/recipe_maker.css"}),
+        html.link({"rel": "stylesheet", "href": "/static/css/health/recipe_maker.css"}),
         html.nav(
             {"className": "navbar"},
             html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")
