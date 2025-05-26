@@ -1,18 +1,225 @@
-/* Translator uses the same layout and scaling as spell_check.css */
-@import url("spell_check.css");
+/* Glassmorphism and gradient background for translator */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    min-width: 100vw;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.background-gradient-blur {
+    position: fixed;
+    z-index: -1;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    background: radial-gradient(circle at 20% 30%, #3a8dde 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, #b388ff 0%, transparent 60%),
+                linear-gradient(120deg, #3a8dde 0%, #b388ff 100%);
+    filter: blur(60px) brightness(1.15);
+    opacity: 0.55;
+}
+
+@font-face {
+    font-family: NotoColorEmojiLimited;
+    unicode-range: U+1F1E6-1F1FF;
+    src: url(https://raw.githack.com/googlefonts/noto-emoji/main/fonts/NotoColorEmoji.ttf);
+}
+
+.spellcheck-main-container {
+    min-height: 100vh;
+    min-width: 100vw;
+    height: 100vh;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: stretch;
+    background: rgba(255,255,255,0.40);
+    font-family: 'NotoColorEmojiLimited', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    text-align: center;
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+}
 
 .spellcheck-main-container h2 {
     margin-bottom: 0.5rem;
     margin-top: 0.5rem;
 }
 
-/* Optionally, tweak the arrow and dropdown spacing for translator */
+.spellcheck-form {
+    flex: 1 1 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center all children horizontally */
+    gap: 0.5rem;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.spellcheck-form > .btn {
+    margin: 0.25rem 0 0.25rem 0 !important;
+}
+
+.spellcheck-form > .form-group {
+    margin-bottom: 0.25rem;
+}
+
+.lang-select {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center; /* Center the language selector row */
+}
+.lang-select label {
+    font-weight: bold;
+    font-size: 1.1rem;
+    font-family: 'NotoColorEmojiLimited', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
 .lang-select select {
-    min-width: 90px;
+    font-size: 1.1rem;
+    padding: 0.5em 1em;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    margin-left: 0.5em;
+    font-family: 'NotoColorEmojiLimited', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 }
 .lang-select span {
     margin: 0 0.5em;
     font-size: 1.3em;
     font-weight: bold;
     color: #7b2ff2;
+}
+
+.spellcheck-split {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    height: 100%;
+    gap: 0;
+    justify-content: stretch;
+    align-items: stretch;
+}
+
+.spellcheck-input, .spellcheck-output {
+    width: 50vw;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    font-size: 1.1rem;
+    border-radius: 0;
+    border: none;
+    padding: 2rem 1.5rem;
+    background: rgba(255,255,255,0.7);
+    box-shadow: none;
+    resize: none;
+    font-family: 'NotoColorEmojiLimited', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    overflow: auto;
+}
+
+.spellcheck-input {
+    border-right: 1px solid #ccc;
+}
+
+.spellcheck-output {
+    border-left: 1px solid #ccc;
+    text-align: left;
+    word-break: break-word;
+    display: block;
+    white-space: pre-wrap;
+}
+
+.placeholder {
+    color: #bbb;
+}
+.corrected {
+    color: #1dbf3a;
+    font-weight: bold;
+    background: rgba(29,191,58,0.08);
+    border-radius: 4px;
+    padding: 0 2px;
+}
+
+.btn,
+.btn-gradient,
+.btn-home {
+    background: linear-gradient(90deg, #b388ff 0%, #3a8dde 100%);
+    color: #fff;
+    border-radius: 999px;
+    margin-bottom: 1.2rem;
+    max-width: 600px;
+    min-width: 220px;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(123,47,242,0.08), 0 1.5px 4px rgba(243,87,168,0.10);
+    padding: 0.9rem 2.5rem;
+    font-size: 1.2rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.btn:hover, .btn:focus,
+.btn-gradient:hover, .btn-gradient:focus,
+.btn-home:hover, .btn-home:focus {
+    background: linear-gradient(90deg, #3a8dde 0%, #b388ff 100%);
+    box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
+    transform: translateY(-2px) scale(1.04);
+    text-decoration: none;
+}
+
+a.btn, a.btn-gradient, a.btn-home {
+    text-decoration: none !important;
+}
+
+@media (max-width: 1000px) {
+    .spellcheck-split {
+        flex-direction: column;
+        width: 100vw;
+        height: 100vh;
+    }
+    .spellcheck-input, .spellcheck-output {
+        width: 100vw;
+        height: 50vh;
+        min-height: 0;
+        min-width: 0;
+        font-size: 1.8rem;
+        padding: 1rem;
+        border-radius: 0;
+    }
+    .spellcheck-input {
+        border-right: none;
+        border-bottom: 1px solid #ccc;
+    }
+    .spellcheck-output {
+        border-left: none;
+        border-top: 1px solid #ccc;
+    }
+}
+
+@media (max-width: 500px) {
+    .spellcheck-input, .spellcheck-output {
+        font-size: 0.95rem;
+        padding: 0.5rem;
+    }
 }

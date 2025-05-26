@@ -6,9 +6,9 @@
     width: 100vw;
     height: 100vh;
     pointer-events: none;
-    background: radial-gradient(circle at 20% 30%, #6201ff 0%, transparent 60%),
-                radial-gradient(circle at 80% 70%, #f357a8 0%, transparent 60%),
-                linear-gradient(120deg, #6200ff 0%, #f357a8 100%);
+    background: radial-gradient(circle at 20% 30%, #3a8dde 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, #b388ff 0%, transparent 60%),
+                linear-gradient(120deg, #3a8dde 0%, #b388ff 100%);
     filter: blur(60px) brightness(1.15);
     opacity: 0.55;
 }
@@ -17,39 +17,40 @@ body * {
   box-sizing: border-box;
 }
 
-.btn {
-  width: 100%;
-  font-size: 1.2rem;
-  padding: 1.2rem;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  margin-top: 1rem;
-  text-decoration: none;
-  display: inline-block;
-  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-  font-weight: bold;
-  box-shadow: 0 2px 8px rgba(123,47,242,0.08), 0 1.5px 4px rgba(243,87,168,0.10);
+.btn,
+.btn-gradient,
+.btn-home {
+    background: linear-gradient(90deg, #b388ff 0%, #3a8dde 100%);
+    color: #fff;
+    border-radius: 999px;
+    margin-bottom: 1.2rem;
+    max-width: 600px;
+    min-width: 120px;
+    width: 100%;
+    text-align: center;
+    display: inline-block;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(123,47,242,0.08), 0 1.5px 4px rgba(243,87,168,0.10);
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+    height: auto;
+    min-height: 3.5rem;
 }
 
-.btn-gradient {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
-  color: #fff;
-  border-radius: 999px;
-  margin-bottom: 1.2rem;
-  max-width: 600px;
-  width: 100%;
-  text-align: center;
+.btn:hover, .btn:focus,
+.btn-gradient:hover, .btn-gradient:focus,
+.btn-home:hover, .btn-home:focus {
+    background: linear-gradient(90deg, #3a8dde 0%, #b388ff 100%);
+    box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
+    transform: translateY(-2px) scale(1.04);
+    text-decoration: none;
 }
 
-.btn-gradient:hover, .btn-gradient:focus {
-  background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
-  box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
-  transform: translateY(-2px) scale(1.04);
-  text-decoration: none;
+a.btn, a.btn-gradient, a.btn-home {
+    text-decoration: none !important;
 }
 
 .language-buddy.chat-style {

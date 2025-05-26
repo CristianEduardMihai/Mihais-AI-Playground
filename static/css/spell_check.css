@@ -20,9 +20,9 @@ body {
     width: 100vw;
     height: 100vh;
     pointer-events: none;
-    background: radial-gradient(circle at 20% 30%, #6201ff 0%, transparent 60%),
-                radial-gradient(circle at 80% 70%, #f357a8 0%, transparent 60%),
-                linear-gradient(120deg, #6200ff 0%, #f357a8 100%);
+    background: radial-gradient(circle at 20% 30%, #3a8dde 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, #b388ff 0%, transparent 60%),
+                linear-gradient(120deg, #3a8dde 0%, #b388ff 100%);
     filter: blur(60px) brightness(1.15);
     opacity: 0.55;
 }
@@ -63,8 +63,8 @@ body {
     width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem; /* Reduced from 1.5rem to 0.5rem for tighter spacing */
+    align-items: center; /* Center all children horizontally */
+    gap: 0.5rem;
     height: 100%;
     margin: 0;
     padding: 0;
@@ -78,12 +78,18 @@ body {
     margin-bottom: 0.25rem;
 }
 
+.spellcheck-form > .btn,
+.spellcheck-form > .btn-gradient,
+.spellcheck-form > .btn-home {
+    align-self: center; /* Center these elements individually */
+}
+
 .lang-select {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 0.5rem; /* Reduced from 1rem to 0.5rem for tighter spacing */
-    justify-content: flex-start;
+    gap: 0.5rem;
+    justify-content: center; /* Center the language selector row */
 }
 .lang-select label {
     font-weight: bold;
@@ -150,27 +156,40 @@ body {
     padding: 0 2px;
 }
 
-.btn.spellcheck-btn-small {
-    display: inline-block;
-    min-width: 120px;
-    max-width: 220px;
-    width: auto;
-    font-size: 1rem;
-    padding: 0.5em 1.2em;
-    border-radius: 6px;
-    margin: 0.5rem auto 0.5rem auto;
-    align-self: center;
-    box-shadow: 0 2px 8px rgba(123,47,242,0.08);
+.btn,
+.btn-gradient,
+.btn-home {
+    background: linear-gradient(90deg, #b388ff 0%, #3a8dde 100%);
+    color: #fff;
+    border-radius: 999px;
+    margin-bottom: 1.2rem;
+    max-width: 600px;
+    min-width: 220px;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(123,47,242,0.08), 0 1.5px 4px rgba(243,87,168,0.10);
+    padding: 0.9rem 2.5rem;
+    font-size: 1.2rem;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.spellcheck-form > .btn,
-.spellcheck-btn-small {
-    margin: 0.5rem auto 0.5rem auto !important;
-    align-self: center;
-    width: auto;
-    min-width: 120px;
-    max-width: 220px;
-    display: inline-block;
+.btn:hover, .btn:focus,
+.btn-gradient:hover, .btn-gradient:focus,
+.btn-home:hover, .btn-home:focus {
+    background: linear-gradient(90deg, #3a8dde 0%, #b388ff 100%);
+    box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
+    transform: translateY(-2px) scale(1.04);
+    text-decoration: none;
+}
+
+a.btn, a.btn-gradient, a.btn-home {
+    text-decoration: none !important;
 }
 
 @media (max-width: 1000px) {
