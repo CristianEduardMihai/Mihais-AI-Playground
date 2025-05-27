@@ -17,26 +17,30 @@ Built for the [Hack Club](https://hackclub.com/) Neighborhood Hackatron, Mihai's
 
 - **Glassmorphic Design**: Pink, purple, and pure fun! Modern, accessible, and beautiful on every device.
 - **Super Scalable** 🚀: Add new tools or languages in minutes—just drop in a component or update a config.
+
 ### 🧩 **Modules**
 
-### Learning 📚
-- **Language Buddy** 🗣️: Practice your target language with an AI buddy! Choose your native language, the language you want to learn, your level, and how long you've been learning. Get supportive, interactive practice in a chat-style UI.
-- **AI Spell Check** 📝: Correct your writing, tone, and much more.
-- **AI Translator** 🌎: Translate text between multiple languages.
-- **AI Text Summarizer** 📚: Summarize long texts into concise summaries.
+#### Learning 📚
+- **Language Buddy 🌍**: Practice your target language with an AI buddy!
+- **Spell Check 📝**: Correct your writing, tone and much more.
+- **Translator 🌎**: Translate text between multiple languages.
+- **Text Summarizer 📚**: Summarize long texts into concise summaries.
 
 #### Health 🥗
-- **AI Recipe Maker** 🍳: Input your ingredients and let AI suggest recipes. Customize how healthy the recipes should be!
-- ~~**AI Calorie Tracker** 🔢: Track your daily calorie intake with the help of AI.~~
+- **Recipe Maker 🍳**: Input your ingredients and let AI suggest recipes. Customize how healthy the recipes should be!
 
-#### Quality of Life Tools ✨
-- **AI PC Part Picker** 🖥️: Get AI-generated recommendations for PC parts based on your preferences.
-- **AI Color Palette Picker** 🎨: Describe your project and get a beautiful, AI-generated color palette with HEX codes and friendly explanations.
+#### QOL Tools ✨
+- **PC Part Picker 🖥️**: Get AI-generated recommendations for PC parts based on your preferences.
+- **Color Palette Picker 🎨**: Generate color palettes for your projects with AI.
+- **Interview Prep Assistant 🎤**: Prepare for your next job interview with AI-generated questions and tips.
+- **HTML5 Portfolio Builder 🖼️**: Create a beautiful HTML5 portfolio to showcase your work, with AI assistance.
 
 #### Fun 🤖
-- **Bot Vs Bot Roast Battle** 🔥: Watch two AI bots engage in a hilarious roast battle! No profanity, just clever, punchy fun.
-- **Personality Quiz** 🎭: Answer fun questions and get a playful AI-generated personality analysis!
-- **Reddit-like Storyteller** 📖: Generate stories in the style of your favorite subreddits. With the option to have them read to you.
+- **Bot Vs Bot Roast Battle 🔥**: Watch two AI bots engage in a hilarious roast battle!
+- **Personality Quiz 🎭**: Answer fun questions and get a playful AI-generated personality analysis!
+- **Reddit-like Storyteller 📖**: Generate stories in the style of your favorite subreddits.
+- **Character Chat 🤖**: Chat with your favorite cartoon characters!
+- **Coder Profile 🧑‍💻**: Upload your code and get a playful coder personality analysis!
 
 
 ![hackatime](https://github-readme-stats.hackclub.dev/api/wakatime?username=2408&api_domain=hackatime.hackclub.com&theme=calm_pink&custom_title=Hackatime+Stats&layout=compact&cache_seconds=0&langs_count=8)

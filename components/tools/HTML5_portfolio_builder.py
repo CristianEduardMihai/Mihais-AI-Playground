@@ -267,15 +267,15 @@ def HTML5PortfolioBuilder():
                 )
             )) if show_json_export else None,
             html.div({"className": "form-group"},
-                html.input({"type": "text", "className": "input-title", "value": title, "onChange": lambda e: set_title(e["target"]["value"]), "placeholder": "Portfolio Title"}),
+                html.input({"type": "text", "className": "input-title", "value": title, "onBlur": lambda e: set_title(e["target"]["value"]), "placeholder": "Portfolio Title"}),
                 html.label({}, html.input({"type": "checkbox", "checked": refine_title, "onChange": lambda e: set_refine_title(e["target"]["checked"])}), " Refine Title")
             ),
             html.div({"className": "form-group"},
-                html.input({"type": "text", "className": "input-subtitle", "value": subtitle, "onChange": lambda e: set_subtitle(e["target"]["value"]), "placeholder": "Subtitle"}),
+                html.input({"type": "text", "className": "input-subtitle", "value": subtitle, "onBlur": lambda e: set_subtitle(e["target"]["value"]), "placeholder": "Subtitle"}),
                 html.label({}, html.input({"type": "checkbox", "checked": refine_subtitle, "onChange": lambda e: set_refine_subtitle(e["target"]["checked"])}), " Refine Subtitle")
             ),
             html.div({"className": "form-group"},
-                html.input({"type": "text", "className": "input-color-style", "value": color_style, "onChange": lambda e: set_color_style(e["target"]["value"]), "placeholder": "Color Style"})
+                html.input({"type": "text", "className": "input-color-style", "value": color_style, "onBlur": lambda e: set_color_style(e["target"]["value"]), "placeholder": "Color Style"})
             ),
             html.div({"className": "ai-refine-options"},
                 html.label({}, html.input({"type": "checkbox", "checked": refine_project_titles, "onChange": lambda e: set_refine_project_titles(e["target"]["checked"])}), " Refine Project Titles"),
@@ -285,9 +285,9 @@ def HTML5PortfolioBuilder():
             html.div({"className": "projects-list"},
                 *[
                     html.div({"className": "project-card"},
-                        html.input({"type": "text", "className": "input-project-title", "value": p["title"], "placeholder": "Title", "onChange": lambda e, idx=i: handle_project_change(idx, "title", e["target"]["value"])}),
-                        html.input({"type": "text", "className": "input-project-desc", "value": p["desc"], "placeholder": "Description", "onChange": lambda e, idx=i: handle_project_change(idx, "desc", e["target"]["value"])}),
-                        html.input({"type": "text", "className": "input-project-link", "value": p["link"], "placeholder": "Link", "onChange": lambda e, idx=i: handle_project_change(idx, "link", e["target"]["value"])}),
+                        html.input({"type": "text", "className": "input-project-title", "value": p["title"], "placeholder": "Title", "onBlur": lambda e, idx=i: handle_project_change(idx, "title", e["target"]["value"])}),
+                        html.input({"type": "text", "className": "input-project-desc", "value": p["desc"], "placeholder": "Description", "onBlur": lambda e, idx=i: handle_project_change(idx, "desc", e["target"]["value"])}),
+                        html.input({"type": "text", "className": "input-project-link", "value": p["link"], "placeholder": "Link", "onBlur": lambda e, idx=i: handle_project_change(idx, "link", e["target"]["value"])}),
                         (len(projects) > 1 and html.button({"className": "btn btn-secondary btn-remove-project", "onClick": lambda e, idx=i: remove_project(idx)}, "Remove")) or None
                     ) for i, p in enumerate(projects)
                 ]
