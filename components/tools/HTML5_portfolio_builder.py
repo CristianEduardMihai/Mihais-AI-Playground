@@ -1,8 +1,9 @@
-from reactpy import component, html, use_state
+from reactpy import component, html, use_state, use_effect
 import requests
 import json
-import re
 import base64
+import re
+
 
 @component
 def HTML5PortfolioBuilder():
@@ -20,6 +21,12 @@ def HTML5PortfolioBuilder():
     refine_projects, set_refine_projects = use_state(True)
     refine_project_titles, set_refine_project_titles = use_state(True)
 
+    show_json_modal, set_show_json_modal = use_state(False)
+    json_text, set_json_text = use_state("")
+    show_json_export, set_show_json_export = use_state(False)
+    json_export_text, set_json_export_text = use_state("")
+    copied_json, set_copied_json = use_state(False)
+
     def handle_project_change(idx, field, value):
         def updater(prev):
             updated = prev.copy()
@@ -34,26 +41,33 @@ def HTML5PortfolioBuilder():
         set_projects(lambda prev: [p for i, p in enumerate(prev) if i != idx])
 
     def ai_refine_portfolio_all(title, subtitle, color_style, projects, refine_title, refine_subtitle, refine_projects, refine_project_titles):
+        #print("--------- [DEBUG] ai_refine_portfolio_all called with:")
+        #print("  title:", title)
+        #print("  subtitle:", subtitle)
+        #print("  color_style:", color_style)
+        #print("  projects:", projects)
+        import time, random
+        request_id = f"{int(time.time()*1000)}_{random.randint(1000,9999)}"
         try:
             input_obj = {
                 "title": title,
                 "subtitle": subtitle,
                 "color_style": color_style,
-                "projects": projects
+                "projects": projects,
+                "request_id": request_id
             }
             instructions = [
                 "You are a helpful assistant for building personal portfolio websites.",
                 "Given the following portfolio data as JSON, rewrite the fields as requested and extract color hex codes:",
-                "- Do NOT deviate too much from the original user input."
+                "- Do NOT deviate too much from the original user input.",
+                "- Rewrite the 'title'..." if refine_title else "- Leave the 'title' unchanged.",
+                "- Rewrite the 'subtitle'..." if refine_subtitle else "- Leave the 'subtitle' unchanged.",
+                "- Rewrite project titles..." if refine_project_titles else "- Leave project titles unchanged.",
+                "- Rewrite project descriptions..." if refine_projects else "- Leave project descriptions unchanged.",
+                "- For the 'color_style', extract 2-3 hex color codes as an array called 'hexes', and rewrite as 'color_style_desc'.",
+                "Return JSON only. No explanations or ```.",
             ]
-            instructions.append("- Rewrite the 'title'..." if refine_title else "- Leave the 'title' unchanged.")
-            instructions.append("- Rewrite the 'subtitle'..." if refine_subtitle else "- Leave the 'subtitle' unchanged.")
-            instructions.append("- Rewrite project titles..." if refine_project_titles else "- Leave project titles unchanged.")
-            instructions.append("- Rewrite project descriptions..." if refine_projects else "- Leave project descriptions unchanged.")
-            instructions.append("- For the 'color_style', extract 2-3 hex color codes as an array called 'hexes', and rewrite as 'color_style_desc'.")
-            instructions.append("Return JSON only. No explanations or ```.")
-
-            response = requests.post(
+            resp = requests.post(
                 "https://ai.hackclub.com/chat/completions",
                 headers={"Content-Type": "application/json"},
                 json={
@@ -64,10 +78,19 @@ def HTML5PortfolioBuilder():
                 },
                 timeout=90
             )
-            if response.status_code != 200:
-                return input_obj | {"color_style_desc": color_style, "hexes": []}
-
-            result = json.loads(response.json()["choices"][0]["message"]["content"])
+            ai_raw = resp.json()["choices"][0]["message"]["content"]
+            #print("--------- [DEBUG] AI raw response:")
+            #print(ai_raw)
+            # Remove triple backticks and whitespace if present
+            ai_clean = ai_raw.strip()
+            if ai_clean.startswith("```"):
+                ai_clean = ai_clean.lstrip("`\n ")
+            if ai_clean.endswith("```"):
+                ai_clean = ai_clean.rstrip("`\n ")
+            # Try again if still wrapped
+            if ai_clean.startswith("json"):
+                ai_clean = ai_clean[4:].lstrip("\n ")
+            result = json.loads(ai_clean)
             return {
                 "title": result.get("title", title),
                 "subtitle": result.get("subtitle", subtitle),
@@ -75,35 +98,51 @@ def HTML5PortfolioBuilder():
                 "hexes": result.get("hexes", []),
                 "projects": result.get("projects", projects)
             }
-        except Exception:
+        except Exception as e:
+            #print(f"--------- [DEBUG] AI exception: {e}")
             return {"title": title, "subtitle": subtitle, "color_style_desc": color_style, "hexes": [], "projects": projects}
 
-    def handle_generate(event):
+    def handle_generate(_):
+        # Blur all text inputs to trigger onBlur and update state
+        blur_script = html.script({
+            "dangerouslySetInnerHTML": """
+            Array.from(document.querySelectorAll('input[type="text"]')).forEach(el => el.blur());
+            """
+        })
         set_loading(True)
         set_output_html("")
         set_error("")
-        try:
-            ai_result = ai_refine_portfolio_all(title, subtitle, color_style, projects,
-                                                refine_title, refine_subtitle,
-                                                refine_projects, refine_project_titles)
-
-            final_title = ai_result["title"]
-            final_subtitle = ai_result["subtitle"]
-            refined_projects = ai_result["projects"]
-            refined_desc = ai_result.get("color_style_desc", color_style)
-            hexes = ai_result.get("hexes", [])
-
-            projects_html = "\n".join(
-                f'<div class="project">'
-                f'<div class="project-title">{p["title"]}</div>'
-                f'<div class="project-desc">{p["desc"]}</div>'
-                + (f'<a class="project-link" href="{p["link"]}" target="_blank">{p["link"]}</a>' if p["link"] else "")
-                + '</div>'
-                for p in refined_projects if p["title"] or p["desc"] or p["link"]
+        # Wait a short time to allow onBlur to fire and state to update
+        import threading
+        def delayed_generate():
+            import time
+            time.sleep(0.05)
+            # Re-read state inside the thread to avoid closure issues
+            current_title = title
+            current_subtitle = subtitle
+            current_color_style = color_style
+            current_projects = projects
+            current_refine_title = refine_title
+            current_refine_subtitle = refine_subtitle
+            current_refine_projects = refine_projects
+            current_refine_project_titles = refine_project_titles
+            #print("[DEBUG] handle_generate state before AI call:")
+            #print("  title:", current_title)
+            #print("  subtitle:", current_subtitle)
+            #print("  color_style:", current_color_style)
+            #print("  projects:", current_projects)
+            ai_res = ai_refine_portfolio_all(
+                current_title, current_subtitle, current_color_style, current_projects,
+                current_refine_title, current_refine_subtitle, current_refine_projects, current_refine_project_titles
             )
+            final_title = ai_res["title"]
+            final_subtitle = ai_res["subtitle"]
+            refined_projects = ai_res["projects"]
+            refined_desc = ai_res.get("color_style_desc", color_style)
+            hexes = ai_res.get("hexes", [])
 
             if not hexes:
-                hexes = re.findall(r"#[0-9a-fA-F]{6}", color_style)
+                hexes = re.findall(r"#[0-9A-Fa-f]{6}", color_style)
             bg1 = hexes[0] if len(hexes) > 0 else "#7b2ff2"
             bg2 = hexes[1] if len(hexes) > 1 else "#f357a8"
             accent = hexes[2] if len(hexes) > 2 else "#7b2ff2"
@@ -113,143 +152,162 @@ def HTML5PortfolioBuilder():
 
             html_out = (
                 template
-                .replace("__PORTFOLIO_TITLE__", final_title or "My Portfolio")
-                .replace("__PORTFOLIO_SUBTITLE__", final_subtitle or "")
+                .replace("__PORTFOLIO_TITLE__", final_title)
+                .replace("__PORTFOLIO_SUBTITLE__", final_subtitle)
                 .replace("__BG_COLOR1__", bg1)
                 .replace("__BG_COLOR2__", bg2)
                 .replace("__ACCENT_COLOR__", accent)
-                .replace("__PROJECTS_HTML__", projects_html or "<i>No projects yet.</i>")
-                .replace("__COLOR_STYLE_DESC__", refined_desc or color_style)
+                .replace("__COLOR_STYLE_DESC__", refined_desc)
+                .replace("__PROJECTS_HTML__", "\n".join(
+                    f'<div class="project"><div class="project-title">{p["title"]}</div>'
+                    f'<div class="project-desc">{p["desc"]}</div>'
+                    + (f'<a href="{p["link"]}" target="_blank">{p["link"]}</a>' if p["link"] else "")
+                    + "</div>" for p in refined_projects if any(p.values())
+                ) or "<i>No projects yet.</i>")
             )
 
             set_output_html(html_out)
-
             b64 = base64.b64encode(html_out.encode("utf-8")).decode("utf-8")
             set_download_url(f"data:text/html;base64,{b64}")
-
-        except Exception as e:
-            set_error(f"Error: {e}")
-        finally:
             set_loading(False)
+        threading.Thread(target=delayed_generate, daemon=True).start()
+        return blur_script
+
+    def open_json_modal(_):
+        set_json_text("")
+        set_show_json_modal(True)
+
+    def close_json_modal(_):
+        set_show_json_modal(False)
+        set_json_text("")
+
+    def handle_json_paste(_):
+        try:
+            data = json.loads(json_text)
+            set_title(data.get("title", ""))
+            set_subtitle(data.get("subtitle", ""))
+            set_color_style(data.get("color_style", ""))
+            set_projects(data.get("projects", [{"title": "", "desc": "", "link": ""}]))
+            set_error("")
+            set_show_json_modal(False)
+        except Exception as e:
+            set_error(f"Invalid JSON: {e}")
+
+    def handle_save_json(_):
+        payload = {
+            "title": title,
+            "subtitle": subtitle,
+            "color_style": color_style,
+            "projects": projects
+        }
+        set_json_export_text(json.dumps(payload, indent=2, ensure_ascii=False))
+        set_show_json_export(True)
+
+    def handle_copy_json(_):
+        try:
+            import pyperclip
+            pyperclip.copy(json_export_text)
+        except ImportError:
+            try:
+                import subprocess
+                subprocess.run('echo ' + json_export_text.strip().replace('"', '\"') + '| clip', shell=True)
+            except Exception:
+                pass
+        set_copied_json(True)
+        import threading, time
+        def clear():
+            time.sleep(1.1)
+            set_copied_json(False)
+        threading.Thread(target=clear, daemon=True).start()
+
+    def close_json_export(_):
+        set_show_json_export(False)
+        set_json_export_text("")
 
     return html.div(
         {},
-        html.div({"className": "background-gradient-blur"}),
         html.link({"rel": "stylesheet", "href": "/static/css/tools/HTML5_portfolio_builder.css"}),
-        html.nav(
-            {"className": "navbar"},
-            html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")
-        ),
+        html.nav({"className": "navbar"}, html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")),
         html.div(
             {"className": "portfolio-builder"},
             html.h2("HTML5 Portfolio Builder"),
-
-            html.div({"className": "form-group"},
-                html.label({"for": "portfolio-title"}, "Portfolio Title:"),
-                html.input({
-                    "id": "portfolio-title", "type": "text", "value": title,
-                    "placeholder": "e.g. John Doe's Portfolio",
-                    "onBlur": lambda e: set_title(e["target"]["value"])
-                }),
-                html.label({},
-                    html.input({
-                        "type": "checkbox", "checked": refine_title,
-                        "onChange": lambda e: set_refine_title(e["target"]["checked"])
+            html.div({"style": {"display": "flex", "gap": "1rem", "marginBottom": "1.5rem"}},
+                html.button({"className": "btn btn-secondary", "onClick": handle_save_json}, "⬇ Save Backup"),
+                html.button({"className": "btn btn-secondary", "onClick": open_json_modal}, "⬆ Restore Backup"),
+            ),
+            # Modal for JSON paste
+            (html.div({"style": {"display": "block", "position": "fixed", "top": 0, "left": 0, "width": "100vw", "height": "100vh", "background": "rgba(0,0,0,0.45)", "zIndex": 1000, "justifyContent": "center", "alignItems": "center"}},
+                html.div({"style": {"background": "#fff", "padding": "2rem", "borderRadius": "10px", "maxWidth": "480px", "margin": "10vh auto", "boxShadow": "0 4px 24px rgba(0,0,0,0.18)"}},
+                    html.h3("Paste Portfolio Backup JSON"),
+                    html.textarea({
+                        "style": {"width": "100%", "height": "180px", "fontSize": "1.1rem", "marginBottom": "1rem"},
+                        "value": json_text,
+                        "onInput": lambda e: set_json_text(e["target"]["value"])
                     }),
-                    " Refine with AI"
+                    html.div({"style": {"display": "flex", "gap": "1rem", "justifyContent": "flex-end"}},
+                        html.button({"className": "btn btn-secondary", "onClick": close_json_modal}, "Cancel"),
+                        html.button({"className": "btn btn-gradient", "onClick": handle_json_paste}, "Restore")
+                    )
                 )
-            ),
-
-            html.div({"className": "form-group"},
-                html.label({"for": "portfolio-subtitle"}, "Subtitle / Tagline:"),
-                html.input({
-                    "id": "portfolio-subtitle", "type": "text", "value": subtitle,
-                    "placeholder": "e.g. Web Developer & Designer",
-                    "onBlur": lambda e: set_subtitle(e["target"]["value"])
-                }),
-                html.label({},
-                    html.input({
-                        "type": "checkbox", "checked": refine_subtitle,
-                        "onChange": lambda e: set_refine_subtitle(e["target"]["checked"])
+            )) if show_json_modal else None,
+            # Modal for JSON export/copy
+            (html.div({"style": {"display": "block", "position": "fixed", "top": 0, "left": 0, "width": "100vw", "height": "100vh", "background": "rgba(0,0,0,0.45)", "zIndex": 1000, "justifyContent": "center", "alignItems": "center"}},
+                html.div({"style": {"background": "#fff", "padding": "2rem", "borderRadius": "10px", "maxWidth": "480px", "margin": "10vh auto", "boxShadow": "0 4px 24px rgba(0,0,0,0.18)"}},
+                    html.h3("Copy Portfolio Backup JSON"),
+                    html.textarea({
+                        "style": {"width": "100%", "height": "180px", "fontSize": "1.1rem", "marginBottom": "1rem"},
+                        "value": json_export_text,
+                        "readOnly": True
                     }),
-                    " Refine with AI"
+                    html.div({"style": {"display": "flex", "gap": "1rem", "justifyContent": "flex-end"}},
+                        html.button({"className": "btn btn-secondary", "onClick": handle_copy_json}, "Copy"),
+                        copied_json and html.span({"style": {"color": "#1976d2", "fontWeight": "bold", "marginLeft": "0.5rem"}}, "Copied!") or None,
+                        html.button({"className": "btn btn-gradient", "onClick": close_json_export}, "Close")
+                    )
                 )
-            ),
-
+            )) if show_json_export else None,
             html.div({"className": "form-group"},
-                html.label({"for": "color-style"}, "Describe your color Style:"),
-                html.input({
-                    "id": "color-style", "type": "text", "value": color_style,
-                    "placeholder": "e.g. A purple and pink gradient with a blue accent",
-                    "onBlur": lambda e: set_color_style(e["target"]["value"])
-                })
+                html.input({"type": "text", "value": title, "onChange": lambda e: set_title(e["target"]["value"]), "placeholder": "Portfolio Title"}),
+                html.label({}, html.input({"type": "checkbox", "checked": refine_title, "onChange": lambda e: set_refine_title(e["target"]["checked"])}), " Refine Title")
             ),
-
+            html.div({"className": "form-group"},
+                html.input({"type": "text", "value": subtitle, "onChange": lambda e: set_subtitle(e["target"]["value"]), "placeholder": "Subtitle"}),
+                html.label({}, html.input({"type": "checkbox", "checked": refine_subtitle, "onChange": lambda e: set_refine_subtitle(e["target"]["checked"])}), " Refine Subtitle")
+            ),
+            html.div({"className": "form-group"},
+                html.input({"type": "text", "value": color_style, "onChange": lambda e: set_color_style(e["target"]["value"]), "placeholder": "Color Style"})
+            ),
             html.div({"className": "ai-refine-options"},
-                html.label({"className": "ai-refine-checkbox"},
-                    html.input({
-                        "type": "checkbox", "checked": refine_project_titles,
-                        "onChange": lambda e: set_refine_project_titles(e["target"]["checked"])
-                    }),
-                    " Generate/Refine all project titles with AI"
-                ),
-                html.label({"className": "ai-refine-checkbox"},
-                    html.input({
-                        "type": "checkbox", "checked": refine_projects,
-                        "onChange": lambda e: set_refine_projects(e["target"]["checked"])
-                    }),
-                    " Refine all project descriptions with AI"
-                )
+                html.label({}, html.input({"type": "checkbox", "checked": refine_project_titles, "onChange": lambda e: set_refine_project_titles(e["target"]["checked"])}), " Refine Project Titles"),
+                html.label({}, html.input({"type": "checkbox", "checked": refine_projects, "onChange": lambda e: set_refine_projects(e["target"]["checked"])}), " Refine Project Descriptions")
             ),
-
             html.h3("Projects & Accomplishments"),
             html.div({"className": "projects-list"},
                 *[
                     html.div({"className": "project-card"},
-                        html.label({}, f"Project #{i+1}"),
-                        html.input({
-                            "type": "text", "placeholder": "Title", "value": p["title"],
-                            "onBlur": lambda e, idx=i: handle_project_change(idx, "title", e["target"]["value"])
-                        }),
-                        html.input({
-                            "type": "text", "placeholder": "Description", "value": p["desc"],
-                            "onBlur": lambda e, idx=i: handle_project_change(idx, "desc", e["target"]["value"])
-                        }),
-                        html.input({
-                            "type": "text", "placeholder": "Link (optional)", "value": p["link"],
-                            "onBlur": lambda e, idx=i: handle_project_change(idx, "link", e["target"]["value"])
-                        }),
-                        html.button({"className": "btn btn-secondary", "onClick": lambda e, idx=i: remove_project(idx)}, "Remove")
-                        if len(projects) > 1 else None
+                        html.input({"type": "text", "value": p["title"], "placeholder": "Title", "onChange": lambda e, idx=i: handle_project_change(idx, "title", e["target"]["value"])}),
+                        html.input({"type": "text", "value": p["desc"], "placeholder": "Description", "onChange": lambda e, idx=i: handle_project_change(idx, "desc", e["target"]["value"])}),
+                        html.input({"type": "text", "value": p["link"], "placeholder": "Link", "onChange": lambda e, idx=i: handle_project_change(idx, "link", e["target"]["value"])}),
+                        (len(projects) > 1 and html.button({"className": "btn btn-secondary", "onClick": lambda e, idx=i: remove_project(idx)}, "Remove")) or None
                     ) for i, p in enumerate(projects)
                 ]
             ),
-
-            html.button({"className": "btn btn-gradient add-project-btn" , "onClick": add_project}, "+ Add Another Project"),
-
-            html.button({
-                "className": "btn btn-gradient",
-                "onClick": handle_generate,
-                "disabled": loading
-            }, "Generate Portfolio HTML" if not loading else "Generating..."),
-
+            html.button({"className": "btn btn-gradient add-project-btn", "onClick": add_project}, "+ Add Project"),
+            html.button({"className": "btn btn-gradient", "onClick": handle_generate, "disabled": loading}, "Generate HTML" if not loading else "Generating..."),
+            output_html and html.a({
+                "className": "btn btn-navy download-btn",
+                "href": download_url,
+                "download": "portfolio.html",
+                "target": "_blank"
+            }, "⬇ Download HTML") or None,
             html.div({"className": "error-message"}, error) if error else None,
-
             html.div({"className": "interview-output"},
                 html.h3("Generated HTML Preview:"),
-                html.i({"className": "preview-placeholder"}, "No portfolio generated yet.") if not output_html.strip() else
-                html.iframe({
+                output_html and html.iframe({
                     "className": "portfolio-html-iframe",
                     "srcDoc": output_html,
                     "sandbox": "allow-scripts allow-same-origin"
                 }),
-
-                html.a({
-                    "href": download_url,
-                    "download": "portfolio.html",
-                    "className": "btn btn-navy download-btn",
-                    "target": "_blank"
-                }, "⬇ Download HTML") if download_url else None
             )
         )
     )
