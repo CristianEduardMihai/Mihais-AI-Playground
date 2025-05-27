@@ -199,6 +199,59 @@ a.btn, a.btn-gradient, a.btn-home {
   margin-bottom: 1.5rem;
 }
 
+/* Modal overlay and content */
+.modal-overlay {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  max-width: 480px;
+  margin: 10vh auto;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+}
+.modal-textarea {
+  width: 100%;
+  height: 180px;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  resize: vertical;
+}
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+.copied-message {
+  color: #1976d2;
+  font-weight: bold;
+  margin-left: 0.5rem;
+}
+
+/* Remove project button and top buttons */
+.btn-remove-project {
+  margin-top: 0.5rem;
+}
+
+.top-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
 /* ======================
    Mobile First Styles
    ====================== */

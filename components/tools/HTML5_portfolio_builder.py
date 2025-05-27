@@ -231,51 +231,51 @@ def HTML5PortfolioBuilder():
         html.div(
             {"className": "portfolio-builder"},
             html.h2("HTML5 Portfolio Builder"),
-            html.div({"style": {"display": "flex", "gap": "1rem", "marginBottom": "1.5rem"}},
+            html.div({"className": "top-buttons"},
                 html.button({"className": "btn btn-secondary", "onClick": handle_save_json}, "⬇ Save Backup"),
                 html.button({"className": "btn btn-secondary", "onClick": open_json_modal}, "⬆ Restore Backup"),
             ),
-            # Modal for JSON paste
-            (html.div({"style": {"display": "block", "position": "fixed", "top": 0, "left": 0, "width": "100vw", "height": "100vh", "background": "rgba(0,0,0,0.45)", "zIndex": 1000, "justifyContent": "center", "alignItems": "center"}},
-                html.div({"style": {"background": "#fff", "padding": "2rem", "borderRadius": "10px", "maxWidth": "480px", "margin": "10vh auto", "boxShadow": "0 4px 24px rgba(0,0,0,0.18)"}},
+            # Modal for JSON paste (Restore)
+            (html.div({"className": "modal-overlay"},
+                html.div({"className": "modal-content"},
                     html.h3("Paste Portfolio Backup JSON"),
                     html.textarea({
-                        "style": {"width": "100%", "height": "180px", "fontSize": "1.1rem", "marginBottom": "1rem"},
+                        "className": "modal-textarea",
                         "value": json_text,
                         "onInput": lambda e: set_json_text(e["target"]["value"])
                     }),
-                    html.div({"style": {"display": "flex", "gap": "1rem", "justifyContent": "flex-end"}},
-                        html.button({"className": "btn btn-secondary", "onClick": close_json_modal}, "Cancel"),
-                        html.button({"className": "btn btn-gradient", "onClick": handle_json_paste}, "Restore")
+                    html.div({"className": "modal-actions"},
+                        html.button({"className": "btn btn-secondary", "onClick": handle_json_paste}, "Restore"),
+                        html.button({"className": "btn btn-gradient", "onClick": close_json_modal}, "Cancel")
                     )
                 )
             )) if show_json_modal else None,
-            # Modal for JSON export/copy
-            (html.div({"style": {"display": "block", "position": "fixed", "top": 0, "left": 0, "width": "100vw", "height": "100vh", "background": "rgba(0,0,0,0.45)", "zIndex": 1000, "justifyContent": "center", "alignItems": "center"}},
-                html.div({"style": {"background": "#fff", "padding": "2rem", "borderRadius": "10px", "maxWidth": "480px", "margin": "10vh auto", "boxShadow": "0 4px 24px rgba(0,0,0,0.18)"}},
+            # Modal for JSON export/copy (Save)
+            (html.div({"className": "modal-overlay"},
+                html.div({"className": "modal-content"},
                     html.h3("Copy Portfolio Backup JSON"),
                     html.textarea({
-                        "style": {"width": "100%", "height": "180px", "fontSize": "1.1rem", "marginBottom": "1rem"},
+                        "className": "modal-textarea",
                         "value": json_export_text,
                         "readOnly": True
                     }),
-                    html.div({"style": {"display": "flex", "gap": "1rem", "justifyContent": "flex-end"}},
+                    html.div({"className": "modal-actions"},
                         html.button({"className": "btn btn-secondary", "onClick": handle_copy_json}, "Copy"),
-                        copied_json and html.span({"style": {"color": "#1976d2", "fontWeight": "bold", "marginLeft": "0.5rem"}}, "Copied!") or None,
+                        copied_json and html.span({"className": "copied-message"}, "Copied!") or None,
                         html.button({"className": "btn btn-gradient", "onClick": close_json_export}, "Close")
                     )
                 )
             )) if show_json_export else None,
             html.div({"className": "form-group"},
-                html.input({"type": "text", "value": title, "onChange": lambda e: set_title(e["target"]["value"]), "placeholder": "Portfolio Title"}),
+                html.input({"type": "text", "className": "input-title", "value": title, "onChange": lambda e: set_title(e["target"]["value"]), "placeholder": "Portfolio Title"}),
                 html.label({}, html.input({"type": "checkbox", "checked": refine_title, "onChange": lambda e: set_refine_title(e["target"]["checked"])}), " Refine Title")
             ),
             html.div({"className": "form-group"},
-                html.input({"type": "text", "value": subtitle, "onChange": lambda e: set_subtitle(e["target"]["value"]), "placeholder": "Subtitle"}),
+                html.input({"type": "text", "className": "input-subtitle", "value": subtitle, "onChange": lambda e: set_subtitle(e["target"]["value"]), "placeholder": "Subtitle"}),
                 html.label({}, html.input({"type": "checkbox", "checked": refine_subtitle, "onChange": lambda e: set_refine_subtitle(e["target"]["checked"])}), " Refine Subtitle")
             ),
             html.div({"className": "form-group"},
-                html.input({"type": "text", "value": color_style, "onChange": lambda e: set_color_style(e["target"]["value"]), "placeholder": "Color Style"})
+                html.input({"type": "text", "className": "input-color-style", "value": color_style, "onChange": lambda e: set_color_style(e["target"]["value"]), "placeholder": "Color Style"})
             ),
             html.div({"className": "ai-refine-options"},
                 html.label({}, html.input({"type": "checkbox", "checked": refine_project_titles, "onChange": lambda e: set_refine_project_titles(e["target"]["checked"])}), " Refine Project Titles"),
@@ -285,10 +285,10 @@ def HTML5PortfolioBuilder():
             html.div({"className": "projects-list"},
                 *[
                     html.div({"className": "project-card"},
-                        html.input({"type": "text", "value": p["title"], "placeholder": "Title", "onChange": lambda e, idx=i: handle_project_change(idx, "title", e["target"]["value"])}),
-                        html.input({"type": "text", "value": p["desc"], "placeholder": "Description", "onChange": lambda e, idx=i: handle_project_change(idx, "desc", e["target"]["value"])}),
-                        html.input({"type": "text", "value": p["link"], "placeholder": "Link", "onChange": lambda e, idx=i: handle_project_change(idx, "link", e["target"]["value"])}),
-                        (len(projects) > 1 and html.button({"className": "btn btn-secondary", "onClick": lambda e, idx=i: remove_project(idx)}, "Remove")) or None
+                        html.input({"type": "text", "className": "input-project-title", "value": p["title"], "placeholder": "Title", "onChange": lambda e, idx=i: handle_project_change(idx, "title", e["target"]["value"])}),
+                        html.input({"type": "text", "className": "input-project-desc", "value": p["desc"], "placeholder": "Description", "onChange": lambda e, idx=i: handle_project_change(idx, "desc", e["target"]["value"])}),
+                        html.input({"type": "text", "className": "input-project-link", "value": p["link"], "placeholder": "Link", "onChange": lambda e, idx=i: handle_project_change(idx, "link", e["target"]["value"])}),
+                        (len(projects) > 1 and html.button({"className": "btn btn-secondary btn-remove-project", "onClick": lambda e, idx=i: remove_project(idx)}, "Remove")) or None
                     ) for i, p in enumerate(projects)
                 ]
             ),
@@ -306,7 +306,7 @@ def HTML5PortfolioBuilder():
                 output_html and html.iframe({
                     "className": "portfolio-html-iframe",
                     "srcDoc": output_html,
-                    "sandbox": "allow-scripts allow-same-origin"
+                    "sandbox": "allow-same-origin"
                 }),
             )
         )

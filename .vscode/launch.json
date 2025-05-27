@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "chrome",
+            "name": "Launch Chrome",
+            "request": "launch",
+            "url": "http://localhost:8084",
+            "presentation": {
+                "hidden": false
+            }
+        }
+    ],
+    "compounds": []
+}
