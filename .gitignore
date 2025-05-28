@@ -1,4 +1,6 @@
 static/assets/tts_temp/
+server-assets/database/users.db
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

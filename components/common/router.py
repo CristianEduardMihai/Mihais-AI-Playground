@@ -1,6 +1,7 @@
 from reactpy import component
 from reactpy_router import browser_router, route
 from components.common.home import Home
+from components.common.login_portal import LoginPortal
 from components.learning.language_buddy import LanguageBuddy
 from components.health.recipe_maker import RecipeMaker
 from components.learning.spell_check import SpellCheck
@@ -10,6 +11,7 @@ from components.tools.pc_part_picker import PCPartPicker
 from components.tools.color_picker import AIColorPicker
 from components.tools.interview_prep import InterviewPrep
 from components.tools.HTML5_portfolio_builder import HTML5PortfolioBuilder
+from components.tools.task_organizer import TaskOrganizer
 from components.fun.roast_battle import BotVsBotRoastBattle
 from components.fun.personality_quiz import PersonalityQuiz
 from components.fun.reddit_like_storyteller import RedditLikeStoryteller
@@ -21,6 +23,7 @@ from components.common.not_found import NotFound
 def RootRouter():
     return browser_router(
         route("/", Home()),
+        route("/login", LoginPortal()),
         route("/learning/language-buddy", LanguageBuddy()),
         route("/health/recipe-maker", RecipeMaker()),
         route("/learning/spell-check", SpellCheck()),
@@ -30,6 +33,7 @@ def RootRouter():
         route("/tools/color-picker", AIColorPicker()),
         route("/tools/interview-prep", InterviewPrep()),
         route("/tools/html5-portfolio-builder", HTML5PortfolioBuilder()),
+        route("/tools/task-organizer", TaskOrganizer()),
         route("/fun/roast-battle", BotVsBotRoastBattle()),
         route("/fun/personality-quiz", PersonalityQuiz()),
         route("/fun/reddit-like-storyteller", RedditLikeStoryteller()),

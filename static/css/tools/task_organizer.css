@@ -1,0 +1,283 @@
+body {
+  background: radial-gradient(circle at 20% 30%, #ab0a0a 0%, transparent 60%),
+              radial-gradient(circle at 80% 70%, #e06441 0%, transparent 60%),
+              linear-gradient(120deg, #ab0a0a 0%, #e06441 100%);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.task-organizer {
+  background: rgba(255,255,255,0.404);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.10);
+  padding: 2rem;
+  margin: 3rem auto;
+  max-width: 900px;
+  width: calc(100vw - 6rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: calc(100vh - 6rem);
+  height: auto;
+  justify-content: flex-start;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  width: 100%;
+  text-align: left;
+}
+
+label {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+input[type="text"], input[type="number"] {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  box-sizing: border-box;
+}
+
+.btn {
+  width: 100%;
+  font-size: 1.2rem;
+  padding: 1.2rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  margin-top: 1rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  font-weight: bold;
+  background: linear-gradient(90deg, #e06441 0%, #ab0a0a 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(171,10,10,0.08), 0 1.5px 4px rgba(224,100,65,0.10);
+}
+.btn:hover, .btn:focus {
+  background: linear-gradient(90deg, #ab0a0a 0%, #e06441 100%);
+  box-shadow: 0 4px 16px rgba(171,10,10,0.15), 0 3px 8px rgba(224,100,65,0.18);
+  transform: translateY(-2px) scale(1.04);
+  text-decoration: none;
+}
+
+.btn-secondary {
+  background: #eee;
+  color: #b00;
+  border: 1px solid #e0e0e0;
+  box-shadow: none;
+}
+.btn-secondary:hover {
+  background: #f8d7da;
+  color: #a00;
+}
+
+.btn-gradient {
+  background: linear-gradient(90deg, #e06441 0%, #ab0a0a 100%);
+  color: #fff;
+  border-radius: 999px;
+  margin-bottom: 1.5rem;
+}
+.btn-gradient:hover, .btn-gradient:focus {
+  background: linear-gradient(90deg, #ab0a0a 0%, #e06441 100%);
+  box-shadow: 0 4px 16px rgba(171,10,10,0.15), 0 3px 8px rgba(224,100,65,0.18);
+  transform: translateY(-2px) scale(1.04);
+  text-decoration: none;
+}
+
+.add-task-btn {
+  margin-bottom: 1.5rem;
+  background: linear-gradient(90deg, #1a237e 0%, #1976d2 100%) !important;
+  color: #fff !important;
+  border: none;
+  box-shadow: 0 2px 8px rgba(26,35,126,0.10), 0 1.5px 4px rgba(25,118,210,0.10);
+}
+.add-task-btn:hover, .add-task-btn:focus {
+  background: linear-gradient(90deg, #1976d2 0%, #1a237e 100%) !important;
+  color: #fff !important;
+}
+
+.tasks-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: flex-start;
+  align-items: stretch;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.task-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(123,47,242,0.07);
+  padding: 1.2rem 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 220px;
+  max-width: 320px;
+  flex: 1 1 220px;
+  box-sizing: border-box;
+  transition: box-shadow 0.18s, transform 0.18s;
+}
+
+.btn-remove-task {
+  margin-top: 0.5rem;
+}
+
+.error-message {
+  color: #b00;
+  background: #ffeaea;
+  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  margin: 1rem 0 0.5rem 0;
+  font-size: 1.05rem;
+  width: 100%;
+  text-align: left;
+}
+
+.interview-output {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  min-height: 0;
+  height: 100%;
+  margin-top: 2rem;
+  background: #f4f4f9;
+  border-radius: 6px;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  text-align: left;
+  overflow: hidden;
+}
+
+.btn-navy.download-btn {
+  background: linear-gradient(90deg, #0d1333 0%, #1a237e 100%) !important;
+  color: #fff !important;
+  font-weight: bold;
+  font-size: 1.18rem;
+  border: none;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 2px 8px rgba(26,35,126,0.10), 0 1.5px 4px rgba(25,118,210,0.10);
+  padding: 1.1rem 2.2rem;
+  width: auto;
+  min-width: 180px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  letter-spacing: 0.03em;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+}
+.btn-navy.download-btn:hover, .btn-navy.download-btn:focus {
+  background: linear-gradient(90deg, #1a237e 0%, #0d1333 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 18px rgba(26,35,126,0.18), 0 2px 8px rgba(25,118,210,0.12);
+  transform: translateY(-2px) scale(1.04);
+}
+
+@media (max-width: 1000px) {
+  .task-organizer {
+    background: rgba(255,255,255,0.404);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    border-radius: 0;
+    box-shadow: none;
+    font-size: 2.4rem;
+    padding: 5vw;
+    margin: 0;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100vw;
+  }
+  .form-group {
+    margin-bottom: 4vw;
+    width: 100%;
+  }
+  label {
+    font-size: 4.5vw;
+    margin-bottom: 1.5vw;
+  }
+  input[type="text"], input[type="number"] {
+    font-size: 3.2rem;
+    padding: 6vw;
+    margin-bottom: 3vw;
+    width: 100%;
+    min-height: 5.5rem;
+  }
+  .btn {
+    width: 100%;
+    font-size: 5vw;
+    padding: 5vw;
+    border-radius: 1vw;
+    display: inline-block;
+    background: linear-gradient(90deg, #e06441 0%, #ab0a0a 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(171,10,10,0.08), 0 1.5px 4px rgba(224,100,65,0.10);
+  }
+  .btn-gradient {
+    width: 100%;
+    text-align: center;
+    font-size: 4.5vw;
+    margin-bottom: 3vw;
+    padding: 4vw 0;
+    border-radius: 0;
+  }
+  .interview-output {
+    font-size: 4.2vw;
+    padding: 4vw;
+    margin-top: 4vw;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .task-card {
+    font-size: 2.2rem;
+    padding: 1rem;
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+  .tasks-list {
+    flex-direction: column !important;
+    gap: 0 !important;
+  }
+}
+
+@media (max-width: 500px) {
+  .task-organizer {
+    padding: 1rem 0.5rem;
+    font-size: 1rem;
+    min-height: 100vh;
+  }
+  input[type="text"], input[type="number"] {
+    font-size: 1.1rem;
+    padding: 0.7rem;
+    min-height: 2.5rem;
+  }
+  .btn {
+    font-size: 1.1rem;
+    padding: 0.7rem;
+  }
+  .interview-output {
+    font-size: 1rem;
+    padding: 0.7rem;
+  }
+}

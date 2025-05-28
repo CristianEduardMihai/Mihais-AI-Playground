@@ -50,6 +50,7 @@ def Home():
             {"title": "Color Palette Picker 🎨", "desc": "Generate color palettes for your projects with AI.", "href": "/tools/color-picker"},
             {"title": "Interview Prep Assistant 🎤", "desc": "Prepare for your next job interview with AI-generated questions and tips.", "href": "/tools/interview-prep"},
             {"title": "HTML5 Portfolio Builder 🖼️", "desc": "Create a beautiful HTML5 portfolio to showcase your work, with AI assistance.", "href": "/tools/html5-portfolio-builder"},
+            {"title": "Task Organizer 📅", "desc": "Organize your tasks and calendars with AI assistance.", "href": "/tools/task-organizer"},
         ],
         "fun": [
             {"title": "Bot Vs Bot Roast Battle 🔥", "desc": "Watch two AI bots engage in a hilarious roast battle!", "href": "/fun/roast-battle"},
@@ -169,7 +170,12 @@ def Home():
         html.link({"rel": "stylesheet", "href": "/static/css/common/home.css"}),
         html.header(
             html.h1("Mihai's AI Playground"),
-            html.p("Explore fun and useful AI-powered tools!")
+            html.p("Explore fun and useful AI-powered tools!"),
+            html.a({
+                "href": "/login",
+                "className": "btn-gradient home-btn",
+                "style": {"marginTop": "1.2rem", "marginBottom": "0.5rem", "display": "inline-block", "width": "auto"}
+            }, "Login / Sign Up")
         ),
         html.div(
             {"class": "home-search-tabs"},
