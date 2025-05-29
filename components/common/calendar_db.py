@@ -8,8 +8,6 @@ DB_PATH = os.path.join(os.path.dirname(__file__), '../../server-assets/database/
 
 DEBUG_MODE = True  # Set to True to enable verbose debug output
 
-print("!!! [calendar_db.py](http://_vscodecontentref_/6) import test !!!")
-
 def debug_print(*args, **kwargs):
     if DEBUG_MODE:
         print("[DEBUG] [calendar_db.py]", *args, **kwargs)

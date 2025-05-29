@@ -32,6 +32,21 @@ async def add_user_agent_header(request: Request, call_next):
 # Mount your static assets
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+@app.get("/calendars/{user_id}")
+def get_calendar(user_id: str, request: Request):
+    import os
+    debug_print("app.py calendar_db imported from", os.path.abspath(calendar_db.__file__))
+    debug_print(f"/calendars/{{user_id}} endpoint called with user_id={user_id}")
+    debug_print(f"Request path: {request.url.path}")
+    debug_print(f"Request headers: {dict(request.headers)}")
+    ics = calendar_db.get_calendar(user_id)
+    if not ics:
+        debug_print(f"No calendar found for user_id={user_id}")
+        return Response(content="No calendar found.", status_code=404, media_type="text/plain")
+    debug_print(f"Returning calendar for user_id={user_id}, ICS length: {len(ics)}")
+    debug_print(f"ICS content (first 200 chars):\n{ics[:200]}")
+    return Response(content=ics, media_type="text/calendar")
+
 # Configure the ReactPy app
 configure(
     app, RootRouter,
@@ -104,19 +119,6 @@ def favicon_32():
 @app.get("/site.webmanifest")
 def site_manifest():
     return FileResponse("static/favicon_io/site.webmanifest")
-
-@app.get("/calendars/{user_id}")
-def get_calendar(user_id: str):
-    import os
-    debug_print("app.py calendar_db imported from", os.path.abspath(calendar_db.__file__))
-    debug_print(f"/calendars/{{user_id}} endpoint called with user_id={user_id}")
-    ics = calendar_db.get_calendar(user_id)
-    if not ics:
-        debug_print(f"No calendar found for user_id={user_id}")
-        return Response(content="No calendar found.", status_code=404, media_type="text/plain")
-    debug_print(f"Returning calendar for user_id={user_id}, ICS length: {len(ics)}")
-    debug_print(f"ICS content (first 200 chars):\n{ics[:200]}")
-    return Response(content=ics, media_type="text/calendar")
 
 if __name__ == "__main__":
     import uvicorn
