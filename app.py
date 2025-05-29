@@ -12,7 +12,7 @@ import components.common.calendar_db as calendar_db
 
 app = FastAPI()
 
-DEBUG_MODE = True  # Set to True to enable verbose debug output
+DEBUG_MODE = False  # Set to True to enable verbose debug output
 
 def debug_print(*args, **kwargs):
     if DEBUG_MODE:

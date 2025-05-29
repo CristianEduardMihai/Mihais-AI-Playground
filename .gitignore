@@ -1,5 +1,5 @@
 static/assets/tts_temp/
-server-assets/database/users.db
+server-assets/database/*.db
 
 
 # Byte-compiled / optimized / DLL files

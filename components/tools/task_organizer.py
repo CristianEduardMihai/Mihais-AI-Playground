@@ -9,8 +9,7 @@ import random
 import string
 import components.common.calendar_db as calendar_db
 
-# --- AI logic for scheduling tasks efficiently ---
-DEBUG_MODE = True  # Set to True to enable verbose debug output
+DEBUG_MODE = False  # Set to True to enable verbose debug output
 
 def debug_print(*args, **kwargs):
     if DEBUG_MODE:
@@ -210,6 +209,17 @@ def TaskOrganizer():
         set_user_id(new_id)
         set_calendar_url(f"/calendars/{new_id}")
         debug_print("Generated new calendar link:", f"/calendars/{new_id}")
+        # Immediately save the current schedule to the new link
+        if organized_tasks and len(organized_tasks) > 0:
+            ics = generate_ics(organized_tasks)
+            try:
+                debug_print(f"Auto-saving calendar for user_id {new_id}")
+                calendar_db.save_calendar(new_id, ics)
+                set_link_error("")
+                debug_print(f"Calendar auto-saved for user_id {new_id}")
+            except Exception as e:
+                set_link_error(f"Failed to auto-save: {e}")
+                debug_print(f"Failed to auto-save calendar for user_id {new_id}: {e}")
 
     def handle_save_schedule(_):
         debug_print("handle_save_schedule called")
@@ -236,7 +246,9 @@ def TaskOrganizer():
         debug_print("handle_paste_link called with:", e)
         val = e["target"]["value"].strip()
         if val:
+            # Accept full URL, /calendars/ID, or just ID
             if "/calendars/" in val:
+                # Extract everything after the last /calendars/
                 uid = val.split("/calendars/")[-1].split("/")[0]
                 set_user_id(uid)
                 set_calendar_url(f"/calendars/{uid}")
@@ -245,6 +257,18 @@ def TaskOrganizer():
                 set_user_id(val)
                 set_calendar_url(f"/calendars/{val}")
                 debug_print("Pasted calendar id:", val)
+            # Auto-save to pasted link if there is a schedule
+            target_id = val.split("/calendars/")[-1].split("/")[0] if "/calendars/" in val else val
+            if organized_tasks and len(organized_tasks) > 0:
+                ics = generate_ics(organized_tasks)
+                try:
+                    debug_print(f"Auto-saving calendar for pasted user_id {target_id}")
+                    calendar_db.save_calendar(target_id, ics)
+                    set_link_error("")
+                    debug_print(f"Calendar auto-saved for pasted user_id {target_id}")
+                except Exception as e:
+                    set_link_error(f"Failed to auto-save: {e}")
+                    debug_print(f"Failed to auto-save calendar for pasted user_id {target_id}: {e}")
 
     return html.div(
         {},
