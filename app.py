@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from reactpy.backend.fastapi import configure, Options
@@ -8,13 +8,24 @@ import time
 import asyncio
 
 from components.common.router import RootRouter
+import components.common.calendar_db as calendar_db
 
 app = FastAPI()
+
+DEBUG_MODE = True  # Set to True to enable verbose debug output
+
+def debug_print(*args, **kwargs):
+    if DEBUG_MODE:
+        print("[DEBUG] [app.py]", *args, **kwargs)
+
+debug_print("app.py loaded, DEBUG_MODE is", DEBUG_MODE)
 
 # Middleware to set User-Agent header
 @app.middleware("http")
 async def add_user_agent_header(request: Request, call_next):
+    debug_print("Incoming request:", request.method, request.url)
     response = await call_next(request)
+    debug_print("Outgoing response status:", response.status_code)
     response.headers["user-agent"] = "SlackID U08RP1Z64EN"
     return response
 
@@ -93,6 +104,19 @@ def favicon_32():
 @app.get("/site.webmanifest")
 def site_manifest():
     return FileResponse("static/favicon_io/site.webmanifest")
+
+@app.get("/calendars/{user_id}")
+def get_calendar(user_id: str):
+    import os
+    debug_print("app.py calendar_db imported from", os.path.abspath(calendar_db.__file__))
+    debug_print(f"/calendars/{{user_id}} endpoint called with user_id={user_id}")
+    ics = calendar_db.get_calendar(user_id)
+    if not ics:
+        debug_print(f"No calendar found for user_id={user_id}")
+        return Response(content="No calendar found.", status_code=404, media_type="text/plain")
+    debug_print(f"Returning calendar for user_id={user_id}, ICS length: {len(ics)}")
+    debug_print(f"ICS content (first 200 chars):\n{ics[:200]}")
+    return Response(content=ics, media_type="text/calendar")
 
 if __name__ == "__main__":
     import uvicorn

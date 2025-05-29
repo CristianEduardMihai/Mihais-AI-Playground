@@ -170,12 +170,7 @@ def Home():
         html.link({"rel": "stylesheet", "href": "/static/css/common/home.css"}),
         html.header(
             html.h1("Mihai's AI Playground"),
-            html.p("Explore fun and useful AI-powered tools!"),
-            html.a({
-                "href": "/login",
-                "className": "btn-gradient home-btn",
-                "style": {"marginTop": "1.2rem", "marginBottom": "0.5rem", "display": "inline-block", "width": "auto"}
-            }, "Login / Sign Up")
+            html.p("Explore fun and useful AI-powered tools!")
         ),
         html.div(
             {"class": "home-search-tabs"},
