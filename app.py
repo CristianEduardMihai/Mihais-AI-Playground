@@ -3,14 +3,12 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from reactpy.backend.fastapi import configure, Options
 from reactpy import html
+from contextlib import asynccontextmanager
 import os
 import time
 import asyncio
-
 from components.common.router import RootRouter
 import components.common.calendar_db as calendar_db
-
-app = FastAPI()
 
 DEBUG_MODE = False  # Set to True to enable verbose debug output
 
@@ -20,46 +18,7 @@ def debug_print(*args, **kwargs):
 
 debug_print("app.py loaded, DEBUG_MODE is", DEBUG_MODE)
 
-# Middleware to set User-Agent header
-@app.middleware("http")
-async def add_user_agent_header(request: Request, call_next):
-    debug_print("Incoming request:", request.method, request.url)
-    response = await call_next(request)
-    debug_print("Outgoing response status:", response.status_code)
-    response.headers["user-agent"] = "SlackID U08RP1Z64EN"
-    return response
-
-# Mount your static assets
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-@app.get("/calendars/{user_id}")
-def get_calendar(user_id: str, request: Request):
-    import os
-    debug_print("app.py calendar_db imported from", os.path.abspath(calendar_db.__file__))
-    debug_print(f"/calendars/{{user_id}} endpoint called with user_id={user_id}")
-    debug_print(f"Request path: {request.url.path}")
-    debug_print(f"Request headers: {dict(request.headers)}")
-    ics = calendar_db.get_calendar(user_id)
-    if not ics:
-        debug_print(f"No calendar found for user_id={user_id}")
-        return Response(content="No calendar found.", status_code=404, media_type="text/plain")
-    debug_print(f"Returning calendar for user_id={user_id}, ICS length: {len(ics)}")
-    debug_print(f"ICS content (first 200 chars):\n{ics[:200]}")
-    return Response(content=ics, media_type="text/calendar")
-
-# Configure the ReactPy app
-configure(
-    app, RootRouter,
-    options=Options(
-        head=html.head(
-            html.title("Mihai's AI Playground"),
-            html.link({"rel": "icon", "type": "image/png", "href": "/static/favicon.ico"}),
-            html.link({"rel": "apple-touch-icon", "href": "/apple-touch-icon.png"})
-        )
-    )
-)
-
-# Clean up old tts files in static/assets/tts_temp (max age: 1 hour)
+# ─── TTS Cleanup Config ─────────────────────────────────────────────
 dir_path = "static/assets/tts_temp"
 MAX_AGE_SECONDS = 60 * 60  # 1 hour
 CLEANUP_INTERVAL = 60 * 60  # 1 hour
@@ -87,39 +46,74 @@ async def periodic_cleanup():
         cleanup_old_wavs()
         await asyncio.sleep(CLEANUP_INTERVAL)
 
-@app.on_event("startup")
-async def start_periodic_cleanup():
+# ─── Lifespan for FastAPI Startup/Shutdown ─────────────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    debug_print("Starting FastAPI lifespan...")
     asyncio.create_task(periodic_cleanup())
+    yield
+    debug_print("Shutting down FastAPI lifespan...")
 
-# Icons and favicons at root for iOS/browser compatibility
+# ─── FastAPI App ────────────────────────────────────────────────────
+app = FastAPI(lifespan=lifespan)
+
+# ─── Middleware ─────────────────────────────────────────────────────
+@app.middleware("http")
+async def add_user_agent_header(request: Request, call_next):
+    debug_print("Incoming request:", request.method, request.url)
+    response = await call_next(request)
+    debug_print("Outgoing response status:", response.status_code)
+    response.headers["user-agent"] = "SlackID U08RP1Z64EN"
+    return response
+
+# ─── Static Files ───────────────────────────────────────────────────
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# ─── Calendar Endpoint ──────────────────────────────────────────────
+@app.get("/calendars/{user_id}")
+def get_calendar(user_id: str, request: Request):
+    import os
+    debug_print("app.py calendar_db imported from", os.path.abspath(calendar_db.__file__))
+    debug_print(f"/calendars/{{user_id}} endpoint called with user_id={user_id}")
+    debug_print(f"Request path: {request.url.path}")
+    debug_print(f"Request headers: {dict(request.headers)}")
+    ics = calendar_db.get_calendar(user_id)
+    if not ics:
+        debug_print(f"No calendar found for user_id={user_id}")
+        return Response(content="No calendar found.", status_code=404, media_type="text/plain")
+    debug_print(f"Returning calendar for user_id={user_id}, ICS length: {len(ics)}")
+    debug_print(f"ICS content (first 200 chars):\n{ics[:200]}")
+    return Response(content=ics, media_type="text/calendar")
+
+# ─── ReactPy Configuration ──────────────────────────────────────────
+configure(
+    app, RootRouter,
+    options=Options(
+        head=html.head(
+            html.title("Mihai's AI Playground"),
+            html.link({"rel": "icon", "type": "image/png", "href": "/static/favicon.ico"}),
+            html.link({"rel": "apple-touch-icon", "href": "/apple-touch-icon.png"})
+        )
+    )
+)
+
+# ─── Favicon Routes ─────────────────────────────────────────────────
 @app.get("/favicon.ico")
-def favicon():
-    return FileResponse("static/favicon.ico")
-
+def favicon(): return FileResponse("static/favicon.ico")
 @app.get("/apple-touch-icon.png")
-def apple_icon():
-    return FileResponse("static/favicon_io/apple-touch-icon.png")
-
+def apple_icon(): return FileResponse("static/favicon_io/apple-touch-icon.png")
 @app.get("/android-chrome-192x192.png")
-def android_192():
-    return FileResponse("static/favicon_io/android-chrome-192x192.png")
-
+def android_192(): return FileResponse("static/favicon_io/android-chrome-192x192.png")
 @app.get("/android-chrome-512x512.png")
-def android_512():
-    return FileResponse("static/favicon_io/android-chrome-512x512.png")
-
+def android_512(): return FileResponse("static/favicon_io/android-chrome-512x512.png")
 @app.get("/favicon-16x16.png")
-def favicon_16():
-    return FileResponse("static/favicon_io/favicon-16x16.png")
-
+def favicon_16(): return FileResponse("static/favicon_io/favicon-16x16.png")
 @app.get("/favicon-32x32.png")
-def favicon_32():
-    return FileResponse("static/favicon_io/favicon-32x32.png")
-
+def favicon_32(): return FileResponse("static/favicon_io/favicon-32x32.png")
 @app.get("/site.webmanifest")
-def site_manifest():
-    return FileResponse("static/favicon_io/site.webmanifest")
+def site_manifest(): return FileResponse("static/favicon_io/site.webmanifest")
 
+# ─── Local Dev Entrypoint ───────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app:app", host="127.0.0.1", port=8084, reload=True)

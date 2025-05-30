@@ -117,7 +117,6 @@ def TaskOrganizer():
     ])
     ai_estimate_all, set_ai_estimate_all = use_state(True)
     organized_tasks, set_organized_tasks = use_state([])
-    calendar_link, set_calendar_link = use_state("")
     loading, set_loading = use_state(False)
     error, set_error = use_state("")
     show_link_modal, set_show_link_modal = use_state(False)
@@ -169,39 +168,9 @@ def TaskOrganizer():
                 scheduled = call_ai_schedule(tasks)
                 debug_print("AI scheduled tasks:", scheduled)
                 set_organized_tasks(scheduled)
-                # Generate Google Calendar link for the scheduled block (use first and last block)
-                if scheduled:
-                    debug_print("Generating Google Calendar link for scheduled block")
-                    min_start = min(
-                        int(b['start_time'].split(':')[0]) * 60 + int(b['start_time'].split(':')[1])
-                        for b in scheduled if 'start_time' in b and re.match(r"^\d{1,2}:\d{2}$", b['start_time'])
-                    ) if scheduled else 0
-                    max_end = max(
-                        int(b['start_time'].split(':')[0]) * 60 + int(b['start_time'].split(':')[1]) + int(b.get('duration', 30))
-                        for b in scheduled if 'start_time' in b and re.match(r"^\d{1,2}:\d{2}$", b['start_time'])
-                    ) if scheduled else 60
-                    today = datetime.datetime.now().replace(second=0, microsecond=0)
-                    start_dt = today.replace(hour=min_start // 60, minute=min_start % 60)
-                    end_dt = today.replace(hour=max_end // 60, minute=max_end % 60)
-                    event_title = "My Organized Tasks"
-                    details = "\n".join(
-                        f"{i+1}. {b.get('type','task').capitalize()}: {b.get('name', b.get('label',''))} (Start: {b.get('start_time','auto')}, Duration: {b.get('duration','?')} min)" for i, b in enumerate(scheduled)
-                    )
-                    url = (
-                        "https://calendar.google.com/calendar/render?action=TEMPLATE"
-                        f"&text={urllib.parse.quote(event_title)}"
-                        f"&details={urllib.parse.quote(details)}"
-                        f"&dates={start_dt.strftime('%Y%m%dT%H%M%S')}/{end_dt.strftime('%Y%m%dT%H%M%S')}"
-                    )
-                    set_calendar_link(url)
-                    debug_print("Set calendar link:", url)
-                else:
-                    set_calendar_link("")
-                    debug_print("No schedule, calendar link cleared")
             except Exception as e:
                 set_error(f"AI scheduling error: {e}")
                 set_organized_tasks([])
-                set_calendar_link("")
                 debug_print("Error in ai_schedule:", e)
             set_loading(False)
             debug_print("ai_schedule thread finished")
@@ -211,8 +180,8 @@ def TaskOrganizer():
         debug_print("handle_save_to_link called")
         set_show_link_modal(True)
         set_link_error("")
-        # If no calendar_url/user_id, auto-generate a new link and save
-        if not user_id:
+        # Only auto-generate a new link if 'Create New Link' is selected and no user_id
+        if link_mode == 'new' and not user_id:
             new_id = generate_random_id()
             set_user_id(new_id)
             set_calendar_url(f"/calendars/{new_id}")
@@ -257,12 +226,12 @@ def TaskOrganizer():
             debug_print("No organized_tasks to save")
             set_link_error("No schedule to save. Please organize your day first.")
             return
-        # Just save the current schedule as a new calendar, no override/merge logic
+        # Save the current schedule as a new or existing calendar
         ics = generate_ics(organized_tasks)
         calendar_db.save_calendar(user_id, ics)
         set_calendar_url(f"/calendars/{user_id}")
         set_link_error("")
-        debug_print(f"Calendar saved for user_id {user_id} (demo mode, no override)")
+        debug_print(f"Calendar saved for user_id {user_id}")
 
     def handle_day_change(e):
         set_selected_day(e['target']['value'])
@@ -290,12 +259,18 @@ def TaskOrganizer():
                 set_tasks(tasks_for_day if tasks_for_day else [{"name": "", "prep_time": "", "ai_estimate": False, "est_start": "", "est_duration": ""}])
 
     def handle_link_mode_change(e):
-        set_link_mode(e['target']['value'])
+        mode = e['target']['value']
+        set_link_mode(mode)
         set_link_error("")
         set_link_input("")
         set_user_id("")
         set_calendar_url("")
         set_tasks([{"name": "", "prep_time": "", "ai_estimate": False, "est_start": "", "est_duration": ""}])
+        if mode == 'new':
+            # Immediately generate a new link and set user_id/calendar_url
+            new_id = generate_random_id()
+            set_user_id(new_id)
+            set_calendar_url(f"/calendars/{new_id}")
 
     def handle_link_input(e):
         val = e['target']['value'].strip()
@@ -330,46 +305,21 @@ def TaskOrganizer():
                                 'est_duration': ''
                             })
                 set_tasks(tasks_for_day if tasks_for_day else [{"name": "", "prep_time": "", "ai_estimate": False, "est_start": "", "est_duration": ""}])
-        elif link_mode == 'new' and val:
-            set_user_id(val)
-            set_calendar_url(f"/calendars/{val}")
-            set_tasks([{"name": "", "prep_time": "", "ai_estimate": False, "est_start": "", "est_duration": ""}])
+        elif link_mode == 'new':
+            # Do nothing on input for new link mode
+            pass
 
     return html.div(
         {},
         html.link({"rel": "stylesheet", "href": "/static/css/tools/task_organizer.css"}),
-        html.div({"className": "save-load-box"},
-            html.h3("Save/Load Calendar"),
-            html.div({"className": "link-mode-group"},
-                html.label({},
-                    html.input({
-                        "type": "radio", "name": "link_mode", "value": "existing", "checked": link_mode == 'existing', "onChange": handle_link_mode_change
-                    }),
-                    " Use Existing Link "
-                ),
-                html.label({},
-                    html.input({
-                        "type": "radio", "name": "link_mode", "value": "new", "checked": link_mode == 'new', "onChange": handle_link_mode_change
-                    }),
-                    " Create New Link "
-                )
-            ),
-            link_mode == 'existing' and html.input({
-                "type": "text", "placeholder": "Paste or enter calendar link/ID...", "value": link_input, "onInput": handle_link_input, "className": "calendar-link-input"
-            }),
-            html.select({"value": selected_day, "onChange": handle_day_change},
-                *[html.option({"value": d}, d) for d in day_options]
-            ),
-            link_error and html.div({"className": "error-message"}, link_error),
-            calendar_url and html.div({},
-                html.p({}, "Add this link to Google Calendar via 'Add other calendars > From URL':"),
-                html.code({}, f"https://testing.mihais-ai-playground.xyz{calendar_url}")
-            )
-        ),
         html.nav({"className": "navbar"}, html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")),
         html.div({"className": "task-organizer"},
+            html.div({"className": "day-selector"},
+                html.select({"value": selected_day, "onChange": handle_day_change, "className": "day-selector"},
+                    *[html.option({"value": d}, d) for d in day_options]
+                )
+            ),
             html.h2("AI Task Organizer"),
-
             html.div({"className": "form-group"},
                 html.label({},
                     html.input({
@@ -437,26 +387,63 @@ def TaskOrganizer():
             error and html.div({"className": "error-message"}, error) or None,
             organized_tasks and html.div({"className": "interview-output"},
                 html.h3("Full Day Schedule:"),
-                html.ul(
-                    {},
-                    *[html.li({}, f"{i+1}. {b.get('type','task').capitalize()}: {b.get('name', b.get('label',''))} (Start: {b.get('start_time','auto')}, Duration: {b.get('duration','?')} min)") for i, b in enumerate(organized_tasks)]
+                html.div({"className": "schedule-list"},
+                    *[
+                        html.div({
+                            "className": f"schedule-block schedule-{b.get('type','task').lower()}",
+                            "key": f"block-{i}"
+                        },
+                            html.div({"className": "block-header"},
+                                (
+                                    b.get('type','task').lower() == 'prep' and html.span({"className": "block-icon prep"}, "🛠️")
+                                ) or (
+                                    b.get('type','task').lower() == 'task' and html.span({"className": "block-icon task"}, "✅")
+                                ) or (
+                                    b.get('type','task').lower() == 'rest' and html.span({"className": "block-icon rest"}, "☕")
+                                ),
+                                html.span({"className": "block-type"}, b.get('type','task').capitalize()),
+                                html.span({"className": "block-title"}, b.get('name', b.get('label','')))
+                            ),
+                            html.div({"className": "block-details"},
+                                html.span({"className": "block-time"}, f"Start: {b.get('start_time','auto')}"),
+                                html.span({"className": "block-duration"}, f"Duration: {b.get('duration','?')} min")
+                            )
+                        ) for i, b in enumerate(organized_tasks)
+                    ]
                 ),
                 html.button({"className": "btn btn-navy download-btn", "onClick": handle_save_to_link}, "Save to Link"),
                 show_link_modal and html.div({"className": "modal-bg"},
                     html.div({"className": "modal"},
                         html.h4("Save to Calendar Link"),
-                        calendar_url and html.div({},
-                            html.p({}, "Your calendar link (add to Google Calendar via 'Add other calendars > From URL'):"),
-                            html.code({}, f"https://testing.mihais-ai-playground.xyz{calendar_url}")
+                        html.div({"className": "save-load-box"},
+                            html.div({"className": "link-mode-group"},
+                                html.label({"style": {"justifyContent": "center"}},
+                                    html.input({
+                                        "type": "radio", "name": "link_mode", "value": "existing", "checked": link_mode == 'existing', "onChange": handle_link_mode_change
+                                    }),
+                                    " Use Existing Link "
+                                ),
+                                html.label({"style": {"justifyContent": "center"}},
+                                    html.input({
+                                        "type": "radio", "name": "link_mode", "value": "new", "checked": link_mode == 'new', "onChange": handle_link_mode_change
+                                    }),
+                                    " Create New Link "
+                                )
+                            ),
+                            (link_mode == 'existing' and html.input({
+                                "type": "text", "placeholder": "Paste or enter calendar link/ID...", "value": link_input, "onInput": handle_link_input, "className": "calendar-link-input"
+                            }) or None),
+                            (link_error and html.div({"className": "error-message"}, link_error) or None),
+                            (calendar_url and html.div({},
+                                html.p({}, "Add this link to Google Calendar via 'Add other calendars > From URL':"),
+                                html.code({}, f"https://mihais-ai-playground.xyz{calendar_url}")
+                            ) or None)
                         ),
-                        not calendar_url and html.div({},
-                            html.p({}, "No calendar link available. Please generate or paste a link at the top.")
-                        ),
-                        html.button({"onClick": handle_save_schedule, "className": "btn btn-gradient"}, "Save/Update Schedule"),
+                        html.button({"onClick": handle_save_schedule, "className": "btn btn-gradient"}, "Save Schedule"),
                         link_error and html.div({"className": "error-message"}, link_error),
                         html.button({"onClick": lambda e: set_show_link_modal(False), "className": "btn btn-secondary", "style": {"marginTop": "1rem"}}, "Close")
                     )
-                )
+                ) or None
             ) or None
         )
     )
