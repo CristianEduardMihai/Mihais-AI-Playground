@@ -8,8 +8,9 @@ import json
 import random
 import string
 import components.common.calendar_db as calendar_db
+from datetime import timedelta
 
-DEBUG_MODE = False  # Set to True to enable verbose debug output
+DEBUG_MODE = True  # Set to True to enable verbose debug output
 
 def debug_print(*args, **kwargs):
     if DEBUG_MODE:
@@ -124,6 +125,16 @@ def TaskOrganizer():
     user_id, set_user_id = use_state("")
     link_error, set_link_error = use_state("")
 
+    # Day selector state
+    today = datetime.date.today()
+    days = [(today + timedelta(days=i)) for i in range(15)]
+    day_options = [d.strftime('%Y-%m-%d (%a)') for d in days]
+    selected_day, set_selected_day = use_state(day_options[0])
+
+    # Save/Load box state
+    link_mode, set_link_mode = use_state('existing')  # 'existing' or 'new'
+    link_input, set_link_input = use_state("")
+
     def handle_task_change(idx, field, value):
         def updater(prev):
             updated = prev.copy()
@@ -200,8 +211,23 @@ def TaskOrganizer():
         debug_print("handle_save_to_link called")
         set_show_link_modal(True)
         set_link_error("")
-        set_calendar_url("")
-        set_user_id("")
+        # If no calendar_url/user_id, auto-generate a new link and save
+        if not user_id:
+            new_id = generate_random_id()
+            set_user_id(new_id)
+            set_calendar_url(f"/calendars/{new_id}")
+            debug_print("Auto-generated calendar link in modal:", f"/calendars/{new_id}")
+            # Immediately save the current schedule to the new link if there are tasks
+            if organized_tasks and len(organized_tasks) > 0:
+                ics = generate_ics(organized_tasks)
+                try:
+                    debug_print(f"Auto-saving calendar for user_id {new_id} from modal")
+                    calendar_db.save_calendar(new_id, ics)
+                    set_link_error("")
+                    debug_print(f"Calendar auto-saved for user_id {new_id} from modal")
+                except Exception as e:
+                    set_link_error(f"Failed to auto-save: {e}")
+                    debug_print(f"Failed to auto-save calendar for user_id {new_id} from modal: {e}")
 
     def handle_generate_link(_):
         debug_print("handle_generate_link called")
@@ -231,48 +257,115 @@ def TaskOrganizer():
             debug_print("No organized_tasks to save")
             set_link_error("No schedule to save. Please organize your day first.")
             return
+        # Just save the current schedule as a new calendar, no override/merge logic
         ics = generate_ics(organized_tasks)
-        try:
-            debug_print(f"Saving calendar for user_id {user_id}")
-            calendar_db.save_calendar(user_id, ics)
-            set_calendar_url(f"/calendars/{user_id}")
-            set_link_error("")
-            debug_print(f"Calendar saved for user_id {user_id}")
-        except Exception as e:
-            set_link_error(f"Failed to save: {e}")
-            debug_print(f"Failed to save calendar for user_id {user_id}: {e}")
+        calendar_db.save_calendar(user_id, ics)
+        set_calendar_url(f"/calendars/{user_id}")
+        set_link_error("")
+        debug_print(f"Calendar saved for user_id {user_id} (demo mode, no override)")
 
-    def handle_paste_link(e):
-        debug_print("handle_paste_link called with:", e)
-        val = e["target"]["value"].strip()
-        if val:
+    def handle_day_change(e):
+        set_selected_day(e['target']['value'])
+        # On day change, if link is selected, load tasks for that day
+        if user_id:
+            ics = calendar_db.get_calendar(user_id)
+            if ics:
+                # Parse tasks for the selected day (simple: all events for that day)
+                import re
+                day_str = selected_day[:10].replace('-', '')
+                vevents = re.findall(r'BEGIN:VEVENT(.*?)END:VEVENT', ics, re.DOTALL)
+                tasks_for_day = []
+                for block in vevents:
+                    dtstart = re.search(r'DTSTART:(\d{8})T(\d{4})Z', block)
+                    summary = re.search(r'SUMMARY:([^\n]+)', block)
+                    duration = re.search(r'DTEND:(\d{8})T(\d{4})Z', block)
+                    if dtstart and dtstart.group(1) == day_str:
+                        tasks_for_day.append({
+                            'name': summary.group(1) if summary else '',
+                            'prep_time': '',
+                            'ai_estimate': False,
+                            'est_start': dtstart.group(2)[:2] + ':' + dtstart.group(2)[2:],
+                            'est_duration': ''
+                        })
+                set_tasks(tasks_for_day if tasks_for_day else [{"name": "", "prep_time": "", "ai_estimate": False, "est_start": "", "est_duration": ""}])
+
+    def handle_link_mode_change(e):
+        set_link_mode(e['target']['value'])
+        set_link_error("")
+        set_link_input("")
+        set_user_id("")
+        set_calendar_url("")
+        set_tasks([{"name": "", "prep_time": "", "ai_estimate": False, "est_start": "", "est_duration": ""}])
+
+    def handle_link_input(e):
+        val = e['target']['value'].strip()
+        set_link_input(val)
+        if link_mode == 'existing' and val:
             # Accept full URL, /calendars/ID, or just ID
             if "/calendars/" in val:
-                # Extract everything after the last /calendars/
                 uid = val.split("/calendars/")[-1].split("/")[0]
-                set_user_id(uid)
-                set_calendar_url(f"/calendars/{uid}")
-                debug_print("Pasted calendar link, extracted user_id:", uid)
             else:
-                set_user_id(val)
-                set_calendar_url(f"/calendars/{val}")
-                debug_print("Pasted calendar id:", val)
-            # Auto-save to pasted link if there is a schedule
-            target_id = val.split("/calendars/")[-1].split("/")[0] if "/calendars/" in val else val
-            if organized_tasks and len(organized_tasks) > 0:
-                ics = generate_ics(organized_tasks)
-                try:
-                    debug_print(f"Auto-saving calendar for pasted user_id {target_id}")
-                    calendar_db.save_calendar(target_id, ics)
-                    set_link_error("")
-                    debug_print(f"Calendar auto-saved for pasted user_id {target_id}")
-                except Exception as e:
-                    set_link_error(f"Failed to auto-save: {e}")
-                    debug_print(f"Failed to auto-save calendar for pasted user_id {target_id}: {e}")
+                uid = val
+            set_user_id(uid)
+            set_calendar_url(f"/calendars/{uid}")
+            # Always load tasks for selected day as soon as link is entered
+            ics = calendar_db.get_calendar(uid)
+            if ics:
+                import re
+                day_str = selected_day[:10].replace('-', '')
+                vevents = re.findall(r'BEGIN:VEVENT(.*?)END:VEVENT', ics, re.DOTALL)
+                tasks_for_day = []
+                for block in vevents:
+                    dtstart = re.search(r'DTSTART:(\d{8})T(\d{4})Z', block)
+                    summary = re.search(r'SUMMARY:([^\n]+)', block)
+                    if dtstart and dtstart.group(1) == day_str:
+                        # Only treat as a task if it's not a rest/prep block
+                        summary_val = summary.group(1) if summary else ''
+                        if not summary_val.lower().startswith('rest') and not summary_val.lower().startswith('prep'):
+                            tasks_for_day.append({
+                                'name': summary_val,
+                                'prep_time': '',
+                                'ai_estimate': False,
+                                'est_start': dtstart.group(2)[:2] + ':' + dtstart.group(2)[2:],
+                                'est_duration': ''
+                            })
+                set_tasks(tasks_for_day if tasks_for_day else [{"name": "", "prep_time": "", "ai_estimate": False, "est_start": "", "est_duration": ""}])
+        elif link_mode == 'new' and val:
+            set_user_id(val)
+            set_calendar_url(f"/calendars/{val}")
+            set_tasks([{"name": "", "prep_time": "", "ai_estimate": False, "est_start": "", "est_duration": ""}])
 
     return html.div(
         {},
         html.link({"rel": "stylesheet", "href": "/static/css/tools/task_organizer.css"}),
+        html.div({"className": "save-load-box"},
+            html.h3("Save/Load Calendar"),
+            html.div({"className": "link-mode-group"},
+                html.label({},
+                    html.input({
+                        "type": "radio", "name": "link_mode", "value": "existing", "checked": link_mode == 'existing', "onChange": handle_link_mode_change
+                    }),
+                    " Use Existing Link "
+                ),
+                html.label({},
+                    html.input({
+                        "type": "radio", "name": "link_mode", "value": "new", "checked": link_mode == 'new', "onChange": handle_link_mode_change
+                    }),
+                    " Create New Link "
+                )
+            ),
+            link_mode == 'existing' and html.input({
+                "type": "text", "placeholder": "Paste or enter calendar link/ID...", "value": link_input, "onInput": handle_link_input, "className": "calendar-link-input"
+            }),
+            html.select({"value": selected_day, "onChange": handle_day_change},
+                *[html.option({"value": d}, d) for d in day_options]
+            ),
+            link_error and html.div({"className": "error-message"}, link_error),
+            calendar_url and html.div({},
+                html.p({}, "Add this link to Google Calendar via 'Add other calendars > From URL':"),
+                html.code({}, f"https://testing.mihais-ai-playground.xyz{calendar_url}")
+            )
+        ),
         html.nav({"className": "navbar"}, html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")),
         html.div({"className": "task-organizer"},
             html.h2("AI Task Organizer"),
@@ -352,20 +445,15 @@ def TaskOrganizer():
                 show_link_modal and html.div({"className": "modal-bg"},
                     html.div({"className": "modal"},
                         html.h4("Save to Calendar Link"),
-                        html.input({
-                            "type": "text",
-                            "placeholder": "Paste your calendar link or ID, or generate new...",
-                            "value": calendar_url,
-                            "onInput": handle_paste_link,
-                            "className": "calendar-link-input"
-                        }),
-                        html.button({"onClick": handle_generate_link, "className": "btn btn-secondary"}, "Generate New Link"),
-                        html.button({"onClick": handle_save_schedule, "className": "btn btn-gradient"}, "Save Schedule"),
-                        link_error and html.div({"className": "error-message"}, link_error),
                         calendar_url and html.div({},
-                            html.p({}, "Add this link to Google Calendar via 'Add other calendars > From URL':"),
+                            html.p({}, "Your calendar link (add to Google Calendar via 'Add other calendars > From URL'):"),
                             html.code({}, f"https://testing.mihais-ai-playground.xyz{calendar_url}")
                         ),
+                        not calendar_url and html.div({},
+                            html.p({}, "No calendar link available. Please generate or paste a link at the top.")
+                        ),
+                        html.button({"onClick": handle_save_schedule, "className": "btn btn-gradient"}, "Save/Update Schedule"),
+                        link_error and html.div({"className": "error-message"}, link_error),
                         html.button({"onClick": lambda e: set_show_link_modal(False), "className": "btn btn-secondary", "style": {"marginTop": "1rem"}}, "Close")
                     )
                 )
