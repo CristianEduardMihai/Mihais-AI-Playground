@@ -1,8 +1,6 @@
 from reactpy import component, html, use_state
-import urllib.parse
 import datetime
 import threading, time
-import re
 import requests
 import json
 import random
@@ -26,7 +24,7 @@ def call_ai_schedule(tasks):
         "You are a helpful assistant for organizing a user's daily tasks into a full calendar view.",
         "Given the following list of tasks as JSON, organize them into a detailed, efficient daily schedule.",
         "For each block in the day, output: type (prep, task, rest), name/label, start_time (hh:mm, 24h), duration (min), and any other relevant info.",
-        "For each task, include a preparation block before it (if needed), the task itself, and a rest block after (if needed).",
+        "For each task, include a preparation block before it (if needed), the task itself, and a rest block after (if needed). Estimate the duration of each block.",
         "If a task has an estimated start time, try to honor it, but optimize the schedule overall.",
         "Estimate preparation time and rest time as needed, but do not ask the user for more info.",
         "Convert any natural language time expressions (e.g. 'half an hour', '8 in the morning', '1h 30min') to hh:mm or minutes as appropriate.",
@@ -71,39 +69,81 @@ def generate_random_id(length=16):
     debug_print(f"Generating random ID of length {length}")
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
-def generate_ics(organized_tasks):
+def generate_ics(organized_tasks, tzid, user_timezone=None):
+    debug_print(f"[ICS] Called generate_ics with tzid={tzid}, user_timezone={user_timezone}")
     debug_print("Generating ICS for organized tasks:", organized_tasks)
-    # Standards-compliant .ics generator using actual AI-scheduled times
     import uuid
     from datetime import datetime, date, timedelta, timezone
-    
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
     today = date.today()
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow() 
+    vtimezone = ""
+    if tzid == "Europe/Bucharest":
+        vtimezone = """BEGIN:VTIMEZONE\nTZID:Europe/Bucharest\nX-LIC-LOCATION:Europe/Bucharest\nBEGIN:DAYLIGHT\nTZOFFSETFROM:+0200\nTZOFFSETTO:+0300\nTZNAME:EEST\nDTSTART:19700329T030000\nRRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU\nEND:DAYLIGHT\nBEGIN:STANDARD\nTZOFFSETFROM:+0300\nTZOFFSETTO:+0200\nTZNAME:EET\nDTSTART:19701027T040000\nRRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU\nEND:STANDARD\nEND:VTIMEZONE\n"""
+    elif tzid and tzid != "UTC":
+        vtimezone = f"BEGIN:VTIMEZONE\nTZID:{tzid}\nEND:VTIMEZONE\n"
     events = []
     for b in organized_tasks:
         debug_print("Processing block for ICS:", b)
         start = b.get('start_time', '08:00')
         duration = int(b.get('duration', 30))
-        # Parse start time (assume 24h format from AI)
         try:
-            start_dt = datetime.combine(today, datetime.strptime(start, "%H:%M").time(), tzinfo=timezone.utc)
+            start_dt_naive = datetime.combine(today, datetime.strptime(start, "%H:%M").time())
         except Exception:
             debug_print(f"Skipping event due to invalid start time: {start}")
             continue
-        end_dt = start_dt + timedelta(minutes=duration)
+        end_dt_naive = start_dt_naive + timedelta(minutes=duration)
         summary = f"{b.get('type','Task').capitalize()}: {b.get('name', b.get('label',''))}"
         uid = str(uuid.uuid4()) + "@ai-task-organizer"
         dtstamp = now.strftime('%Y%m%dT%H%M%SZ')
-        events.append(
-            f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART:{start_dt.strftime('%Y%m%dT%H%M%SZ')}\nDTEND:{end_dt.strftime('%Y%m%dT%H%M%SZ')}\nEND:VEVENT"""
-        )
+        # Localize to tzid if possible, fallback to UTC using datetime.timezone.utc
+        try:
+            if tzid and tzid != "UTC":
+                local_zone = ZoneInfo(tzid)
+            elif tzid == "UTC":
+                local_zone = timezone.utc
+            else:
+                local_zone = timezone.utc
+        except Exception:
+            debug_print(f"ZoneInfoNotFoundError for tzid={tzid}, falling back to datetime.timezone.utc")
+            local_zone = timezone.utc
+        if tzid == "UTC":
+            # Localize to user's real zone, then convert to UTC
+            try:
+                debug_print(f"[ICS] Converting local time to UTC using user_timezone={user_timezone}")
+                if user_timezone and user_timezone != "UTC":
+                    user_zone = ZoneInfo(user_timezone)
+                else:
+                    user_zone = timezone.utc
+                start_dt_utc = start_dt_naive.replace(tzinfo=user_zone).astimezone(timezone.utc)
+                end_dt_utc = end_dt_naive.replace(tzinfo=user_zone).astimezone(timezone.utc)
+            except Exception as e:
+                debug_print(f"Timezone conversion failed, defaulting to naive UTC: {e}")
+                start_dt_utc = start_dt_naive.replace(tzinfo=timezone.utc)
+                end_dt_utc = end_dt_naive.replace(tzinfo=timezone.utc)
+            dtstart_str = start_dt_utc.strftime('%Y%m%dT%H%MZ')
+            dtend_str = end_dt_utc.strftime('%Y%m%dT%H%MZ')
+            events.append(
+                f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART:{dtstart_str}\nDTEND:{dtend_str}\nEND:VEVENT"""
+            )
+        else:
+            # Localize to user's zone
+            debug_print(f"[ICS] Localizing to tzid={tzid}")
+            start_dt_local = start_dt_naive.replace(tzinfo=local_zone)
+            end_dt_local = end_dt_naive.replace(tzinfo=local_zone)
+            dtstart_str = start_dt_local.strftime('%Y%m%dT%H%M')
+            dtend_str = end_dt_local.strftime('%Y%m%dT%H%M')
+            events.append(
+                f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART;TZID={tzid}:{dtstart_str}\nDTEND;TZID={tzid}:{dtend_str}\nEND:VEVENT"""
+            )
     ics_content = (
         "BEGIN:VCALENDAR\n"
         "VERSION:2.0\n"
         "CALSCALE:GREGORIAN\n"
         "PRODID:-//AI Task Organizer//EN\n"
         "METHOD:PUBLISH\n"
-        "X-WR-TIMEZONE:UTC\n"
+        f"X-WR-TIMEZONE:{tzid}\n"
+        f"{vtimezone}"
         f"{chr(10).join(events)}\n"
         "END:VCALENDAR"
     )
@@ -123,6 +163,8 @@ def TaskOrganizer():
     calendar_url, set_calendar_url = use_state("")
     user_id, set_user_id = use_state("")
     link_error, set_link_error = use_state("")
+    user_timezone, set_user_timezone = use_state("")
+    timezone_error, set_timezone_error = use_state("")
 
     # Day selector state
     today = datetime.date.today()
@@ -178,7 +220,7 @@ def TaskOrganizer():
 
     def handle_save_to_link(_):
         debug_print("handle_save_to_link called")
-        set_show_link_modal(True)
+        set_show_link_modal(True)  # Always open modal immediately
         set_link_error("")
         # Only auto-generate a new link if 'Create New Link' is selected and no user_id
         if link_mode == 'new' and not user_id:
@@ -188,7 +230,7 @@ def TaskOrganizer():
             debug_print("Auto-generated calendar link in modal:", f"/calendars/{new_id}")
             # Immediately save the current schedule to the new link if there are tasks
             if organized_tasks and len(organized_tasks) > 0:
-                ics = generate_ics(organized_tasks)
+                ics = generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
                 try:
                     debug_print(f"Auto-saving calendar for user_id {new_id} from modal")
                     calendar_db.save_calendar(new_id, ics)
@@ -206,7 +248,7 @@ def TaskOrganizer():
         debug_print("Generated new calendar link:", f"/calendars/{new_id}")
         # Immediately save the current schedule to the new link
         if organized_tasks and len(organized_tasks) > 0:
-            ics = generate_ics(organized_tasks)
+            ics = generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
             try:
                 debug_print(f"Auto-saving calendar for user_id {new_id}")
                 calendar_db.save_calendar(new_id, ics)
@@ -227,7 +269,7 @@ def TaskOrganizer():
             set_link_error("No schedule to save. Please organize your day first.")
             return
         # Save the current schedule as a new or existing calendar
-        ics = generate_ics(organized_tasks)
+        ics = generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
         calendar_db.save_calendar(user_id, ics)
         set_calendar_url(f"/calendars/{user_id}")
         set_link_error("")
@@ -309,10 +351,141 @@ def TaskOrganizer():
             # Do nothing on input for new link mode
             pass
 
+    # Inject JS to auto-detect timezone and set it in state
+    debug_print('[DEBUG] Injecting timezone detection JS')
+    timezone_script = html.script({
+        "dangerouslySetInnerHTML": {
+            "__html": """
+            (function() {
+                try {
+                    var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    window.dispatchEvent(new CustomEvent('timezone-detected', { detail: tz }));
+                } catch (e) {
+                    window.dispatchEvent(new CustomEvent('timezone-detected', { detail: '' }));
+                }
+            })();
+            """
+        }
+    })
+
+    def on_timezone_detected(event):
+        tz = event['detail']
+        debug_print(f"[ReactPy] on_timezone_detected called with: {tz}")
+        print(f"[DEBUG] [TZ-DETECT] Browser detected timezone: {tz}")
+        if tz:
+            debug_print(f"[ReactPy] Setting user_timezone to: {tz}")
+            set_user_timezone(tz)
+            set_timezone_error("")
+        else:
+            debug_print("[ReactPy] Could not detect timezone, defaulting to UTC")
+            set_user_timezone("")
+            set_timezone_error("Could not detect your timezone. Your browser may have blocked detection, so calendar times may be off (defaulting to UTC).")
+
+    # Register event listener for timezone detection (ReactPy pattern)
+    debug_print('[DEBUG] Registering timezone-detected event listener')
+    html.script({
+        "dangerouslySetInnerHTML": {
+            "__html": """
+            window.addEventListener('timezone-detected', function(e) {
+                if (window.reactpyTimezoneCallback) window.reactpyTimezoneCallback(e.detail);
+            });
+            """
+        }
+    })
+    # Attach callback to window (ReactPy pattern)
+    import reactpy
+    debug_print('[DEBUG] Registering reactpyTimezoneCallback')
+    reactpy.hooks.use_effect(lambda: setattr(__import__('builtins'), 'reactpyTimezoneCallback', lambda tz: on_timezone_detected({'detail': tz})), [])
+
+    def generate_ics(organized_tasks, tzid, user_timezone=None):
+        debug_print(f"[ICS] Called generate_ics with tzid={tzid}, user_timezone={user_timezone}")
+        debug_print("Generating ICS for organized tasks:", organized_tasks)
+        import uuid
+        from datetime import datetime, date, timedelta, timezone
+        from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+        today = date.today()
+        now = datetime.utcnow()
+        vtimezone = ""
+        if tzid == "Europe/Bucharest":
+            vtimezone = """BEGIN:VTIMEZONE\nTZID:Europe/Bucharest\nX-LIC-LOCATION:Europe/Bucharest\nBEGIN:DAYLIGHT\nTZOFFSETFROM:+0200\nTZOFFSETTO:+0300\nTZNAME:EEST\nDTSTART:19700329T030000\nRRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU\nEND:DAYLIGHT\nBEGIN:STANDARD\nTZOFFSETFROM:+0300\nTZOFFSETTO:+0200\nTZNAME:EET\nDTSTART:19701027T040000\nRRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU\nEND:STANDARD\nEND:VTIMEZONE\n"""
+        elif tzid and tzid != "UTC":
+            vtimezone = f"BEGIN:VTIMEZONE\nTZID:{tzid}\nEND:VTIMEZONE\n"
+        events = []
+        for b in organized_tasks:
+            debug_print("Processing block for ICS:", b)
+            start = b.get('start_time', '08:00')
+            duration = int(b.get('duration', 30))
+            try:
+                start_dt_naive = datetime.combine(today, datetime.strptime(start, "%H:%M").time())
+            except Exception:
+                debug_print(f"Skipping event due to invalid start time: {start}")
+                continue
+            end_dt_naive = start_dt_naive + timedelta(minutes=duration)
+            summary = f"{b.get('type','Task').capitalize()}: {b.get('name', b.get('label',''))}"
+            uid = str(uuid.uuid4()) + "@ai-task-organizer"
+            dtstamp = now.strftime('%Y%m%dT%H%M%SZ')
+            # Localize to tzid if possible, fallback to UTC using datetime.timezone.utc
+            try:
+                if tzid and tzid != "UTC":
+                    local_zone = ZoneInfo(tzid)
+                elif tzid == "UTC":
+                    local_zone = timezone.utc
+                else:
+                    local_zone = timezone.utc
+            except Exception:
+                debug_print(f"ZoneInfoNotFoundError for tzid={tzid}, falling back to datetime.timezone.utc")
+                local_zone = timezone.utc
+            if tzid == "UTC":
+                # Localize to user's real zone, then convert to UTC
+                try:
+                    debug_print(f"[ICS] Converting local time to UTC using user_timezone={user_timezone}")
+                    if user_timezone and user_timezone != "UTC":
+                        user_zone = ZoneInfo(user_timezone)
+                    else:
+                        user_zone = timezone.utc
+                    start_dt_utc = start_dt_naive.replace(tzinfo=user_zone).astimezone(timezone.utc)
+                    end_dt_utc = end_dt_naive.replace(tzinfo=user_zone).astimezone(timezone.utc)
+                except Exception as e:
+                    debug_print(f"Timezone conversion failed, defaulting to naive UTC: {e}")
+                    start_dt_utc = start_dt_naive.replace(tzinfo=timezone.utc)
+                    end_dt_utc = end_dt_naive.replace(tzinfo=timezone.utc)
+                dtstart_str = start_dt_utc.strftime('%Y%m%dT%H%MZ')
+                dtend_str = end_dt_utc.strftime('%Y%m%dT%H%MZ')
+                events.append(
+                    f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART:{dtstart_str}\nDTEND:{dtend_str}\nEND:VEVENT"""
+                )
+            else:
+                # Localize to user's zone
+                debug_print(f"[ICS] Localizing to tzid={tzid}")
+                start_dt_local = start_dt_naive.replace(tzinfo=local_zone)
+                end_dt_local = end_dt_naive.replace(tzinfo=local_zone)
+                dtstart_str = start_dt_local.strftime('%Y%m%dT%H%M')
+                dtend_str = end_dt_local.strftime('%Y%m%dT%H%M')
+                events.append(
+                    f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART;TZID={tzid}:{dtstart_str}\nDTEND;TZID={tzid}:{dtend_str}\nEND:VEVENT"""
+                )
+        ics_content = (
+            "BEGIN:VCALENDAR\n"
+            "VERSION:2.0\n"
+            "CALSCALE:GREGORIAN\n"
+            "PRODID:-//AI Task Organizer//EN\n"
+            "METHOD:PUBLISH\n"
+            f"X-WR-TIMEZONE:{tzid}\n"
+            f"{vtimezone}"
+            f"{chr(10).join(events)}\n"
+            "END:VCALENDAR"
+        )
+        debug_print("Generated ICS content:\n", ics_content)
+        return ics_content
+
+    # Update all calls to generate_ics to pass user_timezone as the third argument
+    # Example: generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
     return html.div(
         {},
+        timezone_script,
         html.link({"rel": "stylesheet", "href": "/static/css/tools/task_organizer.css"}),
         html.nav({"className": "navbar"}, html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")),
+        timezone_error and html.div({"className": "error-message"}, timezone_error) or None,
         html.div({"className": "task-organizer"},
             html.div({"className": "day-selector"},
                 html.select({"value": selected_day, "onChange": handle_day_change, "className": "day-selector"},
@@ -415,7 +588,7 @@ def TaskOrganizer():
                 show_link_modal and html.div({"className": "modal-bg"},
                     html.div({"className": "modal"},
                         html.h4("Save to Calendar Link"),
-                        html.div({"className": "save-load-box"},
+                        html.div({"className": "save-load box"},
                             html.div({"className": "link-mode-group"},
                                 html.label({"style": {"justifyContent": "center"}},
                                     html.input({
