@@ -372,6 +372,37 @@ input[type="text"], input[type="number"] {
   margin-right: 0.2rem;
 }
 
+.timezone-row button {
+  padding: 0.7rem 1.5rem;
+  border-radius: 6px;
+  border: none;
+  background: linear-gradient(90deg, #e06441 0%, #ab0a0a 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.08rem;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.1s;
+  margin-left: 0.3em;
+  margin-right: 0;
+  height: 2.6rem;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(224,100,65,0.13);
+  letter-spacing: 0.01em;
+}
+.timezone-row button:disabled {
+  background: #eee;
+  color: #aaa;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.timezone-row button:hover:not(:disabled), .timezone-row button:focus:not(:disabled) {
+  background: linear-gradient(90deg, #ab0a0a 0%, #e06441 100%);
+  box-shadow: 0 4px 14px rgba(224,100,65,0.18);
+  transform: translateY(-1px) scale(1.04);
+}
+
 @media (max-width: 1000px) {
   .task-organizer {
     background: rgba(255,255,255,0.404);

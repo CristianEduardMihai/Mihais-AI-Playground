@@ -70,18 +70,16 @@ def generate_random_id(length=16):
     debug_print(f"Generating random ID of length {length}")
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
-# Hardcoded user timezone for testing (UTC+3)
-USER_TIMEZONE = 'Europe/Bucharest'  # UTC+3, change as needed for testing
-
 def generate_ics(organized_tasks, tzid, user_timezone=None):
-    # Use the hardcoded USER_TIMEZONE for all ICS output
-    debug_print(f"[ICS] Called generate_ics with tzid={tzid}, user_timezone={user_timezone}")
-    debug_print("Generating ICS for organized tasks:", organized_tasks)
+    # Use detected user_timezone if available, else fallback to UTC
+    tz = user_timezone or 'UTC'
+    debug_print(f"[ICS] Called generate_ics with tzid={tzid}, user_timezone={user_timezone} (using: {tz})")
+    print(f"[DEBUG] [TZ-DETECT] Using timezone for ICS: {tz}")
     import uuid
     from datetime import datetime, date, timedelta
     from zoneinfo import ZoneInfo
     today = date.today()
-    now = datetime.now(ZoneInfo(USER_TIMEZONE))
+    now = datetime.now(ZoneInfo(tz))
     events = []
     for b in organized_tasks:
         debug_print("Processing block for ICS:", b)
@@ -96,14 +94,14 @@ def generate_ics(organized_tasks, tzid, user_timezone=None):
         summary = f"{b.get('type','Task').capitalize()}: {b.get('name', b.get('label',''))}"
         uid = str(uuid.uuid4()) + "@ai-task-organizer"
         dtstamp = now.strftime('%Y%m%dT%H%M%S')
-        # Localize to USER_TIMEZONE and output DTSTART;TZID=USER_TIMEZONE:...
-        zone = ZoneInfo(USER_TIMEZONE)
+        # Localize to detected timezone
+        zone = ZoneInfo(tz)
         start_dt_local = start_dt_naive.replace(tzinfo=zone)
         end_dt_local = end_dt_naive.replace(tzinfo=zone)
         dtstart_str = start_dt_local.strftime('%Y%m%dT%H%M%S')
         dtend_str = end_dt_local.strftime('%Y%m%dT%H%M%S')
         events.append(
-            f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART;TZID={USER_TIMEZONE}:{dtstart_str}\nDTEND;TZID={USER_TIMEZONE}:{dtend_str}\nEND:VEVENT"""
+            f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART;TZID={tz}:{dtstart_str}\nDTEND;TZID={tz}:{dtend_str}\nEND:VEVENT"""
         )
     ics_content = (
         "BEGIN:VCALENDAR\n"
@@ -111,7 +109,7 @@ def generate_ics(organized_tasks, tzid, user_timezone=None):
         "CALSCALE:GREGORIAN\n"
         "PRODID:-//AI Task Organizer//EN\n"
         "METHOD:PUBLISH\n"
-        f"X-WR-TIMEZONE:{USER_TIMEZONE}\n"
+        f"X-WR-TIMEZONE:{tz}\n"
         f"{chr(10).join(events)}\n"
         "END:VCALENDAR"
     )
@@ -198,7 +196,7 @@ def TaskOrganizer():
             debug_print("Auto-generated calendar link in modal:", f"/calendars/{new_id}")
             # Immediately save the current schedule to the new link if there are tasks
             if organized_tasks and len(organized_tasks) > 0:
-                ics = generate_ics(organized_tasks, USER_TIMEZONE, USER_TIMEZONE)
+                ics = generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
                 try:
                     debug_print(f"Auto-saving calendar for user_id {new_id} from modal")
                     calendar_db.save_calendar(new_id, ics)
@@ -216,7 +214,7 @@ def TaskOrganizer():
         debug_print("Generated new calendar link:", f"/calendars/{new_id}")
         # Immediately save the current schedule to the new link
         if organized_tasks and len(organized_tasks) > 0:
-            ics = generate_ics(organized_tasks, USER_TIMEZONE, USER_TIMEZONE)
+            ics = generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
             try:
                 debug_print(f"Auto-saving calendar for user_id {new_id}")
                 calendar_db.save_calendar(new_id, ics)
@@ -237,7 +235,7 @@ def TaskOrganizer():
             set_link_error("No schedule to save. Please organize your day first.")
             return
         # Save the current schedule as a new or existing calendar
-        ics = generate_ics(organized_tasks, USER_TIMEZONE, USER_TIMEZONE)
+        ics = generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
         calendar_db.save_calendar(user_id, ics)
         set_calendar_url(f"/calendars/{user_id}")
         set_link_error("")
@@ -325,11 +323,22 @@ def TaskOrganizer():
         "dangerouslySetInnerHTML": {
             "__html": """
             (function() {
+                function getOffsetString() {
+                    var offset = -new Date().getTimezoneOffset(); // in minutes, positive for UTC+ zones
+                    var sign = offset >= 0 ? '+' : '-';
+                    var absOffset = Math.abs(offset);
+                    var hours = Math.floor(absOffset / 60);
+                    var mins = absOffset % 60;
+                    return 'UTC' + sign + hours + (mins ? (':' + (mins < 10 ? '0' : '') + mins) : '');
+                }
                 try {
                     var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    if (!tz || tz === 'UTC') {
+                        tz = getOffsetString();
+                    }
                     window.dispatchEvent(new CustomEvent('timezone-detected', { detail: tz }));
                 } catch (e) {
-                    window.dispatchEvent(new CustomEvent('timezone-detected', { detail: '' }));
+                    window.dispatchEvent(new CustomEvent('timezone-detected', { detail: getOffsetString() }));
                 }
             })();
             """
@@ -365,64 +374,102 @@ def TaskOrganizer():
     debug_print('[DEBUG] Registering reactpyTimezoneCallback')
     reactpy.hooks.use_effect(lambda: setattr(__import__('builtins'), 'reactpyTimezoneCallback', lambda tz: on_timezone_detected({'detail': tz})), [])
 
-    def generate_ics(organized_tasks, tzid, user_timezone=None):
-        # Use the hardcoded USER_TIMEZONE for all ICS output
-        debug_print(f"[ICS] Called generate_ics with tzid={tzid}, user_timezone={user_timezone}")
-        debug_print("Generating ICS for organized tasks:", organized_tasks)
-        import uuid
-        from datetime import datetime, date, timedelta
-        from zoneinfo import ZoneInfo
-        today = date.today()
-        now = datetime.now(ZoneInfo(USER_TIMEZONE))
-        events = []
-        for b in organized_tasks:
-            debug_print("Processing block for ICS:", b)
-            start = b.get('start_time', '08:00')
-            duration = int(b.get('duration', 30))
-            try:
-                start_dt_naive = datetime.combine(today, datetime.strptime(start, "%H:%M").time())
-            except Exception:
-                debug_print(f"Skipping event due to invalid start time: {start}")
-                continue
-            end_dt_naive = start_dt_naive + timedelta(minutes=duration)
-            summary = f"{b.get('type','Task').capitalize()}: {b.get('name', b.get('label',''))}"
-            uid = str(uuid.uuid4()) + "@ai-task-organizer"
-            dtstamp = now.strftime('%Y%m%dT%H%M%S')
-            # Localize to USER_TIMEZONE and output DTSTART;TZID=USER_TIMEZONE:...
-            zone = ZoneInfo(USER_TIMEZONE)
-            start_dt_local = start_dt_naive.replace(tzinfo=zone)
-            end_dt_local = end_dt_naive.replace(tzinfo=zone)
-            dtstart_str = start_dt_local.strftime('%Y%m%dT%H%M%S')
-            dtend_str = end_dt_local.strftime('%Y%m%dT%H%M%S')
-            events.append(
-                f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART;TZID={USER_TIMEZONE}:{dtstart_str}\nDTEND;TZID={USER_TIMEZONE}:{dtend_str}\nEND:VEVENT"""
-            )
-        ics_content = (
-            "BEGIN:VCALENDAR\n"
-            "VERSION:2.0\n"
-            "CALSCALE:GREGORIAN\n"
-            "PRODID:-//AI Task Organizer//EN\n"
-            "METHOD:PUBLISH\n"
-            f"X-WR-TIMEZONE:{USER_TIMEZONE}\n"
-            f"{chr(10).join(events)}\n"
-            "END:VCALENDAR"
-        )
-        debug_print("Generated ICS content (with user timezone):\n", ics_content)
-        return ics_content
+    # Show detected timezone for debugging
+    debug_print(f"[ReactPy] Current detected user_timezone state: {user_timezone}")
 
-    # Update all calls to generate_ics to pass user_timezone as the third argument
-    # Example: generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
+    # List of common IANA timezones (can be expanded as needed)
+    COMMON_TIMEZONES = [
+        'Europe/Bucharest', 'Europe/Berlin', 'Europe/London', 'Europe/Paris', 'Europe/Moscow',
+        'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
+        'Asia/Tokyo', 'Asia/Shanghai', 'Asia/Kolkata', 'Asia/Dubai',
+        'Australia/Sydney', 'Africa/Johannesburg', 'UTC'
+    ]
+
+    # Show a warning if timezone is not detected or is UTC or a UTC offset
+    show_tz_warning = (not user_timezone or user_timezone.upper() == 'UTC' or user_timezone.startswith('UTC'))
+
+    timezone_ai_loading, set_timezone_ai_loading = use_state(False)
+    timezone_ai_error, set_timezone_ai_error = use_state("")
+    timezone_ai_input, set_timezone_ai_input = use_state("")
+
+    def handle_timezone_input(e):
+        val = e['target']['value']
+        set_timezone_ai_input(val)
+        set_timezone_ai_error("")
+
+    def handle_timezone_input_blur_or_enter(e=None):
+        val = timezone_ai_input.strip()
+        if not val:
+            return
+        set_timezone_ai_loading(True)
+        set_timezone_ai_error("")
+        # Call AI endpoint to resolve timezone
+        try:
+            prompt = f"Given the user input '{val}', return the best matching IANA timezone name (e.g. Europe/Moscow, America/New_York). Only return the timezone name, nothing else. If ambiguous, pick the most likely for a city or region."
+            resp = requests.post(
+                "https://ai.hackclub.com/chat/completions",
+                headers={"Content-Type": "application/json"},
+                json={
+                    "messages": [
+                        {"role": "system", "content": "You are a helpful assistant that maps user input to IANA timezone names."},
+                        {"role": "user", "content": prompt}
+                    ]
+                },
+                timeout=20
+            )
+            ai_raw = resp.json()["choices"][0]["message"]["content"].strip()
+            # Clean up any code block formatting
+            if ai_raw.startswith("`"):
+                ai_raw = ai_raw.lstrip("`\n ")
+            if ai_raw.endswith("`"):
+                ai_raw = ai_raw.rstrip("`\n ")
+            # Only take the first line, in case
+            tz = ai_raw.split("\n")[0].strip()
+            if tz:
+                set_user_timezone(tz)
+                set_timezone_ai_error("")
+                debug_print(f"[ReactPy] AI resolved timezone input '{val}' to: {tz}")
+            else:
+                set_timezone_ai_error("Could not resolve to a valid timezone.")
+        except Exception as ex:
+            set_timezone_ai_error(f"AI error: {ex}")
+        set_timezone_ai_loading(False)
+
+    def handle_timezone_input_keydown(e):
+        if e.get('key') == 'Enter':
+            handle_timezone_input_blur_or_enter(e)
+
     return html.div(
         {},
         timezone_script,
         html.link({"rel": "stylesheet", "href": "/static/css/tools/task_organizer.css"}),
         html.nav({"className": "navbar"}, html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")),
-        timezone_error and html.div({"className": "error-message"}, timezone_error) or None,
+        (show_tz_warning and html.div({"className": "error-message"}, "Could not detect your timezone name. Calendar times may be off (using UTC offset only).")) or None,
+        html.div({"style": {"color": "#888", "fontSize": "0.9em", "marginBottom": "0.5em"}}, f"Detected timezone: {user_timezone or 'UTC'}"),
         html.div({"className": "task-organizer"},
+            # Timezone input box and submit button above day selector
+            show_tz_warning and html.div({"className": "timezone-row"},
+                html.label({}, "Enter your city/region or timezone:"),
+                html.input({
+                    "type": "text",
+                    "value": timezone_ai_input,
+                    "onBlur": handle_timezone_input_blur_or_enter,
+                    "onChange": handle_timezone_input,
+                    "placeholder": "e.g. Bucharest, UTC+3, Europe/Moscow",
+                    "className": "timezone-input"
+                }),
+                html.button({
+                    "type": "button",
+                    "onClick": handle_timezone_input_blur_or_enter,
+                    "disabled": timezone_ai_loading
+                }, "Submit"),
+                timezone_ai_loading and html.span({"className": "timezone-status loading"}, "Resolving...") or None,
+                timezone_ai_error and html.span({"className": "timezone-status error"}, timezone_ai_error) or None
+            ) or None,
             html.div({"className": "day-selector"},
                 html.select({"value": selected_day, "onChange": handle_day_change, "className": "day-selector"},
                     *[html.option({"value": d}, d) for d in day_options]
-                )
+                ),
             ),
             html.h2("AI Task Organizer"),
             html.div({"className": "form-group"},
