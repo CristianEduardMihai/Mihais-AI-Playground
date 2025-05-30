@@ -7,6 +7,7 @@ import random
 import string
 import components.common.calendar_db as calendar_db
 from datetime import timedelta
+from zoneinfo import ZoneInfo
 
 DEBUG_MODE = True  # Set to True to enable verbose debug output
 
@@ -69,19 +70,18 @@ def generate_random_id(length=16):
     debug_print(f"Generating random ID of length {length}")
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
+# Hardcoded user timezone for testing (UTC+3)
+USER_TIMEZONE = 'Europe/Bucharest'  # UTC+3, change as needed for testing
+
 def generate_ics(organized_tasks, tzid, user_timezone=None):
+    # Use the hardcoded USER_TIMEZONE for all ICS output
     debug_print(f"[ICS] Called generate_ics with tzid={tzid}, user_timezone={user_timezone}")
     debug_print("Generating ICS for organized tasks:", organized_tasks)
     import uuid
-    from datetime import datetime, date, timedelta, timezone
-    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+    from datetime import datetime, date, timedelta
+    from zoneinfo import ZoneInfo
     today = date.today()
-    now = datetime.utcnow() 
-    vtimezone = ""
-    if tzid == "Europe/Bucharest":
-        vtimezone = """BEGIN:VTIMEZONE\nTZID:Europe/Bucharest\nX-LIC-LOCATION:Europe/Bucharest\nBEGIN:DAYLIGHT\nTZOFFSETFROM:+0200\nTZOFFSETTO:+0300\nTZNAME:EEST\nDTSTART:19700329T030000\nRRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU\nEND:DAYLIGHT\nBEGIN:STANDARD\nTZOFFSETFROM:+0300\nTZOFFSETTO:+0200\nTZNAME:EET\nDTSTART:19701027T040000\nRRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU\nEND:STANDARD\nEND:VTIMEZONE\n"""
-    elif tzid and tzid != "UTC":
-        vtimezone = f"BEGIN:VTIMEZONE\nTZID:{tzid}\nEND:VTIMEZONE\n"
+    now = datetime.now(ZoneInfo(USER_TIMEZONE))
     events = []
     for b in organized_tasks:
         debug_print("Processing block for ICS:", b)
@@ -95,59 +95,27 @@ def generate_ics(organized_tasks, tzid, user_timezone=None):
         end_dt_naive = start_dt_naive + timedelta(minutes=duration)
         summary = f"{b.get('type','Task').capitalize()}: {b.get('name', b.get('label',''))}"
         uid = str(uuid.uuid4()) + "@ai-task-organizer"
-        dtstamp = now.strftime('%Y%m%dT%H%M%SZ')
-        # Localize to tzid if possible, fallback to UTC using datetime.timezone.utc
-        try:
-            if tzid and tzid != "UTC":
-                local_zone = ZoneInfo(tzid)
-            elif tzid == "UTC":
-                local_zone = timezone.utc
-            else:
-                local_zone = timezone.utc
-        except Exception:
-            debug_print(f"ZoneInfoNotFoundError for tzid={tzid}, falling back to datetime.timezone.utc")
-            local_zone = timezone.utc
-        if tzid == "UTC":
-            # Localize to user's real zone, then convert to UTC
-            try:
-                debug_print(f"[ICS] Converting local time to UTC using user_timezone={user_timezone}")
-                if user_timezone and user_timezone != "UTC":
-                    user_zone = ZoneInfo(user_timezone)
-                else:
-                    user_zone = timezone.utc
-                start_dt_utc = start_dt_naive.replace(tzinfo=user_zone).astimezone(timezone.utc)
-                end_dt_utc = end_dt_naive.replace(tzinfo=user_zone).astimezone(timezone.utc)
-            except Exception as e:
-                debug_print(f"Timezone conversion failed, defaulting to naive UTC: {e}")
-                start_dt_utc = start_dt_naive.replace(tzinfo=timezone.utc)
-                end_dt_utc = end_dt_naive.replace(tzinfo=timezone.utc)
-            dtstart_str = start_dt_utc.strftime('%Y%m%dT%H%MZ')
-            dtend_str = end_dt_utc.strftime('%Y%m%dT%H%MZ')
-            events.append(
-                f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART:{dtstart_str}\nDTEND:{dtend_str}\nEND:VEVENT"""
-            )
-        else:
-            # Localize to user's zone
-            debug_print(f"[ICS] Localizing to tzid={tzid}")
-            start_dt_local = start_dt_naive.replace(tzinfo=local_zone)
-            end_dt_local = end_dt_naive.replace(tzinfo=local_zone)
-            dtstart_str = start_dt_local.strftime('%Y%m%dT%H%M')
-            dtend_str = end_dt_local.strftime('%Y%m%dT%H%M')
-            events.append(
-                f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART;TZID={tzid}:{dtstart_str}\nDTEND;TZID={tzid}:{dtend_str}\nEND:VEVENT"""
-            )
+        dtstamp = now.strftime('%Y%m%dT%H%M%S')
+        # Localize to USER_TIMEZONE and output DTSTART;TZID=USER_TIMEZONE:...
+        zone = ZoneInfo(USER_TIMEZONE)
+        start_dt_local = start_dt_naive.replace(tzinfo=zone)
+        end_dt_local = end_dt_naive.replace(tzinfo=zone)
+        dtstart_str = start_dt_local.strftime('%Y%m%dT%H%M%S')
+        dtend_str = end_dt_local.strftime('%Y%m%dT%H%M%S')
+        events.append(
+            f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART;TZID={USER_TIMEZONE}:{dtstart_str}\nDTEND;TZID={USER_TIMEZONE}:{dtend_str}\nEND:VEVENT"""
+        )
     ics_content = (
         "BEGIN:VCALENDAR\n"
         "VERSION:2.0\n"
         "CALSCALE:GREGORIAN\n"
         "PRODID:-//AI Task Organizer//EN\n"
         "METHOD:PUBLISH\n"
-        f"X-WR-TIMEZONE:{tzid}\n"
-        f"{vtimezone}"
+        f"X-WR-TIMEZONE:{USER_TIMEZONE}\n"
         f"{chr(10).join(events)}\n"
         "END:VCALENDAR"
     )
-    debug_print("Generated ICS content:\n", ics_content)
+    debug_print("Generated ICS content (with user timezone):\n", ics_content)
     return ics_content
 
 @component
@@ -230,7 +198,7 @@ def TaskOrganizer():
             debug_print("Auto-generated calendar link in modal:", f"/calendars/{new_id}")
             # Immediately save the current schedule to the new link if there are tasks
             if organized_tasks and len(organized_tasks) > 0:
-                ics = generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
+                ics = generate_ics(organized_tasks, USER_TIMEZONE, USER_TIMEZONE)
                 try:
                     debug_print(f"Auto-saving calendar for user_id {new_id} from modal")
                     calendar_db.save_calendar(new_id, ics)
@@ -248,7 +216,7 @@ def TaskOrganizer():
         debug_print("Generated new calendar link:", f"/calendars/{new_id}")
         # Immediately save the current schedule to the new link
         if organized_tasks and len(organized_tasks) > 0:
-            ics = generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
+            ics = generate_ics(organized_tasks, USER_TIMEZONE, USER_TIMEZONE)
             try:
                 debug_print(f"Auto-saving calendar for user_id {new_id}")
                 calendar_db.save_calendar(new_id, ics)
@@ -269,7 +237,7 @@ def TaskOrganizer():
             set_link_error("No schedule to save. Please organize your day first.")
             return
         # Save the current schedule as a new or existing calendar
-        ics = generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
+        ics = generate_ics(organized_tasks, USER_TIMEZONE, USER_TIMEZONE)
         calendar_db.save_calendar(user_id, ics)
         set_calendar_url(f"/calendars/{user_id}")
         set_link_error("")
@@ -398,18 +366,14 @@ def TaskOrganizer():
     reactpy.hooks.use_effect(lambda: setattr(__import__('builtins'), 'reactpyTimezoneCallback', lambda tz: on_timezone_detected({'detail': tz})), [])
 
     def generate_ics(organized_tasks, tzid, user_timezone=None):
+        # Use the hardcoded USER_TIMEZONE for all ICS output
         debug_print(f"[ICS] Called generate_ics with tzid={tzid}, user_timezone={user_timezone}")
         debug_print("Generating ICS for organized tasks:", organized_tasks)
         import uuid
-        from datetime import datetime, date, timedelta, timezone
-        from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+        from datetime import datetime, date, timedelta
+        from zoneinfo import ZoneInfo
         today = date.today()
-        now = datetime.utcnow()
-        vtimezone = ""
-        if tzid == "Europe/Bucharest":
-            vtimezone = """BEGIN:VTIMEZONE\nTZID:Europe/Bucharest\nX-LIC-LOCATION:Europe/Bucharest\nBEGIN:DAYLIGHT\nTZOFFSETFROM:+0200\nTZOFFSETTO:+0300\nTZNAME:EEST\nDTSTART:19700329T030000\nRRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU\nEND:DAYLIGHT\nBEGIN:STANDARD\nTZOFFSETFROM:+0300\nTZOFFSETTO:+0200\nTZNAME:EET\nDTSTART:19701027T040000\nRRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU\nEND:STANDARD\nEND:VTIMEZONE\n"""
-        elif tzid and tzid != "UTC":
-            vtimezone = f"BEGIN:VTIMEZONE\nTZID:{tzid}\nEND:VTIMEZONE\n"
+        now = datetime.now(ZoneInfo(USER_TIMEZONE))
         events = []
         for b in organized_tasks:
             debug_print("Processing block for ICS:", b)
@@ -423,59 +387,27 @@ def TaskOrganizer():
             end_dt_naive = start_dt_naive + timedelta(minutes=duration)
             summary = f"{b.get('type','Task').capitalize()}: {b.get('name', b.get('label',''))}"
             uid = str(uuid.uuid4()) + "@ai-task-organizer"
-            dtstamp = now.strftime('%Y%m%dT%H%M%SZ')
-            # Localize to tzid if possible, fallback to UTC using datetime.timezone.utc
-            try:
-                if tzid and tzid != "UTC":
-                    local_zone = ZoneInfo(tzid)
-                elif tzid == "UTC":
-                    local_zone = timezone.utc
-                else:
-                    local_zone = timezone.utc
-            except Exception:
-                debug_print(f"ZoneInfoNotFoundError for tzid={tzid}, falling back to datetime.timezone.utc")
-                local_zone = timezone.utc
-            if tzid == "UTC":
-                # Localize to user's real zone, then convert to UTC
-                try:
-                    debug_print(f"[ICS] Converting local time to UTC using user_timezone={user_timezone}")
-                    if user_timezone and user_timezone != "UTC":
-                        user_zone = ZoneInfo(user_timezone)
-                    else:
-                        user_zone = timezone.utc
-                    start_dt_utc = start_dt_naive.replace(tzinfo=user_zone).astimezone(timezone.utc)
-                    end_dt_utc = end_dt_naive.replace(tzinfo=user_zone).astimezone(timezone.utc)
-                except Exception as e:
-                    debug_print(f"Timezone conversion failed, defaulting to naive UTC: {e}")
-                    start_dt_utc = start_dt_naive.replace(tzinfo=timezone.utc)
-                    end_dt_utc = end_dt_naive.replace(tzinfo=timezone.utc)
-                dtstart_str = start_dt_utc.strftime('%Y%m%dT%H%MZ')
-                dtend_str = end_dt_utc.strftime('%Y%m%dT%H%MZ')
-                events.append(
-                    f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART:{dtstart_str}\nDTEND:{dtend_str}\nEND:VEVENT"""
-                )
-            else:
-                # Localize to user's zone
-                debug_print(f"[ICS] Localizing to tzid={tzid}")
-                start_dt_local = start_dt_naive.replace(tzinfo=local_zone)
-                end_dt_local = end_dt_naive.replace(tzinfo=local_zone)
-                dtstart_str = start_dt_local.strftime('%Y%m%dT%H%M')
-                dtend_str = end_dt_local.strftime('%Y%m%dT%H%M')
-                events.append(
-                    f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART;TZID={tzid}:{dtstart_str}\nDTEND;TZID={tzid}:{dtend_str}\nEND:VEVENT"""
-                )
+            dtstamp = now.strftime('%Y%m%dT%H%M%S')
+            # Localize to USER_TIMEZONE and output DTSTART;TZID=USER_TIMEZONE:...
+            zone = ZoneInfo(USER_TIMEZONE)
+            start_dt_local = start_dt_naive.replace(tzinfo=zone)
+            end_dt_local = end_dt_naive.replace(tzinfo=zone)
+            dtstart_str = start_dt_local.strftime('%Y%m%dT%H%M%S')
+            dtend_str = end_dt_local.strftime('%Y%m%dT%H%M%S')
+            events.append(
+                f"""BEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nSUMMARY:{summary}\nDTSTART;TZID={USER_TIMEZONE}:{dtstart_str}\nDTEND;TZID={USER_TIMEZONE}:{dtend_str}\nEND:VEVENT"""
+            )
         ics_content = (
             "BEGIN:VCALENDAR\n"
             "VERSION:2.0\n"
             "CALSCALE:GREGORIAN\n"
             "PRODID:-//AI Task Organizer//EN\n"
             "METHOD:PUBLISH\n"
-            f"X-WR-TIMEZONE:{tzid}\n"
-            f"{vtimezone}"
+            f"X-WR-TIMEZONE:{USER_TIMEZONE}\n"
             f"{chr(10).join(events)}\n"
             "END:VCALENDAR"
         )
-        debug_print("Generated ICS content:\n", ics_content)
+        debug_print("Generated ICS content (with user timezone):\n", ics_content)
         return ics_content
 
     # Update all calls to generate_ics to pass user_timezone as the third argument
