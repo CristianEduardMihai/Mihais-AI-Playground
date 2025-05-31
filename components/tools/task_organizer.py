@@ -1,15 +1,12 @@
 from reactpy import component, html, use_state
-import datetime
 import threading, time
 import requests
 import json
 import random
 import string
 import components.common.calendar_db as calendar_db
-from datetime import timedelta
-from zoneinfo import ZoneInfo
 
-DEBUG_MODE = True  # Set to True to enable verbose debug output
+DEBUG_MODE = False  # Set to True to enable verbose debug output
 
 def debug_print(*args, **kwargs):
     if DEBUG_MODE:
@@ -132,15 +129,30 @@ def TaskOrganizer():
     user_timezone, set_user_timezone = use_state("")
     timezone_error, set_timezone_error = use_state("")
 
-    # Day selector state
-    today = datetime.date.today()
-    days = [(today + timedelta(days=i)) for i in range(15)]
-    day_options = [d.strftime('%Y-%m-%d (%a)') for d in days]
-    selected_day, set_selected_day = use_state(day_options[0])
-
     # Save/Load box state
     link_mode, set_link_mode = use_state('existing')  # 'existing' or 'new'
     link_input, set_link_input = use_state("")
+    timezone_ai_loading, set_timezone_ai_loading = use_state(False)
+    timezone_ai_error, set_timezone_ai_error = use_state("")
+    timezone_ai_input, set_timezone_ai_input = use_state("")
+
+    copied_link, set_copied_link = use_state(False)
+
+    def handle_copy_link(link):
+        try:
+            import pyperclip
+            pyperclip.copy(link)
+        except Exception:
+            try:
+                import subprocess
+                subprocess.run(f'echo "{link.strip()}" | xclip -selection clipboard', shell=True)
+            except Exception:
+                pass
+        set_copied_link(True)
+        def clear():
+            time.sleep(1.1)
+            set_copied_link(False)
+        threading.Thread(target=clear, daemon=True).start()
 
     def handle_task_change(idx, field, value):
         def updater(prev):
@@ -224,8 +236,8 @@ def TaskOrganizer():
                 set_link_error(f"Failed to auto-save: {e}")
                 debug_print(f"Failed to auto-save calendar for user_id {new_id}: {e}")
 
-    def handle_save_schedule(_):
-        debug_print("handle_save_schedule called")
+    def handle_save_and_copy(_):
+        debug_print("handle_save_and_copy called")
         if not user_id:
             debug_print("No user_id provided")
             set_link_error("Please paste or generate a calendar link.")
@@ -240,31 +252,8 @@ def TaskOrganizer():
         set_calendar_url(f"/calendars/{user_id}")
         set_link_error("")
         debug_print(f"Calendar saved for user_id {user_id}")
-
-    def handle_day_change(e):
-        set_selected_day(e['target']['value'])
-        # On day change, if link is selected, load tasks for that day
-        if user_id:
-            ics = calendar_db.get_calendar(user_id)
-            if ics:
-                # Parse tasks for the selected day (simple: all events for that day)
-                import re
-                day_str = selected_day[:10].replace('-', '')
-                vevents = re.findall(r'BEGIN:VEVENT(.*?)END:VEVENT', ics, re.DOTALL)
-                tasks_for_day = []
-                for block in vevents:
-                    dtstart = re.search(r'DTSTART:(\d{8})T(\d{4})Z', block)
-                    summary = re.search(r'SUMMARY:([^\n]+)', block)
-                    duration = re.search(r'DTEND:(\d{8})T(\d{4})Z', block)
-                    if dtstart and dtstart.group(1) == day_str:
-                        tasks_for_day.append({
-                            'name': summary.group(1) if summary else '',
-                            'prep_time': '',
-                            'ai_estimate': False,
-                            'est_start': dtstart.group(2)[:2] + ':' + dtstart.group(2)[2:],
-                            'est_duration': ''
-                        })
-                set_tasks(tasks_for_day if tasks_for_day else [{"name": "", "prep_time": "", "ai_estimate": False, "est_start": "", "est_duration": ""}])
+        # Copy the link
+        handle_copy_link(f"https://mihais-ai-playground.xyz/calendars/{user_id}")
 
     def handle_link_mode_change(e):
         mode = e['target']['value']
@@ -279,6 +268,16 @@ def TaskOrganizer():
             new_id = generate_random_id()
             set_user_id(new_id)
             set_calendar_url(f"/calendars/{new_id}")
+            # Immediately save the current schedule to the new link if there are organized tasks
+            if organized_tasks and len(organized_tasks) > 0:
+                ics = generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
+                try:
+                    calendar_db.save_calendar(new_id, ics)
+                    set_link_error("")
+                    debug_print(f"Calendar auto-saved for user_id {new_id} after switching to new link mode")
+                except Exception as e:
+                    set_link_error(f"Failed to auto-save: {e}")
+                    debug_print(f"Failed to auto-save calendar for user_id {new_id} after switching to new link mode: {e}")
 
     def handle_link_input(e):
         val = e['target']['value'].strip()
@@ -291,19 +290,17 @@ def TaskOrganizer():
                 uid = val
             set_user_id(uid)
             set_calendar_url(f"/calendars/{uid}")
-            # Always load tasks for selected day as soon as link is entered
+
             ics = calendar_db.get_calendar(uid)
             if ics:
                 import re
-                day_str = selected_day[:10].replace('-', '')
                 vevents = re.findall(r'BEGIN:VEVENT(.*?)END:VEVENT', ics, re.DOTALL)
                 tasks_for_day = []
                 for block in vevents:
-                    dtstart = re.search(r'DTSTART:(\d{8})T(\d{4})Z', block)
                     summary = re.search(r'SUMMARY:([^\n]+)', block)
-                    if dtstart and dtstart.group(1) == day_str:
-                        # Only treat as a task if it's not a rest/prep block
-                        summary_val = summary.group(1) if summary else ''
+                    dtstart = re.search(r'DTSTART:(\d{8})T(\d{4})Z', block)
+                    if summary and dtstart:
+                        summary_val = summary.group(1)
                         if not summary_val.lower().startswith('rest') and not summary_val.lower().startswith('prep'):
                             tasks_for_day.append({
                                 'name': summary_val,
@@ -314,7 +311,6 @@ def TaskOrganizer():
                             })
                 set_tasks(tasks_for_day if tasks_for_day else [{"name": "", "prep_time": "", "ai_estimate": False, "est_start": "", "est_duration": ""}])
         elif link_mode == 'new':
-            # Do nothing on input for new link mode
             pass
 
     # Inject JS to auto-detect timezone and set it in state
@@ -388,17 +384,24 @@ def TaskOrganizer():
     # Show a warning if timezone is not detected or is UTC or a UTC offset
     show_tz_warning = (not user_timezone or user_timezone.upper() == 'UTC' or user_timezone.startswith('UTC'))
 
-    timezone_ai_loading, set_timezone_ai_loading = use_state(False)
-    timezone_ai_error, set_timezone_ai_error = use_state("")
-    timezone_ai_input, set_timezone_ai_input = use_state("")
+    def handle_timezone_input_blur(e=None):
+        if e is not None:
+            val = e['target']['value']
+            set_timezone_ai_input(val)
+            # After setting, call the resolver
+            handle_timezone_input_blur_or_enter(val)
 
-    def handle_timezone_input(e):
-        val = e['target']['value']
+    def handle_timezone_submit(_):
+        # Get the value from the input box (from state)
+        val = timezone_ai_input
         set_timezone_ai_input(val)
-        set_timezone_ai_error("")
+        handle_timezone_input_blur_or_enter(val)
 
-    def handle_timezone_input_blur_or_enter(e=None):
-        val = timezone_ai_input.strip()
+    def handle_timezone_input_blur_or_enter(val=None):
+        # Accept value as argument, or use state
+        if val is None:
+            val = timezone_ai_input
+        val = val.strip()
         if not val:
             return
         set_timezone_ai_loading(True)
@@ -435,9 +438,6 @@ def TaskOrganizer():
             set_timezone_ai_error(f"AI error: {ex}")
         set_timezone_ai_loading(False)
 
-    def handle_timezone_input_keydown(e):
-        if e.get('key') == 'Enter':
-            handle_timezone_input_blur_or_enter(e)
 
     return html.div(
         {},
@@ -445,32 +445,25 @@ def TaskOrganizer():
         html.link({"rel": "stylesheet", "href": "/static/css/tools/task_organizer.css"}),
         html.nav({"className": "navbar"}, html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")),
         (show_tz_warning and html.div({"className": "error-message"}, "Could not detect your timezone name. Calendar times may be off (using UTC offset only).")) or None,
-        html.div({"style": {"color": "#888", "fontSize": "0.9em", "marginBottom": "0.5em"}}, f"Detected timezone: {user_timezone or 'UTC'}"),
+        html.div({"style": {"color": "#888", "fontSize": "0.9em", "marginBottom": "0.5em"}}, f"Timezone: {user_timezone or 'Defaulting to UTC'}"),
         html.div({"className": "task-organizer"},
-            # Timezone input box and submit button above day selector
             show_tz_warning and html.div({"className": "timezone-row"},
                 html.label({}, "Enter your city/region or timezone:"),
                 html.input({
                     "type": "text",
                     "value": timezone_ai_input,
-                    "onBlur": handle_timezone_input_blur_or_enter,
-                    "onChange": handle_timezone_input,
+                    "onBlur": handle_timezone_input_blur,
                     "placeholder": "e.g. Bucharest, UTC+3, Europe/Moscow",
                     "className": "timezone-input"
                 }),
                 html.button({
                     "type": "button",
-                    "onClick": handle_timezone_input_blur_or_enter,
+                    "onClick": handle_timezone_submit,
                     "disabled": timezone_ai_loading
                 }, "Submit"),
                 timezone_ai_loading and html.span({"className": "timezone-status loading"}, "Resolving...") or None,
                 timezone_ai_error and html.span({"className": "timezone-status error"}, timezone_ai_error) or None
             ) or None,
-            html.div({"className": "day-selector"},
-                html.select({"value": selected_day, "onChange": handle_day_change, "className": "day-selector"},
-                    *[html.option({"value": d}, d) for d in day_options]
-                ),
-            ),
             html.h2("AI Task Organizer"),
             html.div({"className": "form-group"},
                 html.label({},
@@ -586,12 +579,12 @@ def TaskOrganizer():
                                 "type": "text", "placeholder": "Paste or enter calendar link/ID...", "value": link_input, "onInput": handle_link_input, "className": "calendar-link-input"
                             }) or None),
                             (link_error and html.div({"className": "error-message"}, link_error) or None),
-                            (calendar_url and html.div({},
+                            (calendar_url and html.div({"style": {"display": "flex", "alignItems": "center", "gap": "0.5em", "marginTop": "0.7em"}},
                                 html.p({}, "Add this link to Google Calendar via 'Add other calendars > From URL':"),
                                 html.code({}, f"https://mihais-ai-playground.xyz{calendar_url}")
                             ) or None)
                         ),
-                        html.button({"onClick": handle_save_schedule, "className": "btn btn-gradient"}, "Save Schedule"),
+                        html.button({"onClick": handle_save_and_copy, "className": "btn btn-gradient"}, ("Save and Copy" if not copied_link else "Copied!")),
                         link_error and html.div({"className": "error-message"}, link_error),
                         html.button({"onClick": lambda e: set_show_link_modal(False), "className": "btn btn-secondary", "style": {"marginTop": "1rem"}}, "Close")
                     )
