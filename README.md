@@ -29,11 +29,12 @@ Built for the [Hack Club](https://hackclub.com/) Neighborhood Hackatron, Mihai's
 #### Health 🥗
 - **Recipe Maker 🍳**: Input your ingredients and let AI suggest recipes. Customize how healthy the recipes should be!
 
-#### QOL Tools ✨
+#### Tools ✨
 - **PC Part Picker 🖥️**: Get AI-generated recommendations for PC parts based on your preferences.
 - **Color Palette Picker 🎨**: Generate color palettes for your projects with AI.
 - **Interview Prep Assistant 🎤**: Prepare for your next job interview with AI-generated questions and tips.
 - **HTML5 Portfolio Builder 🖼️**: Create a beautiful HTML5 portfolio to showcase your work, with AI assistance.
+- **Task Organizer 📅**: Organize your tasks and calendars with AI assistance.
 
 #### Fun 🤖
 - **Bot Vs Bot Roast Battle 🔥**: Watch two AI bots engage in a hilarious roast battle!

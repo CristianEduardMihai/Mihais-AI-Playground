@@ -63,7 +63,7 @@ def Home():
     categories = [
         ("learning", "Learning 📚"),
         ("health", "Health 🥗"),
-        ("tools", "QOL Tools ✨"),
+        ("tools", "Tools ✨"),
         ("fun", "Fun 🤖")
     ]
 
@@ -128,37 +128,9 @@ def Home():
             "style": {"background": grad}  # Only override background
         }
 
-    # Why not in the CSS file? Because it doesn't render the text bubble on hover/focus
     def info_icon(module_id, history):
-        tooltip_style = {
-            "position": "absolute",
-            "left": 0,
-            "right": 0,
-            "top": "2.2em",
-            "margin": "0 auto",
-            "zIndex": 100,
-            "background": "rgba(40,40,60,0.97)",
-            "color": "#fff",
-            "padding": "0.7em 1em",
-            "borderRadius": "8px",
-            "boxShadow": "0 2px 12px rgba(123,47,242,0.18)",
-            "fontSize": "0.98em",
-            "minWidth": "320px",
-            "maxWidth": "200vw",
-            "width": "fit-content",
-            "whiteSpace": "normal",
-            "pointerEvents": "auto"
-        }
-        icon_style = {
-            "display": "inline-block",
-            "marginLeft": "0.5em",
-            "cursor": "pointer",
-            "fontSize": "1.1em",
-            "color": "#7b2ff2",
-            "position": "relative"
-        }
         return html.span(
-            {"style": icon_style,
+            {"className": "home-info-icon",
              "tabIndex": 0,
              "onMouseEnter": lambda e: set_info_open(module_id),
              "onMouseLeave": lambda e: set_info_open(None),
@@ -167,7 +139,7 @@ def Home():
              "onClick": lambda e: set_info_open(module_id if info_open != module_id else None)
             },
             "ℹ️",
-            info_open == module_id and html.div({"style": tooltip_style}, history) or None
+            info_open == module_id and html.div({"class": "home-info-tooltip"}, history) or None
         )
 
     def filtered_cards():
