@@ -175,7 +175,16 @@ footer {
     margin-bottom: 2rem;
     gap: 1rem;
 }
+.home-search-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    max-width: 420px;
+    gap: 0.5em;
+}
 .home-search-bar {
+    flex: 1 1 auto;
     width: 100%;
     max-width: 420px;
     padding: 0.7em 1.2em;
@@ -185,13 +194,26 @@ footer {
     outline: none;
     box-shadow: 0 2px 8px rgba(123,47,242,0.08);
     background: rgba(255,255,255,0.7);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
     transition: border 0.2s, box-shadow 0.2s;
     box-sizing: border-box;
 }
 .home-search-bar:focus {
     border: 2px solid #f357a8;
     box-shadow: 0 0 0 2px #f357a833;
+}
+.home-search-btn {
+    flex: 0 0 auto;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0.3em 0.8em;
+    font-size: 1.3em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    box-shadow: 0 2px 12px rgba(123,47,242,0.08);
+    margin: 0;
 }
 .home-tabs {
     display: flex;
@@ -262,6 +284,27 @@ footer {
     100% {
         transform: scale(1.04);
     }
+}
+
+@keyframes search-btn-bounce {
+    0% {
+        transform: scale(1);
+    }
+    30% {
+        transform: scale(1.18);
+    }
+    60% {
+        transform: scale(0.96);
+    }
+    80% {
+        transform: scale(1.08);
+    }
+    100% {
+        transform: scale(1.0);
+    }
+}
+.home-search-btn.clicked {
+    animation: search-btn-bounce 0.45s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .home-info-tooltip {
@@ -335,6 +378,9 @@ footer {
         text-align: center;
         line-height: 1.5;
     }
+    .home-search-row {
+        max-width: 95vw;
+    }
     .home-search-bar {
         font-size: 1.25em;
         padding: 1.2em 2em;
@@ -342,6 +388,12 @@ footer {
         width: 95vw;
         border-width: 2.5px;
         box-sizing: border-box;
+    }
+    .home-search-btn {
+        font-size: 1.7em;
+        min-width: 56px;
+        min-height: 56px;
+        padding: 0.6em 0.7em;
     }
     .home-tabs {
         gap: 0.7rem 0.5rem;
@@ -422,6 +474,9 @@ footer {
         align-items: center;
         justify-content: center;
     }
+    .home-search-row {
+        max-width: 98vw;
+    }
     .home-search-bar {
         font-size: 1.32em;
         padding: 1.5em 2.5em;
@@ -429,6 +484,12 @@ footer {
         width: 98vw;
         border-width: 3px;
         box-sizing: border-box;
+    }
+    .home-search-btn {
+        font-size: 2em;
+        min-width: 60px;
+        min-height: 60px;
+        padding: 0.4em 0.8em;
     }
     .home-tabs {
         gap: 0.6rem 0.3rem;

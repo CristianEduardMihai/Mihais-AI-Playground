@@ -1,5 +1,7 @@
 from reactpy import component, html, use_state
 import random
+import threading
+import time
 
 button_variations = [
     "✨ Take me there!",
@@ -30,9 +32,11 @@ button_variations = [
 @component
 def Home():
     search, set_search = use_state("")
+    search_box, set_search_box = use_state("")
     tab, set_tab = use_state("learning")
     tab_clicked, set_tab_clicked = use_state(False)
     info_open, set_info_open = use_state(None)  # Track which info box is open
+    search_btn_clicked, set_search_btn_clicked = use_state(False)
 
     # Module data for easier filtering
     modules = {
@@ -109,6 +113,25 @@ def Home():
     def handle_tab_click(cat_key):
         set_tab(cat_key)
         set_tab_clicked(True)
+
+    def handle_search(e=None):
+        set_search(search_box)
+        set_search_btn_clicked(True)
+        def clear():
+            time.sleep(0.45)
+            set_search_btn_clicked(False)
+        threading.Thread(target=clear, daemon=True).start()
+
+    def handle_input_blur(e):
+        val = e["target"]["value"]
+        set_search_box(val)
+        set_search(val)
+
+    def handle_input_keydown(e):
+        if e.get("key") == "Enter":
+            val = e["target"]["value"]
+            set_search_box(val)
+            set_search(val)
 
     def get_bg_style():
         if not tab_clicked:
@@ -195,13 +218,24 @@ def Home():
         ),
         html.div(
             {"class": "home-search-tabs"},
-            html.input({
-                "type": "text",
-                "placeholder": "Search modules...",
-                "value": search,
-                "onInput": lambda e: set_search(e["target"]["value"]),
-                "className": "home-search-bar"
-            }),
+            html.div(
+                {"class": "home-search-row"},
+                html.input({
+                    "type": "text",
+                    "placeholder": "Search modules...",
+                    "value": search_box,
+                    "onBlur": handle_input_blur,
+                    "onKeyDown": handle_input_keydown,
+                    "className": "home-search-bar",
+                }),
+                html.button({
+                    "type": "button",
+                    "onClick": handle_search,
+                    "className": f"btn-gradient home-search-btn{' clicked' if search_btn_clicked else ''}",
+                    "tabIndex": 0,
+                    "aria-label": "Search"
+                }, "\U0001F50D")  # Eyeglass emoji
+            ),
             html.div(
                 {"class": "home-tabs"},
                 *[
