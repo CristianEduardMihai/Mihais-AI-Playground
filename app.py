@@ -7,8 +7,11 @@ from contextlib import asynccontextmanager
 import os
 import time
 import asyncio
+import re
+import requests
 from components.common.router import RootRouter
 import components.common.calendar_db as calendar_db
+from components.common.config import GITHUB_ACTIONS_RUN, set_github_actions_run
 
 DEBUG_MODE = False  # Set to True to enable verbose debug output
 
@@ -91,8 +94,8 @@ configure(
     options=Options(
         head=html.head(
             html.title("Mihai's AI Playground"),
-            html.link({"rel": "icon", "type": "image/png", "href": "/static/favicon.ico"}),
-            html.link({"rel": "apple-touch-icon", "href": "/apple-touch-icon.png"})
+            html.link({"rel": "icon", "type": "image/png", "href": f"/static/favicon.ico?v={GITHUB_ACTIONS_RUN}"}),
+            html.link({"rel": "apple-touch-icon", "href": f"/apple-touch-icon.png?v={GITHUB_ACTIONS_RUN}"})
         )
     )
 )
@@ -112,6 +115,26 @@ def favicon_16(): return FileResponse("static/favicon_io/favicon-16x16.png")
 def favicon_32(): return FileResponse("static/favicon_io/favicon-32x32.png")
 @app.get("/site.webmanifest")
 def site_manifest(): return FileResponse("static/favicon_io/site.webmanifest")
+
+# ─── GitHub Actions Run Number ───────────────────────────────────────
+GITHUB_ACTIONS_URL = "https://github.com/CristianEduardMihai/Mihais-AI-Playground/actions"
+def fetch_github_actions_run():
+    try:
+        resp = requests.get(GITHUB_ACTIONS_URL, timeout=5)
+        if resp.ok:
+            match = re.search(r"/actions/runs/(\d+)", resp.text)
+            if match:
+                return match.group(1)
+    except Exception:
+        pass
+    return None
+
+# Set the global config variable at startup
+run_number = fetch_github_actions_run()
+print("Fetched GitHub Actions run number:", run_number)
+if not run_number:
+    run_number = str(int(time.time()))
+set_github_actions_run(run_number)
 
 # ─── Local Dev Entrypoint ───────────────────────────────────────────
 if __name__ == "__main__":

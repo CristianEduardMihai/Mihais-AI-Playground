@@ -1,4 +1,4 @@
-from reactpy import component, html, use_state, use_effect
+from reactpy import component, html, use_state
 import requests
 import json
 import base64
@@ -188,6 +188,10 @@ def HTML5PortfolioBuilder():
             set_subtitle(data.get("subtitle", ""))
             set_color_style(data.get("color_style", ""))
             set_projects(data.get("projects", [{"title": "", "desc": "", "link": ""}]))
+            set_refine_title(data.get("refine_title", True))
+            set_refine_subtitle(data.get("refine_subtitle", True))
+            set_refine_projects(data.get("refine_projects", True))
+            set_refine_project_titles(data.get("refine_project_titles", True))
             set_error("")
             set_show_json_modal(False)
         except Exception as e:
@@ -198,7 +202,11 @@ def HTML5PortfolioBuilder():
             "title": title,
             "subtitle": subtitle,
             "color_style": color_style,
-            "projects": projects
+            "projects": projects,
+            "refine_title": refine_title,
+            "refine_subtitle": refine_subtitle,
+            "refine_projects": refine_projects,
+            "refine_project_titles": refine_project_titles
         }
         set_json_export_text(json.dumps(payload, indent=2, ensure_ascii=False))
         set_show_json_export(True)
@@ -224,9 +232,10 @@ def HTML5PortfolioBuilder():
         set_show_json_export(False)
         set_json_export_text("")
 
+    from components.common.config import GITHUB_ACTIONS_RUN
     return html.div(
         {},
-        html.link({"rel": "stylesheet", "href": "/static/css/tools/HTML5_portfolio_builder.css"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/tools/HTML5_portfolio_builder.css?v={GITHUB_ACTIONS_RUN}"}),
         html.nav({"className": "navbar"}, html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")),
         html.div(
             {"className": "portfolio-builder"},
@@ -275,7 +284,7 @@ def HTML5PortfolioBuilder():
                 html.label({}, html.input({"type": "checkbox", "checked": refine_subtitle, "onChange": lambda e: set_refine_subtitle(e["target"]["checked"])}), " Refine Subtitle")
             ),
             html.div({"className": "form-group"},
-                html.input({"type": "text", "className": "input-color-style", "value": color_style, "onBlur": lambda e: set_color_style(e["target"]["value"]), "placeholder": "Color Style"})
+                html.input({"type": "text", "className": "input-color-style", "value": color_style, "onBlur": lambda e: set_color_style(e["target"]["value"]), "placeholder": "Color Gradient Style"})
             ),
             html.div({"className": "ai-refine-options"},
                 html.label({}, html.input({"type": "checkbox", "checked": refine_project_titles, "onChange": lambda e: set_refine_project_titles(e["target"]["checked"])}), " Refine Project Titles"),

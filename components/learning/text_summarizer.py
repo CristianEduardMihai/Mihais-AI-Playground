@@ -75,10 +75,11 @@ def TextSummarizer():
         except Exception as e:
             raise Exception(f"Summarization failed: {e}")
 
+    from components.common.config import GITHUB_ACTIONS_RUN
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": "/static/css/learning/text_summarizer.css"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/learning/text_summarizer.css?v={GITHUB_ACTIONS_RUN}"}),
         html.nav(
             {"className": "navbar"},
             html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home"),

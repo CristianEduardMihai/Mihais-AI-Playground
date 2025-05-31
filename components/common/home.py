@@ -212,10 +212,11 @@ def Home():
             )
         return cards
 
+    from components.common.config import GITHUB_ACTIONS_RUN
     return html.div(
         {},
         html.div(get_bg_style()),
-        html.link({"rel": "stylesheet", "href": "/static/css/common/home.css"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/common/home.css?v={GITHUB_ACTIONS_RUN}"}),
         html.header(
             html.h1("Mihai's AI Playground"),
             html.p("Explore fun and useful AI-powered tools!")

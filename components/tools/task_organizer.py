@@ -438,11 +438,11 @@ def TaskOrganizer():
             set_timezone_ai_error(f"AI error: {ex}")
         set_timezone_ai_loading(False)
 
-
+    from components.common.config import GITHUB_ACTIONS_RUN
     return html.div(
         {},
         timezone_script,
-        html.link({"rel": "stylesheet", "href": "/static/css/tools/task_organizer.css"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/tools/task_organizer.css?v={GITHUB_ACTIONS_RUN}"}),
         html.nav({"className": "navbar"}, html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")),
         (show_tz_warning and html.div({"className": "error-message"}, "Could not detect your timezone name. Calendar times may be off (using UTC offset only).")) or None,
         html.div({"style": {"color": "#888", "fontSize": "0.9em", "marginBottom": "0.5em"}}, f"Timezone: {user_timezone or 'Defaulting to UTC'}"),

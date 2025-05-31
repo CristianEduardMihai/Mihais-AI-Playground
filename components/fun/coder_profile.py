@@ -52,9 +52,10 @@ def CoderProfile():
         finally:
             set_loading(False)
 
+    from components.common.config import GITHUB_ACTIONS_RUN
     return html.div(
         {"className": "coder-profile"},
-        html.link({"rel": "stylesheet", "href": "/static/css/fun/coder_profile.css"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/fun/coder_profile.css?v={GITHUB_ACTIONS_RUN}"}),
         html.div({"className": "background-gradient-blur"}),
         html.nav(
             {"className": "navbar"},

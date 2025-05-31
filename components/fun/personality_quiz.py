@@ -77,9 +77,10 @@ def PersonalityQuiz():
             set_loading(False)
 
     # --- render ---
+    from components.common.config import GITHUB_ACTIONS_RUN
     return html.div(
         {"className": "personality-quiz"},
-        html.link({"rel": "stylesheet", "href": "/static/css/fun/personality_quiz.css"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/fun/personality_quiz.css?v={GITHUB_ACTIONS_RUN}"}),
         html.div({"className": "background-gradient-blur"}),
         html.nav(
             {"className": "navbar"},

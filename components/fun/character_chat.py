@@ -1,4 +1,4 @@
-from reactpy import component, html, use_state, use_effect
+from reactpy import component, html, use_state
 import json
 import os
 import asyncio
@@ -82,10 +82,12 @@ def CharacterChat():
         return None
 
     # Fix: Use class instead of className for HTML attributes
+    from components.common.config import GITHUB_ACTIONS_RUN
+    #print("GITHUB_ACTIONS_RUN is", GITHUB_ACTIONS_RUN)
     return html.div(
         {},
         html.div({"class": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": "/static/css/fun/character_chat.css"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/fun/character_chat.css?v={GITHUB_ACTIONS_RUN}"}),
         html.div(
             {"class": "home-btn-row"},
             html.a({"href": "/", "class": "btn btn-gradient"}, "🏠 Home")

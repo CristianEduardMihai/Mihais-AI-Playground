@@ -112,10 +112,11 @@ def LanguageBuddy():
             code = lang["name"][:2].upper() if len(lang["name"]) >= 2 else lang["name"].upper()
         return html.option({"value": lang["name"]}, f"{code} - {lang['flag']} {lang['name']}")
 
+    from components.common.config import GITHUB_ACTIONS_RUN
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": "/static/css/learning/language_buddy.css"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/learning/language_buddy.css?v={GITHUB_ACTIONS_RUN}"}),
         html.div(
             {"className": "home-btn-row"},
             html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")

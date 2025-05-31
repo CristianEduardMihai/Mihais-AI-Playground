@@ -182,10 +182,11 @@ def RedditLikeStoryteller():
             set_audio_error(f"Audio generation failed: {e}")
         set_audio_loading(False)
 
+    from components.common.config import GITHUB_ACTIONS_RUN
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": "/static/css/fun/reddit_like_storyteller.css"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/fun/reddit_like_storyteller.css?v={GITHUB_ACTIONS_RUN}"}),
         html.nav(
             {"className": "navbar"},
             html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")

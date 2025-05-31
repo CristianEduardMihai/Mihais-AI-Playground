@@ -96,13 +96,14 @@ def BotVsBotRoastBattle():
         []
     )
 
+    from components.common.config import GITHUB_ACTIONS_RUN
     return html.div(
         {},
         # background blur
         html.div({"className": "background-gradient-blur"}),
 
         # stylesheet
-        html.link({"rel": "stylesheet", "href": "/static/css/fun/roast_battle.css"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/fun/roast_battle.css?v={GITHUB_ACTIONS_RUN}"}),
 
         # navbar
         html.nav(

@@ -82,10 +82,11 @@ def Translator():
         flag_and_name = lang["label"]
         return html.option({"value": lang["code"]}, f"{code} - {flag_and_name}")
 
+    from components.common.config import GITHUB_ACTIONS_RUN
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": "/static/css/learning/translator.css"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/learning/translator.css?v={GITHUB_ACTIONS_RUN}"}),
         html.nav(
             {"className": "navbar"},
             html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home"),
