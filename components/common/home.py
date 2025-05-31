@@ -32,32 +32,32 @@ def Home():
     search, set_search = use_state("")
     tab, set_tab = use_state("learning")
     tab_clicked, set_tab_clicked = use_state(False)
+    info_open, set_info_open = use_state(None)  # Track which info box is open
 
     # Module data for easier filtering
     modules = {
         "learning": [
-            {"title": "Language Buddy 🌍", "desc": "Practice your target language with an AI buddy!", "href": "/learning/language-buddy"},
-            {"title": "Spell Check 📝", "desc": "Correct your writing, tone and much more.", "href": "/learning/spell-check"},
-            {"title": "Translator 🌎", "desc": "Translate text between multiple languages.", "href": "/learning/translator"},
-            {"title": "Text Summarizer 📚", "desc": "Summarize long texts into concise summaries.", "href": "/learning/text-summarizer"},
+            {"title": "Language Buddy 🌍", "desc": "Practice your target language with an AI buddy!", "href": "/learning/language-buddy", "history": "One of the earliest modules, Language Buddy started as a simple chat wrapper for the AI. Over time, it evolved to provide more interactive and helpful feedback, reflecting the project's shift from just wrapping AI to integrating it as a true backend. This module showcases the project's original vision: making AI accessible in a fun way."},
+            {"title": "Spell Check 📝", "desc": "Correct your writing, tone and much more.", "href": "/learning/spell-check", "history": "Spell Check is one of the earliest module, and does only basic correction. It benefited from early UI/UX improvements."},
+            {"title": "Translator 🌎", "desc": "Translate text between multiple languages.", "href": "/learning/translator", "history": "The Translator module was added soon after Language Buddy, leveraging AI for text translation. It was improved with better text input handling and mobile support, and was part of the batch of modules that made the site useful for practical tasks."},
+            {"title": "Text Summarizer 📚", "desc": "Summarize long texts into concise summaries.", "href": "/learning/text-summarizer", "history": "Text Summarizer was introduced as the project matured, reflecting a growing focus on productivity tools. It benefited from the improved backend and UI."},
         ],
         "health": [
-            {"title": "Recipe Maker 🍳", "desc": "Input your ingredients and let AI suggest recipes. Customize how healthy the recipes should be!", "href": "/health/recipe-maker"},
-#            {"title": "Calorie Tracker 🔢", "desc": "Track your daily calorie intake with the help of AI.", "href": "/health/calorie-tracker"},
+            {"title": "Recipe Maker 🍳", "desc": "Input your ingredients and let AI suggest recipes. Customize how healthy the recipes should be!", "href": "/health/recipe-maker", "history": "Recipe Maker was the first module. It got a polished UI and mobile support. It was also a testbed for integrating more complex AI output into the frontend, and inspired later modules to do more with the AI's responses."},
         ],
         "tools": [
-            {"title": "PC Part Picker 🖥️", "desc": "Get AI-generated recommendations for PC parts based on your preferences.", "href": "/tools/pc-part-picker"},
-            {"title": "Color Palette Picker 🎨", "desc": "Generate color palettes for your projects with AI.", "href": "/tools/color-picker"},
-            {"title": "Interview Prep Assistant 🎤", "desc": "Prepare for your next job interview with AI-generated questions and tips.", "href": "/tools/interview-prep"},
-            {"title": "HTML5 Portfolio Builder 🖼️", "desc": "Create a beautiful HTML5 portfolio to showcase your work, with AI assistance.", "href": "/tools/html5-portfolio-builder"},
-            {"title": "Task Organizer 📅", "desc": "Organize your tasks and calendars with AI assistance.", "href": "/tools/task-organizer"},
+            {"title": "PC Part Picker 🖥️", "desc": "Get AI-generated recommendations for PC parts based on your preferences.", "href": "/tools/pc-part-picker", "history": "PC Part Picker was a milestone: it marked the project's move from simple text output to structured, actionable results. It was one of the first modules to use AI as a backend for generating complex, user-specific content."},
+            {"title": "Color Palette Picker 🎨", "desc": "Generate color palettes for your projects with AI.", "href": "/tools/color-picker", "history": "Color Palette Picker is a turning point in the project. Here, AI output was first visualized directly in the UI (as color boxes), not just as text. This set the stage for all future modules to integrate AI results more deeply into the frontend."},
+            {"title": "Interview Prep Assistant 🎤", "desc": "Prepare for your next job interview with AI-generated questions and tips.", "href": "/tools/interview-prep", "history": "Interview Prep Assistant was built as the project matured, benefiting from improved prompt engineering and UI/UX. It reflects the project's focus on practical, real-world tools powered by AI."},
+            {"title": "HTML5 Portfolio Builder 🖼️", "desc": "Create a beautiful HTML5 portfolio to showcase your work, with AI assistance.", "href": "/tools/html5-portfolio-builder", "history": "Portfolio Builder started as a simple form, but quickly evolved to use AI for content generation. It was a showcase for integrating AI with persistent user data and advanced UI features."},
+            {"title": "Task Organizer 📅", "desc": "Organize your tasks and calendars with AI assistance.", "href": "/tools/task-organizer", "history": "Task Organizer is the most complex module to date, featuring calendar integration and persistent storage. Its development spanned many commits, including major bugfixes, timezone handling, and UI/UX improvements. It represents the project's evolution into a true productivity platform, not just a collection of AI demos."},
         ],
         "fun": [
-            {"title": "Bot Vs Bot Roast Battle 🔥", "desc": "Watch two AI bots engage in a hilarious roast battle!", "href": "/fun/roast-battle"},
-            {"title": "Personality Quiz 🎭", "desc": "Answer fun questions and get a playful AI-generated personality analysis!", "href": "/fun/personality-quiz"},
-            {"title": "Reddit-like Storyteller 📖", "desc": "Generate stories in the style of your favorite subreddits.", "href": "/fun/reddit-like-storyteller"},
-            {"title": "Character Chat 🤖", "desc": "Chat with your favorite cartoon characters!", "href": "/fun/character-chat"},
-            {"title": "Coder Profile 🧑‍💻", "desc": "Upload your code and get a playful coder personality analysis!", "href": "/fun/coder-profile"},
+            {"title": "Bot Vs Bot Roast Battle 🔥", "desc": "Watch two AI bots engage in a hilarious roast battle!", "href": "/fun/roast-battle", "history": "Roast Battle was an early experiment in making AI fun and interactive. It was improved with more realistic arguments, better timing, and a mobile-friendly UI. It helped shape the playful side of the project."},
+            {"title": "Personality Quiz 🎭", "desc": "Answer fun questions and get a playful AI-generated personality analysis!", "href": "/fun/personality-quiz", "history": "Personality Quiz was part of a batch of modules added after a major code reorganization. It benefited from improved backend structure and was one of the first to use AI for playful, personalized content."},
+            {"title": "Reddit-like Storyteller 📖", "desc": "Generate stories in the style of your favorite subreddits.", "href": "/fun/reddit-like-storyteller", "history": "Reddit-like Storyteller was added alongside other fun modules, and was the first to use TTS (text-to-speech) for AI-generated stories. It reflects the project's technical growth and creative ambition."},
+            {"title": "Character Chat 🤖", "desc": "Chat with your favorite cartoon characters!", "href": "/fun/character-chat", "history": "Character Chat was inspired by the addition of character images and a focus on playful, engaging AI. It was part of a wave of UI/UX improvements and new features."},
+            {"title": "Coder Profile 🧑‍💻", "desc": "Upload your code and get a playful coder personality analysis!", "href": "/fun/coder-profile", "history": "Coder Profile was a later addition, showing the project's ability to analyze and respond to user-uploaded content. It highlights the platform's flexibility and the growing complexity of its AI integrations."},
         ]
     }
     categories = [
@@ -128,20 +128,65 @@ def Home():
             "style": {"background": grad}  # Only override background
         }
 
+    # Why not in the CSS file? Because it doesn't render the text bubble on hover/focus
+    def info_icon(module_id, history):
+        tooltip_style = {
+            "position": "absolute",
+            "left": 0,
+            "right": 0,
+            "top": "2.2em",
+            "margin": "0 auto",
+            "zIndex": 100,
+            "background": "rgba(40,40,60,0.97)",
+            "color": "#fff",
+            "padding": "0.7em 1em",
+            "borderRadius": "8px",
+            "boxShadow": "0 2px 12px rgba(123,47,242,0.18)",
+            "fontSize": "0.98em",
+            "minWidth": "320px",
+            "maxWidth": "200vw",
+            "width": "fit-content",
+            "whiteSpace": "normal",
+            "pointerEvents": "auto"
+        }
+        icon_style = {
+            "display": "inline-block",
+            "marginLeft": "0.5em",
+            "cursor": "pointer",
+            "fontSize": "1.1em",
+            "color": "#7b2ff2",
+            "position": "relative"
+        }
+        return html.span(
+            {"style": icon_style,
+             "tabIndex": 0,
+             "onMouseEnter": lambda e: set_info_open(module_id),
+             "onMouseLeave": lambda e: set_info_open(None),
+             "onFocus": lambda e: set_info_open(module_id),
+             "onBlur": lambda e: set_info_open(None),
+             "onClick": lambda e: set_info_open(module_id if info_open != module_id else None)
+            },
+            "ℹ️",
+            info_open == module_id and html.div({"style": tooltip_style}, history) or None
+        )
+
     def filtered_cards():
         cards = []
-        # If search is active, search all modules in all categories
         if search.strip():
             for cat, mods in modules.items():
-                # Use 'dianas' gradient for the 'fun' tab, otherwise use the tab's own gradient
                 grad_key = "dianas" if cat == "fun" else cat
-                for m in mods:
+                for idx, m in enumerate(mods):
+                    module_id = f"{cat}-{idx}"
                     if search.lower() in m["title"].lower() or search.lower() in m["desc"].lower():
                         button_text = random.choice(button_variations)
                         btn_style = {"background": tab_gradients[grad_key]["button"]}
                         cards.append(
-                            html.div({"class": "card"},
-                                html.h3(m["title"]),
+                            html.div({"class": "card", "style": {"position": "relative"}},
+                                html.h3(
+                                    {},
+                                    m["title"],
+                                    info_icon(module_id, m.get("history", ""))
+                                ),
                                 html.p(m["desc"]),
                                 html.a({"class": "btn-gradient", "href": m["href"], "style": btn_style}, button_text)
                             )
@@ -149,15 +194,18 @@ def Home():
             if not cards:
                 cards.append(html.p({"style": {"color": "#888", "marginTop": "2rem"}}, "No modules found."))
             return cards
-        # Otherwise, show modules for the selected tab
-        for m in modules[tab]:
+        for idx, m in enumerate(modules[tab]):
+            module_id = f"{tab}-{idx}"
             button_text = random.choice(button_variations)
-            # Use 'dianas' gradient for the 'fun' tab, otherwise use the tab's own gradient
             grad_key = "dianas" if tab == "fun" else tab
             btn_style = {"background": tab_gradients[grad_key]["button"]}
             cards.append(
-                html.div({"class": "card"},
-                    html.h3(m["title"]),
+                html.div({"class": "card", "style": {"position": "relative"}},
+                    html.h3(
+                        {},
+                        m["title"],
+                        info_icon(module_id, m.get("history", ""))
+                    ),
                     html.p(m["desc"]),
                     html.a({"class": "btn-gradient", "href": m["href"], "style": btn_style}, button_text)
                 )
