@@ -2,7 +2,7 @@ import sqlite3
 import os
 from datetime import datetime
 
-DB_PATH = os.path.join(os.path.dirname(__file__), '../../server-assets/database/calendars.db')
+DB_PATH = os.path.join(os.path.dirname(__file__), '../../server-assets/persistent/calendars.db')
 
 # python -c "import components.common.calendar_db as calendar_db; print('Calendar DB initialized.')"
 
