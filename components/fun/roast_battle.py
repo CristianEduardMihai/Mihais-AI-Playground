@@ -1,7 +1,7 @@
 from reactpy import component, html, use_state, use_effect, use_ref
-import requests
-import markdown
 import asyncio
+import aiohttp
+import markdown
 
 @component
 def BotVsBotRoastBattle():
@@ -15,7 +15,6 @@ def BotVsBotRoastBattle():
     task_ref = use_ref(None)
 
     async def roast_battle(cancel_ref):
-        import aiohttp
         set_chat([])
         set_error("")
         set_is_typing(True)

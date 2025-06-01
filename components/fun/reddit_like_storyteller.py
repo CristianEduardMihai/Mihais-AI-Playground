@@ -1,5 +1,6 @@
-from reactpy import component, html, use_state, use_effect
-import requests
+from reactpy import component, html, use_state
+import asyncio
+import aiohttp
 import markdown
 from bs4 import BeautifulSoup
 import re
@@ -49,8 +50,6 @@ def RedditLikeStoryteller():
         set_error("")
         set_story_html("")
         def run_async():
-            import asyncio
-            import aiohttp
             async def do_request():
                 try:
                     if generate_comments:

@@ -45,6 +45,15 @@ def LanguageBuddy():
 
     async def send_message(msg):
         try:
+            # Build chat history for context
+            history = []
+            for speaker, message in chat:
+                if speaker == "You":
+                    history.append({"role": "user", "content": message})
+                else:
+                    history.append({"role": "assistant", "content": message})
+            # Add the new user message
+            history.append({"role": "user", "content": msg})
             prompt = (
                 f"You are a friendly AI language buddy. The user is a {level} learner of {target_lang}, "
                 f"whose native language is {native_lang}. They have been learning for {learning_time}. "
@@ -59,7 +68,7 @@ def LanguageBuddy():
                     json={
                         "messages": [
                             {"role": "system", "content": prompt},
-                            {"role": "user", "content": msg}
+                            *history
                         ],
                         "max_tokens": 400
                     },
@@ -196,8 +205,7 @@ def LanguageBuddy():
                         html.input({
                             "type": "text",
                             "value": user_input,
-                            "onChange": lambda e: set_user_input(e["target"]["value"]),
-                            "onBlur": lambda e: None,                            "onKeyDown": handle_keydown,
+                            "onBlur": lambda e: set_user_input(e["target"]["value"]),
                             "placeholder": f"Type in {target_lang}…",
                             "disabled": is_typing
                         }),
@@ -205,7 +213,7 @@ def LanguageBuddy():
                             {
                                 "className": "btn btn-gradient",
                                 "onClick": handle_send,
-                                "disabled": not user_input.strip() or is_typing,
+                                "disabled": is_typing,
                             },
                             "Send"
                         ),

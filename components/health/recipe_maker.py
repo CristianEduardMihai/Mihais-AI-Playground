@@ -1,5 +1,6 @@
 from reactpy import component, html, use_state
-import requests
+import asyncio
+import aiohttp
 import markdown
 
 @component
@@ -28,8 +29,6 @@ def RecipeMaker():
         set_recipe_html("")  # Clear previous output
         import threading
         def run_async():
-            import asyncio
-            import aiohttp
             async def do_request():
                 try:
                     methods_str = ", ".join(selected_methods) if selected_methods else "any method"

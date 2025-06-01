@@ -1,5 +1,6 @@
 from reactpy import component, html, use_state
-import requests
+import asyncio
+import aiohttp
 import markdown
 
 @component
@@ -25,8 +26,6 @@ def PersonalityQuiz():
         set_error("")
         import threading
         def run_async():
-            import asyncio
-            import aiohttp
             async def do_request():
                 prompt = (
                     "You are a playful personality analyst. "

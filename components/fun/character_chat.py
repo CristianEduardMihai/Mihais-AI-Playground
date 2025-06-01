@@ -29,6 +29,15 @@ def CharacterChat():
         try:
             import aiohttp
             char_data = CHAR_MAP[selected_show]["characters"][selected_char]
+            # Build chat history for context
+            history = []
+            for speaker, message in chat:
+                if speaker == "You":
+                    history.append({"role": "user", "content": message})
+                else:
+                    history.append({"role": "assistant", "content": message})
+            # Add the new user message
+            history.append({"role": "user", "content": msg})
             system_prompt = (
                 f"You are roleplaying as {selected_char.capitalize()} from {selected_show.title()}. {char_data['personality_modifiers']} Stay in character."
                 "Respond to the user's messages as if you were that character, using their unique speech patterns and personality traits."
@@ -36,7 +45,6 @@ def CharacterChat():
                 f" Use the following information about {selected_char.capitalize()}: {char_data['personality_modifiers']}"
                 "Respond in short-sized messages, and use emojis where appropriate."
             )
-            user_prompt = msg
             async with aiohttp.ClientSession() as session:
                 async with session.post(
                     "https://ai.hackclub.com/chat/completions",
@@ -44,7 +52,7 @@ def CharacterChat():
                     json={
                         "messages": [
                             {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": user_prompt},
+                            *history
                         ]
                     },
                     timeout=aiohttp.ClientTimeout(total=60)
@@ -168,9 +176,7 @@ def CharacterChat():
                     html.input({
                         "type": "text",
                         "value": user_input,
-                        "onChange": lambda e: set_user_input(e["target"]["value"]),
-                        "onBlur": lambda e: None,
-                        "onKeyDown": handle_keydown,
+                        "onBlur": lambda e: set_user_input(e["target"]["value"]),
                         "placeholder": f"Type to chat with {selected_char.capitalize()}…" if selected_char else "Type a message…",
                         "disabled": is_typing
                     }),
@@ -178,7 +184,7 @@ def CharacterChat():
                         {
                             "class": "btn btn-gradient",
                             "onClick": handle_send,
-                            "disabled": not user_input.strip() or is_typing,
+                            "disabled": is_typing,
                         },
                         "Send"
                     ),

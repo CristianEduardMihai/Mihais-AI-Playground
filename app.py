@@ -120,7 +120,7 @@ def site_manifest(): return FileResponse("static/favicon_io/site.webmanifest")
 GITHUB_ACTIONS_URL = "https://github.com/CristianEduardMihai/Mihais-AI-Playground/actions"
 def fetch_CACHE_SUFFIX():
     try:
-        resp = requests.get(GITHUB_ACTIONS_URL, timeout=5)
+        resp = requests.get(GITHUB_ACTIONS_URL, timeout=5) # Using requests because it's okay to block, making sure the action URL is fetched before the app starts
         if resp.ok:
             match = re.search(r"/actions/runs/(\d+)", resp.text)
             if match:
