@@ -1,6 +1,6 @@
 # Cache mode: 'STABLE', 'ACTIONS', or 'DEV'
 # DEV mode is for development purposes and will not use cache. The suffix will be the current timestamp.
-CACHE_MODE = 'DEV'  # Change to 'STABLE', 'ACTIONS', or 'DEV' as needed
+CACHE_MODE = 'ACTIONS'  # Change to 'STABLE', 'ACTIONS', or 'DEV' as needed
 CACHE_SUFFIX = None
 
 def set_CACHE_SUFFIX(run_number=None):
