@@ -1,8 +1,8 @@
-from reactpy import component, html, use_state, use_effect
-import requests
-import asyncio
-import json
 import os
+import json
+import asyncio
+import aiohttp
+from reactpy import component, html, use_state, use_effect
 
 LANGUAGES_PATH = os.path.join(os.path.dirname(__file__), '../../static/assets/languages-en.json')
 with open(LANGUAGES_PATH, encoding='utf-8') as f:
@@ -26,77 +26,57 @@ def LanguageBuddy():
     def handle_start(_event=None):
         set_started(True)
         set_chat([])
+        set_feedback("")
         set_error("")
+        set_user_input("")
 
     def handle_send(_event=None):
-        msg = user_input.strip()
-        if not msg or is_typing:
+        if not user_input.strip() or is_typing:
             return
+        set_chat(chat + [("You", user_input)])
+        set_is_typing(True)
+        set_error("")
+        asyncio.create_task(send_message(user_input))
         set_user_input("")
-        asyncio.create_task(send_message(msg))
 
     def handle_keydown(e):
-        # If user hits Enter (and not Shift+Enter), send
-        if e.get("key") == "Enter" and not e.get("shiftKey"):
+        if e.get("key") == "Enter" and not e.get("shiftKey") and not is_typing and user_input.strip():
             handle_send()
 
     async def send_message(msg):
-        set_is_typing(True)
-        set_error("")
-        set_chat(lambda c: c + [("You", msg)])
-        payload = {
-            "messages": [
-                {"role": "system", "content": (
-                    f"You are a friendly language learning buddy. The user is a {level} "
-                    f"in {target_lang} (native: {native_lang}), and has been learning for "
-                    f"{learning_time or 'an unknown amount of'} time. Help them practice, "
-                    "correct mistakes, and encourage them. Keep it fun and supportive. "
-                    "Chat with the user primarily in the target language, at a level appropriate for their skills. "
-                    "Only use their native language to explain something if they are clearly confused or ask for clarification. "
-                    "Do not mix languages in the same sentence unless absolutely necessary for understanding. "
-                    "If the user makes a mistake, gently correct it and explain why, but keep the conversation mostly in the target language.\n"
-                    "When you reply, always return a JSON object with two fields: 'reply' (your chat message in the target language) and 'feedback' \n"
-                    "(a short, friendly tip or correction for the user, focusing on how they can improve their language skills, such as grammar, vocabulary, or pronunciation. \n"
-                    "Do NOT provide possible responses to the user's question; only give feedback on their language use and how to improve their typing or writing in the target language. \n"
-                    "Give the feedback in the user's native language, but do not use it in your chat message. \n"
-                    "Example: {\"reply\": \"Salut! Cum te simti azi?\", \"feedback\": \"Great job using the present tense! Try to use accents correctly in future messages.\"}")
-                },
-                *[
-                    {
-                        "role": "user" if speaker == "You" else "assistant",
-                        "content": message
-                    }
-                    for speaker, message in chat + [("You", msg)]
-                ]
-            ],
-            "max_tokens": 180
-        }
         try:
-            resp = requests.post(
-                "https://ai.hackclub.com/chat/completions",
-                json=payload,
-                headers={"Content-Type": "application/json"},
-                timeout=60,
+            prompt = (
+                f"You are a friendly AI language buddy. The user is a {level} learner of {target_lang}, "
+                f"whose native language is {native_lang}. They have been learning for {learning_time}. "
+                "Respond in the target language, keep it simple and encouraging, and correct mistakes gently. "
+                "After your reply, provide a short feedback or suggestion for improvement. "
+                "Format your response as follows: \n\n<reply>\n\nFEEDBACK: <feedback>. "
+                "Do not use Markdown or HTML formatting."
             )
-            resp.raise_for_status()
-            content = resp.json()["choices"][0]["message"]["content"].strip()
-            import re
-            # Extract the first JSON object from the response
-            match = re.search(r'\{.*?\}', content, re.DOTALL)
-            if match:
-                json_str = match.group(0)
-                try:
-                    data = json.loads(json_str)
-                    reply = data.get("reply", "")
-                    feedback_msg = data.get("feedback", "")
-                except Exception:
-                    reply = content
-                    feedback_msg = ""
-            else:
-                reply = content
-                feedback_msg = ""
-            set_chat(lambda c: c + [("Buddy", reply)])
-            set_feedback(feedback_msg)
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://ai.hackclub.com/chat/completions",
+                    json={
+                        "messages": [
+                            {"role": "system", "content": prompt},
+                            {"role": "user", "content": msg}
+                        ],
+                        "max_tokens": 400
+                    },
+                    headers={"Content-Type": "application/json"},
+                    timeout=60,
+                ) as resp:
+                    resp.raise_for_status()
+                    data = await resp.json()
+                    content = data["choices"][0]["message"]["content"]
+                    # Split feedback if present
+                    if "FEEDBACK:" in content:
+                        reply, fb = content.split("FEEDBACK:", 1)
+                        set_chat(chat + [("You", msg), (target_lang, reply.strip())])
+                        set_feedback(fb.strip())
+                    else:
+                        set_chat(chat + [("You", msg), (target_lang, content.strip())])
+                        set_feedback("")
         except Exception as e:
             set_error(f"Error: {e}")
         set_is_typing(False)
@@ -181,20 +161,17 @@ def LanguageBuddy():
                         "placeholder": "e.g. 6 months",
                     }),
                 ),
-                # start button
                 html.button(
                     {
                         "className": "btn btn-gradient",
                         "onClick": handle_start,
-                        "disabled": not (native_lang and target_lang and learning_time),
+                        "disabled": not (native_lang and target_lang and learning_time) or is_typing,
                     },
                     "Start Chatting!"
                 ),
             ),
-            # --- Chat + Feedback UI ---
             None if not started else html.div(
                 {"className": "chat-feedback-row"},
-                # Chat window and input
                 html.div(
                     {"className": "chat-col"},
                     html.div(
@@ -220,8 +197,7 @@ def LanguageBuddy():
                             "type": "text",
                             "value": user_input,
                             "onChange": lambda e: set_user_input(e["target"]["value"]),
-                            "onBlur": lambda e: None,  # Keep onBlur for future logic if needed
-                            "onKeyDown": handle_keydown,
+                            "onBlur": lambda e: None,                            "onKeyDown": handle_keydown,
                             "placeholder": f"Type in {target_lang}…",
                             "disabled": is_typing
                         }),
@@ -236,7 +212,6 @@ def LanguageBuddy():
                         html.p({"className": "error-message"}, error) if error else None,
                     ),
                 ),
-                # Feedback Box (separate column on desktop, below on mobile)
                 html.div(
                     {"className": "feedback-col"},
                     html.div(

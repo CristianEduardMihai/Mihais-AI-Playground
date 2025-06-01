@@ -1,4 +1,6 @@
 from reactpy import component, html, use_state
+import asyncio
+import aiohttp
 import markdown
 
 @component
@@ -27,13 +29,10 @@ def TextSummarizer():
         set_loading(False)
 
     def handle_submit(e):
-        import asyncio
         asyncio.create_task(summarize_text())
         return False
 
     async def fetch_summary(text, summary_type):
-        import asyncio
-        import requests
         await asyncio.sleep(0)
         try:
             if summary_type == "bullets":
@@ -51,27 +50,29 @@ def TextSummarizer():
                 system_prompt = (
                     "You are a helpful AI that summarizes text. "
                     "Summarize the user's input in a concise, clear way. "
-                    "Output the summary as plain text only, no lists or bullet points. "
+                    "Output the summary as plain text only. "
                     "Do not use Markdown or HTML formatting. "
                     "Preserve important details and main points. "
                     "If the text is very short, just rephrase it concisely. "
                     "Never include explanations or preamble, just the summary."
                 )
-            resp = requests.post(
-                "https://ai.hackclub.com/chat/completions",
-                json={
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": text}
-                    ],
-                    "max_tokens": 400
-                },
-                headers={"Content-Type": "application/json"},
-                timeout=60,
-            )
-            resp.raise_for_status()
-            content = resp.json()["choices"][0]["message"]["content"]
-            return content
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://ai.hackclub.com/chat/completions",
+                    json={
+                        "messages": [
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": text}
+                        ],
+                        "max_tokens": 400
+                    },
+                    headers={"Content-Type": "application/json"},
+                    timeout=60,
+                ) as resp:
+                    resp.raise_for_status()
+                    data = await resp.json()
+                    content = data["choices"][0]["message"]["content"]
+                    return content
         except Exception as e:
             raise Exception(f"Summarization failed: {e}")
 
@@ -106,11 +107,11 @@ def TextSummarizer():
                 html.button(
                     {
                         "type": "button",
-                        "className": "btn btn-gradient spellcheck-btn-small",
-                        "onClick": handle_submit,
+                        "className": f"btn btn-gradient spellcheck-btn-small{' disabled' if loading else ''}",
+                        "onClick": handle_submit if not loading else None,
                         "disabled": loading or not text.strip()
                     },
-                    "Summarize"
+                    "Summarizing..." if loading else "Summarize"
                 ),
                 html.div(
                     {"className": "spellcheck-split"},

@@ -1,5 +1,6 @@
 from reactpy import component, html, use_state
-import requests
+import aiohttp
+import asyncio
 import json
 import base64
 import re
@@ -40,12 +41,7 @@ def HTML5PortfolioBuilder():
     def remove_project(idx):
         set_projects(lambda prev: [p for i, p in enumerate(prev) if i != idx])
 
-    def ai_refine_portfolio_all(title, subtitle, color_style, projects, refine_title, refine_subtitle, refine_projects, refine_project_titles):
-        #print("--------- [DEBUG] ai_refine_portfolio_all called with:")
-        #print("  title:", title)
-        #print("  subtitle:", subtitle)
-        #print("  color_style:", color_style)
-        #print("  projects:", projects)
+    async def ai_refine_portfolio_all(title, subtitle, color_style, projects, refine_title, refine_subtitle, refine_projects, refine_project_titles):
         import time, random
         request_id = f"{int(time.time()*1000)}_{random.randint(1000,9999)}"
         try:
@@ -67,111 +63,90 @@ def HTML5PortfolioBuilder():
                 "- For the 'color_style', extract 2-3 hex color codes as an array called 'hexes', and rewrite as 'color_style_desc'.",
                 "Return JSON only. No explanations or ```.",
             ]
-            resp = requests.post(
-                "https://ai.hackclub.com/chat/completions",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "messages": [
-                        {"role": "system", "content": "\n".join(instructions)},
-                        {"role": "user", "content": json.dumps(input_obj)}
-                    ]
-                },
-                timeout=90
-            )
-            ai_raw = resp.json()["choices"][0]["message"]["content"]
-            #print("--------- [DEBUG] AI raw response:")
-            #print(ai_raw)
-            # Remove triple backticks and whitespace if present
-            ai_clean = ai_raw.strip()
-            if ai_clean.startswith("```"):
-                ai_clean = ai_clean.lstrip("`\n ")
-            if ai_clean.endswith("```"):
-                ai_clean = ai_clean.rstrip("`\n ")
-            # Try again if still wrapped
-            if ai_clean.startswith("json"):
-                ai_clean = ai_clean[4:].lstrip("\n ")
-            result = json.loads(ai_clean)
-            return {
-                "title": result.get("title", title),
-                "subtitle": result.get("subtitle", subtitle),
-                "color_style_desc": result.get("color_style_desc", color_style),
-                "hexes": result.get("hexes", []),
-                "projects": result.get("projects", projects)
-            }
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://ai.hackclub.com/chat/completions",
+                    headers={"Content-Type": "application/json"},
+                    json={
+                        "messages": [
+                            {"role": "system", "content": "\n".join(instructions)},
+                            {"role": "user", "content": json.dumps(input_obj)}
+                        ]
+                    },
+                    timeout=90
+                ) as resp:
+                    data = await resp.json()
+                    ai_raw = data["choices"][0]["message"]["content"]
+                    ai_clean = ai_raw.strip()
+                    if ai_clean.startswith("```"):
+                        ai_clean = ai_clean.lstrip("`\n ")
+                    if ai_clean.endswith("```"):
+                        ai_clean = ai_clean.rstrip("`\n ")
+                    if ai_clean.startswith("json"):
+                        ai_clean = ai_clean[4:].lstrip("\n ")
+                    result = json.loads(ai_clean)
+                    return {
+                        "title": result.get("title", title),
+                        "subtitle": result.get("subtitle", subtitle),
+                        "color_style_desc": result.get("color_style_desc", color_style),
+                        "hexes": result.get("hexes", []),
+                        "projects": result.get("projects", projects)
+                    }
         except Exception as e:
-            #print(f"--------- [DEBUG] AI exception: {e}")
             return {"title": title, "subtitle": subtitle, "color_style_desc": color_style, "hexes": [], "projects": projects}
 
-    def handle_generate(_):
-        # Blur all text inputs to trigger onBlur and update state
-        blur_script = html.script({
-            "dangerouslySetInnerHTML": """
-            Array.from(document.querySelectorAll('input[type="text"]')).forEach(el => el.blur());
-            """
-        })
+    async def handle_generate(_):
         set_loading(True)
         set_output_html("")
         set_error("")
-        # Wait a short time to allow onBlur to fire and state to update
-        import threading
-        def delayed_generate():
-            import time
-            time.sleep(0.05)
-            # Re-read state inside the thread to avoid closure issues
-            current_title = title
-            current_subtitle = subtitle
-            current_color_style = color_style
-            current_projects = projects
-            current_refine_title = refine_title
-            current_refine_subtitle = refine_subtitle
-            current_refine_projects = refine_projects
-            current_refine_project_titles = refine_project_titles
-            #print("[DEBUG] handle_generate state before AI call:")
-            #print("  title:", current_title)
-            #print("  subtitle:", current_subtitle)
-            #print("  color_style:", current_color_style)
-            #print("  projects:", current_projects)
-            ai_res = ai_refine_portfolio_all(
-                current_title, current_subtitle, current_color_style, current_projects,
-                current_refine_title, current_refine_subtitle, current_refine_projects, current_refine_project_titles
-            )
-            final_title = ai_res["title"]
-            final_subtitle = ai_res["subtitle"]
-            refined_projects = ai_res["projects"]
-            refined_desc = ai_res.get("color_style_desc", color_style)
-            hexes = ai_res.get("hexes", [])
+        import time
+        await asyncio.sleep(0.05)
+        current_title = title
+        current_subtitle = subtitle
+        current_color_style = color_style
+        current_projects = projects
+        current_refine_title = refine_title
+        current_refine_subtitle = refine_subtitle
+        current_refine_projects = refine_projects
+        current_refine_project_titles = refine_project_titles
+        ai_res = await ai_refine_portfolio_all(
+            current_title, current_subtitle, current_color_style, current_projects,
+            current_refine_title, current_refine_subtitle, current_refine_projects, current_refine_project_titles
+        )
+        final_title = ai_res["title"]
+        final_subtitle = ai_res["subtitle"]
+        refined_projects = ai_res["projects"]
+        refined_desc = ai_res.get("color_style_desc", color_style)
+        hexes = ai_res.get("hexes", [])
+        if not hexes:
+            hexes = re.findall(r"#[0-9A-Fa-f]{6}", color_style)
+        bg1 = hexes[0] if len(hexes) > 0 else "#7b2ff2"
+        bg2 = hexes[1] if len(hexes) > 1 else "#f357a8"
+        accent = hexes[2] if len(hexes) > 2 else "#7b2ff2"
+        with open("static/assets/html5_portfolio_template.html", encoding="utf-8") as f:
+            template = f.read()
+        html_out = (
+            template
+            .replace("__PORTFOLIO_TITLE__", final_title)
+            .replace("__PORTFOLIO_SUBTITLE__", final_subtitle)
+            .replace("__BG_COLOR1__", bg1)
+            .replace("__BG_COLOR2__", bg2)
+            .replace("__ACCENT_COLOR__", accent)
+            .replace("__COLOR_STYLE_DESC__", refined_desc)
+            .replace("__PROJECTS_HTML__", "\n".join(
+                f'<div class="project"><div class="project-title">{p["title"]}</div>'
+                f'<div class="project-desc">{p["desc"]}</div>'
+                + (f'<a href="{p["link"]}" target="_blank">{p["link"]}</a>' if p["link"] else "")
+                + "</div>" for p in refined_projects if any(p.values())
+            ) or "<i>No projects yet.</i>")
+        )
+        set_output_html(html_out)
+        b64 = base64.b64encode(html_out.encode("utf-8")).decode("utf-8")
+        set_download_url(f"data:text/html;base64,{b64}")
+        set_loading(False)
 
-            if not hexes:
-                hexes = re.findall(r"#[0-9A-Fa-f]{6}", color_style)
-            bg1 = hexes[0] if len(hexes) > 0 else "#7b2ff2"
-            bg2 = hexes[1] if len(hexes) > 1 else "#f357a8"
-            accent = hexes[2] if len(hexes) > 2 else "#7b2ff2"
-
-            with open("static/assets/html5_portfolio_template.html", encoding="utf-8") as f:
-                template = f.read()
-
-            html_out = (
-                template
-                .replace("__PORTFOLIO_TITLE__", final_title)
-                .replace("__PORTFOLIO_SUBTITLE__", final_subtitle)
-                .replace("__BG_COLOR1__", bg1)
-                .replace("__BG_COLOR2__", bg2)
-                .replace("__ACCENT_COLOR__", accent)
-                .replace("__COLOR_STYLE_DESC__", refined_desc)
-                .replace("__PROJECTS_HTML__", "\n".join(
-                    f'<div class="project"><div class="project-title">{p["title"]}</div>'
-                    f'<div class="project-desc">{p["desc"]}</div>'
-                    + (f'<a href="{p["link"]}" target="_blank">{p["link"]}</a>' if p["link"] else "")
-                    + "</div>" for p in refined_projects if any(p.values())
-                ) or "<i>No projects yet.</i>")
-            )
-
-            set_output_html(html_out)
-            b64 = base64.b64encode(html_out.encode("utf-8")).decode("utf-8")
-            set_download_url(f"data:text/html;base64,{b64}")
-            set_loading(False)
-        threading.Thread(target=delayed_generate, daemon=True).start()
-        return blur_script
+    def handle_generate_click(_):
+        asyncio.create_task(handle_generate(None))
 
     def open_json_modal(_):
         set_json_text("")
@@ -302,7 +277,7 @@ def HTML5PortfolioBuilder():
                 ]
             ),
             html.button({"className": "btn btn-gradient add-project-btn", "onClick": add_project}, "+ Add Project"),
-            html.button({"className": "btn btn-gradient", "onClick": handle_generate, "disabled": loading}, "Generate HTML" if not loading else "Generating..."),
+            html.button({"className": "btn btn-gradient", "onClick": handle_generate_click if not loading else None, "disabled": loading}, "Generating..." if loading else "Generate HTML"),
             output_html and html.a({
                 "className": "btn btn-navy download-btn",
                 "href": download_url,

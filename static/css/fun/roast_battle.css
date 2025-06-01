@@ -176,6 +176,20 @@ body * {
   40% { opacity: 1; }
 }
 
+/* Disabled button styles */
+.btn.disabled,
+.btn[disabled],
+.btn-gradient.disabled,
+.btn-gradient[disabled] {
+  opacity: 0.55;
+  filter: grayscale(0.35) brightness(1.08);
+  cursor: not-allowed !important;
+  pointer-events: none;
+  /* background and color not overridden, so gradient shows through */
+  box-shadow: none !important;
+  border: none !important;
+}
+
 /* Responsive tweaks for chat */
 @media (max-width: 1000px) {
   .roast-battle.chat-style {

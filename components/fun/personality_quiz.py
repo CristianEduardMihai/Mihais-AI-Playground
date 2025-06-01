@@ -20,61 +20,64 @@ def PersonalityQuiz():
 
     # --- handlers ---
     def handle_submit(_event=None):
-        # Kick off the request
         set_loading(True)
         set_result_md("")
         set_error("")
-        
-        prompt = (
-            "You are a playful personality analyst. "
-            "Write a playful, friendly personality analysis in Markdown. "
-            "Use bullet lists for strengths/quirks. Add a fun summary at the end. "
-            "Format all lists with newlines before each bullet. "
-            "Add fun emojis, but don't overdo it. "
-            "Use second person perspective (you, your). "
-            "IMPORTANT: Do not directly repeat the information provided in the user's answers. "
-            "Instead, derive personality traits and insights that might be suggested by their preferences. "
-            "Be creative and interpretive rather than literal. Avoid sentences like 'Your love for [hobby] shows that...' "
-            "Make connections that aren't obvious and provide a unique, insightful analysis. "
-            "Keep responses playful and upbeat, focusing on positive traits."
-        )
-
-        try:
-            resp = requests.post(
-                "https://ai.hackclub.com/chat/completions",
-                json={
-                    "messages": [
-                        {"role": "system", "content": prompt},
-                        {"role": "user", "content": (
-                            f"User Personality Quiz:\n"
-                            f"Name: {name}\n"
-                            f"Age: {age}\n"
-                            f"Gender: {gender}\n"
-                            f"Mood: {mood}\n"
-                            f"Favorite Color: {color}\n"
-                            f"Favorite Animal: {animal}\n"
-                            f"Hobby: {hobby}\n"
-                            f"Social Level: {social}\n"
-                            f"Risk Tolerance: {risk}\n"
-                            )
-                        },
-                    ],
-                    "max_tokens": 350
-                },
-                headers={"Content-Type": "application/json"},
-                timeout=40
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-            # tidy up lists
-            if text:
-                text = text.replace("\n*", "\n\n*").replace("\n-", "\n\n-")
-            set_result_md(text)
-        except Exception as e:
-            set_error(f"Error: {e}")
-        finally:
-            set_loading(False)
+        import threading
+        def run_async():
+            import asyncio
+            import aiohttp
+            async def do_request():
+                prompt = (
+                    "You are a playful personality analyst. "
+                    "Write a playful, friendly personality analysis in Markdown. "
+                    "Use bullet lists for strengths/quirks. Add a fun summary at the end. "
+                    "Format all lists with newlines before each bullet. "
+                    "Add fun emojis, but don't overdo it. "
+                    "Use second person perspective (you, your). "
+                    "IMPORTANT: Do not directly repeat the information provided in the user's answers. "
+                    "Instead, derive personality traits and insights that might be suggested by their preferences. "
+                    "Be creative and interpretive rather than literal. Avoid sentences like 'Your love for [hobby] shows that...' "
+                    "Make connections that aren't obvious and provide a unique, insightful analysis. "
+                    "Keep responses playful and upbeat, focusing on positive traits."
+                )
+                try:
+                    async with aiohttp.ClientSession() as session:
+                        async with session.post(
+                            "https://ai.hackclub.com/chat/completions",
+                            json={
+                                "messages": [
+                                    {"role": "system", "content": prompt},
+                                    {"role": "user", "content": (
+                                        f"User Personality Quiz:\n"
+                                        f"Name: {name}\n"
+                                        f"Age: {age}\n"
+                                        f"Gender: {gender}\n"
+                                        f"Mood: {mood}\n"
+                                        f"Favorite Color: {color}\n"
+                                        f"Favorite Animal: {animal}\n"
+                                        f"Hobby: {hobby}\n"
+                                        f"Social Level: {social}\n"
+                                        f"Risk Tolerance: {risk}\n"
+                                    )},
+                                ],
+                                "max_tokens": 350
+                            },
+                            headers={"Content-Type": "application/json"},
+                            timeout=aiohttp.ClientTimeout(total=40)
+                        ) as resp:
+                            resp.raise_for_status()
+                            data = await resp.json()
+                    text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                    if text:
+                        text = text.replace("\n*", "\n\n*").replace("\n-", "\n\n-")
+                    set_result_md(text)
+                except Exception as e:
+                    set_error(f"Error: {e}")
+                finally:
+                    set_loading(False)
+            asyncio.run(do_request())
+        threading.Thread(target=run_async, daemon=True).start()
 
     # --- render ---
     from components.common.config import CACHE_SUFFIX

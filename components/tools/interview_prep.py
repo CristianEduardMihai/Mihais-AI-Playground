@@ -1,7 +1,8 @@
 from reactpy import component, html, use_state
 import markdown
-import requests
+import aiohttp
 import json
+import asyncio
 
 @component
 def InterviewPrep():
@@ -9,6 +10,7 @@ def InterviewPrep():
     experience_level, set_experience_level = use_state("entry")
     question_type, set_question_type = use_state("behavioral")
     output_html, set_output_html = use_state("")
+    loading, set_loading = use_state(False)
     
     # Interview question categories
     categories = [
@@ -25,19 +27,19 @@ def InterviewPrep():
         else:
             set_selected_categories(lambda prev: [c for c in prev if c != value])
             
-    def handle_generate_questions(event):
+    async def handle_generate_questions(event=None):
+        set_loading(True)
         set_output_html("")  # Clear previous output
         try:
             categories_str = ", ".join(selected_categories)
             role = job_role if job_role.strip() else "Software Developer"
-            
             prompt = (
                 "You are an expert interview coach and HR specialist. "
                 "Output ONLY the interview questions and answers in Markdown format, with no extra comments. "
                 "Do not include any text outside the Markdown content. "
                 "Follow the provided template exactly."
                 "Generate a set of interview questions and example answers in Markdown format using this template:\n\n"
-                "# Interview Questions for {job} Position\n\n" # Yes, not f"{job_role}", this is intentional to avoid confusion in the prompt
+                "# Interview Questions for {job} Position\n\n"
                 "## Question Set\n\n"
                 "### {Category 1}\n"
                 "**1. Q: [Question]**\n\n"
@@ -49,44 +51,37 @@ def InterviewPrep():
                 "## Preparation Tips\n"
                 "- [General tips for this type of interview]\n"
                 "- [Specific advice for the role]\n\n"
-                
                 "\nProvide 2-3 questions per selected category, with detailed sample answers and interviewer tips."
             )
-
-            # Call the AI API to generate interview questions
-            response = requests.post(
-                "https://ai.hackclub.com/chat/completions",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": prompt},
-                        {
-                            "role": "user", "content": (
-                            f"Role: {role}\n"
-                            f"Experience Level: {experience_level}\n"
-                            f"Question Type: {question_type}\n"
-                            f"Categories to focus on: {categories_str}\n"
-                            )
-                        }
-                    ]
-                },
-                timeout=60
-            )
-            
-            if response.status_code != 200:
-                raise RuntimeError(f"AI model returned {response.status_code}")
-
-            data = response.json()
-            md_content = data["choices"][0]["message"]["content"]
-            
-            # Convert the markdown to HTML
-            html_content = markdown.markdown(md_content, extensions=["tables", "extra"])
-            set_output_html(f"<div class='markdown-body'>{html_content}</div>")
-
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://ai.hackclub.com/chat/completions",
+                    headers={"Content-Type": "application/json"},
+                    json={
+                        "messages": [
+                            {"role": "system", "content": prompt},
+                            {"role": "user", "content": (
+                                f"Role: {role}\n"
+                                f"Experience Level: {experience_level}\n"
+                                f"Question Type: {question_type}\n"
+                                f"Categories to focus on: {categories_str}\n"
+                            )}
+                        ]
+                    },
+                    timeout=60
+                ) as response:
+                    if response.status != 200:
+                        raise RuntimeError(f"AI model returned {response.status}")
+                    data = await response.json()
+                    md_content = data["choices"][0]["message"]["content"]
+                    html_content = markdown.markdown(md_content, extensions=["tables", "extra"])
+                    set_output_html(f"<div class='markdown-body'>{html_content}</div>")
         except Exception as e:
             set_output_html(f"An error occurred: {str(e)}")
+        set_loading(False)
+
+    def handle_generate_questions_click(event=None):
+        asyncio.create_task(handle_generate_questions())
 
     from components.common.config import CACHE_SUFFIX
     return html.div(
@@ -160,8 +155,8 @@ def InterviewPrep():
             ),
             # Generate button
             html.button(
-                {"className": "btn btn-gradient", "onClick": handle_generate_questions},
-                "Generate Interview Questions"
+                {"className": "btn btn-gradient", "onClick": handle_generate_questions_click if not loading else None, "disabled": loading},
+                "Generating..." if loading else "Generate Interview Questions"
             ),
             # Output + Save as PDF
             html.div(

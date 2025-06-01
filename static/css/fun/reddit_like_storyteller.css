@@ -324,3 +324,16 @@ audio:focus {
   outline: 2px solid #7b2ff2;
   box-shadow: 0 0 0 2px #f357a8;
 }
+
+.btn-gradient.disabled,
+.btn-gradient[disabled],
+.btn-blue-gradient.disabled,
+.btn-blue-gradient[disabled] {
+  opacity: 0.55;
+  filter: grayscale(0.35) brightness(1.08);
+  cursor: not-allowed !important;
+  pointer-events: none;
+  /* background and color not overridden, so gradient shows through */
+  box-shadow: none !important;
+  border: none !important;
+}

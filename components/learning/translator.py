@@ -1,4 +1,6 @@
 from reactpy import component, html, use_state
+import asyncio
+import aiohttp
 import json
 import os
 
@@ -40,38 +42,35 @@ def Translator():
         set_loading(False)
 
     def handle_submit(e):
-        import asyncio
         asyncio.create_task(translate())
         return False
 
     async def fetch_translate(text, src, tgt):
-        import asyncio
-        import requests
         await asyncio.sleep(0)
         try:
-            resp = requests.post(
-                "https://ai.hackclub.com/chat/completions",
-                json={
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": (
-                                f"You are a helpful AI that translates text from {src.upper()} to {tgt.upper()}. "
-                                "Output the translated text as plain text only. Do not use Markdown or HTML formatting. "
-                                "Only return the translated text, not explanations. Preserve the original formatting and line breaks as much as possible. "
-                                "Never collapse multiple lines or paragraphs into a single line. Output must match the input's line breaks and spacing as closely as possible. "
-                            )
-                        },
-                        {"role": "user", "content": text}
-                    ],
-                    "max_tokens": 400
-                },
-                headers={"Content-Type": "application/json"},
-                timeout=60,
+            system_prompt = (
+                f"You are a helpful AI that translates text from {src.upper()} to {tgt.upper()}. "
+                "Output only the translated text, no explanations, and preserve the original formatting as much as possible. "
+                "Do not use Markdown or HTML formatting. "
+                "Never include explanations or preamble, just the translation."
             )
-            resp.raise_for_status()
-            content = resp.json()["choices"][0]["message"]["content"]
-            return content
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://ai.hackclub.com/chat/completions",
+                    json={
+                        "messages": [
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": text}
+                        ],
+                        "max_tokens": 400
+                    },
+                    headers={"Content-Type": "application/json"},
+                    timeout=60,
+                ) as resp:
+                    resp.raise_for_status()
+                    data = await resp.json()
+                    content = data["choices"][0]["message"]["content"]
+                    return content
         except Exception as e:
             raise Exception(f"Translation failed: {e}")
 
@@ -119,11 +118,11 @@ def Translator():
                 html.button(
                     {
                         "type": "button",
-                        "className": "btn btn-gradient spellcheck-btn-small",
-                        "onClick": handle_submit,
+                        "className": f"btn btn-gradient spellcheck-btn-small{' disabled' if loading else ''}",
+                        "onClick": handle_submit if not loading else None,
                         "disabled": loading or not text.strip() or src_lang == tgt_lang
                     },
-                    "Translate"
+                    "Translating..." if loading else "Translate"
                 ),
                 html.div(
                     {"className": "spellcheck-split"},

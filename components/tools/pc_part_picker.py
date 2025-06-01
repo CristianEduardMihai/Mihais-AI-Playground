@@ -1,5 +1,6 @@
 from reactpy import component, html, use_state
-import requests
+import aiohttp
+import asyncio
 import markdown
 import os
 import json
@@ -180,7 +181,17 @@ def PCPartPicker():
         if DEBUG_MODE:
             print(msg)
 
-    def handle_submit(event):
+    async def ai_post(url, payload, timeout=60):
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                url,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=timeout
+            ) as resp:
+                return await resp.json()
+
+    async def handle_submit(event=None):
         if loading:
             debug("[DEBUG] Submit ignored: already loading.")
             return  # Prevent double-clicks
@@ -209,7 +220,6 @@ def PCPartPicker():
             f"Games: {games_str}\n"
         )
         debug(f"[PCPartPicker] {datetime.datetime.now().isoformat()}\nUser preferences (AI gets EUR):\n{user_prefs}")
-        ai_response = None
         tries = 0
         max_tries = 6
         last_missing = None
@@ -229,183 +239,160 @@ def PCPartPicker():
                            f"Here is a snippet of the {last_missing} database (prices in EUR):\n{snippet_str}\n")
             debug(f"[DEBUG] Prompt sent to AI (length={len(prompt)}):\n{prompt}")
             try:
-                response = requests.post(
-                    "https://ai.hackclub.com/chat/completions",
-                    json={
-                        "messages": [
-                            {"role": "system", "content": SYSTEM_PROMPT},
-                            {"role": "user", "content": user_prefs}
-                        ],
-                        "max_tokens": 400
-                    },
-                    headers={"Content-Type": "application/json"},
-                    timeout=60
-                )
-                debug(f"[DEBUG] AI response: {response}")
-                debug(f"[DEBUG] AI response headers: {response.headers}")
-                debug(f"[DEBUG] AI HTTP status: {response.status_code}")
-                raw_json = response.json()
-                debug(f"[DEBUG] Raw response JSON: {raw_json}")
-                if response.status_code == 200:
-                    text = raw_json.get("choices", [{}])[0].get("message", {}).get("content", "")
-                    debug(f"[PCPartPicker][AI raw response]:\n{text}")
-                    if not text.strip():
-                        debug("[DEBUG] AI response text is empty!")
-                        set_error("AI returned an empty response. Try again.")
-                        break
-                    # Use non-greedy regex with DOTALL to extract the first JSON object
-                    matches = list(re.finditer(r"\{.*?\}", text, re.DOTALL))
-                    debug(f"[DEBUG] Regex matches found: {len(matches)}")
-                    if len(matches) > 1:
-                        debug(f"[DEBUG] Warning: Multiple JSON objects found in AI response. Using the first one.")
-                    match = matches[0] if matches else None
-                    debug(f"[DEBUG] Regex match: {match}")
-                    if not match:
-                        debug("[DEBUG] No JSON object found in AI response.")
-                        set_error("AI did not return a JSON object. Try again.")
-                        with open("ai_debug.log", "a") as f:
-                            f.write(f"\n[NO JSON] {datetime.datetime.now().isoformat()}\nPrompt:\n{prompt}\nAI raw text:\n{text}\n\n")
-                        break
-                    json_str = match.group(0)
-                    debug(f"[DEBUG] Extracted JSON string (to be parsed):\n{json_str}")
-                    try:
-                        data = json.loads(json_str.replace("'", '"'))
-                        debug(f"[DEBUG] Parsed JSON: {data}")
-                    except Exception as e:
-                        debug(f"[DEBUG] JSON parse error: {e}")
-                        debug(f"[DEBUG] Problematic string: {json_str}")
-                        with open("ai_debug.log", "a") as f:
-                            f.write(f"\n[JSON ERROR] {datetime.datetime.now().isoformat()}\nPrompt:\n{prompt}\nAI raw text:\n{text}\nExtracted JSON string:\n{json_str}\nError: {e}\n\n")
-                        set_error(f"AI JSON parse error: {e}")
-                        break
-                    build = {}
-                    missing = None
-                    for part, name in data.items():
-                        debug(f"[DEBUG] Matching {part}: {name}")
-                        match = smart_find_best_match(name, datasets.get(part, []))
-                        if not match:
-                            match = find_best_match(name, datasets.get(part, []))
-                        if match:
-                            debug(f"[DEBUG] Found match for {part}: {match.get('name')}")
-                            build[part] = match
-                        else:
-                            debug(f"[DEBUG] No match for {part}: {name}")
-                            missing = part
-                            break
-                    if not missing:
-                        debug("[DEBUG] All parts matched. Rendering markdown.")
-                        # Calculate total price in EUR, USD, and user currency
-                        total_eur = 0.0
-                        total_usd = 0.0
-                        total_user = 0.0
-                        for part, info in build.items():
-                            if info.get('price'):
-                                price_eur = round(convert_to_eur(info['price'], 'usd'), 2)
-                                price_user = round(convert_from_eur(price_eur, currency), 2)
-                                price_usd = info['price']
-                                total_eur += price_eur
-                                total_usd += price_usd
-                                total_user += price_user
-                        md = f"# Your PC Build\n\n"
-                        for part, info in build.items():
-                            md += f"**{part.upper()}**: {info.get('name', 'Unknown')}\n"
-                            if info.get('price'):
-                                price_eur = round(convert_to_eur(info['price'], 'usd'), 2)
-                                price_user = round(convert_from_eur(price_eur, currency), 2)
-                                md += f"- Price: {price_user} {currency.upper()} (original: ${info['price']} USD, €{price_eur} EUR)\n"
-                            if info.get('brand'):
-                                md += f"- Brand: {info['brand']}\n"
-                            if info.get('specs'):
-                                md += f"- Specs: {info['specs']}\n"
-                            md += "\n"
-                        md += f"**Total Price:** {round(total_user,2)} {currency.upper()} (original: ${round(total_usd,2)} USD, €{round(total_eur,2)} EUR)\n\n"
-                        md += "---\n"
-                        md += "## Tips & Recommendations\n"
-                        md += (
-                            "- Double-check compatibility before buying.\n"
-                            "- Prices and availability may have changed since 2024.\n"
-                            "- If you want to upgrade, consider increasing your budget or performance level.\n"
-                        )
-                        set_result_md(md)
-                        # --- Query AI again for expert analysis ---
-                        try:
-                            build_summary = ", ".join([f"{part}: {info.get('name','Unknown')}" for part, info in build.items()])
-                            analysis_prompt = (
-                                "You are a PC building expert. Given a build, "
-                                "provide a short analysis of potential bottlenecks, system balance, upgrade advice, and any expert opinions. State everything is according to you, an AI, not any bottlenech calculators and so on."
-                                "Be concise and helpful."
-                            )
-                            analysis_response = requests.post(
-                                "https://ai.hackclub.com/chat/completions",
-                                json={
-                                    "messages": [
-                                        {"role": "system", "content": analysis_prompt},
-                                        {"role": "user", "content": build_summary}
-                                    ],
-                                    "max_tokens": 250
-                                },
-                                headers={"Content-Type": "application/json"},
-                                timeout=40
-                            )
-                            analysis_json = analysis_response.json()
-                            analysis_text = analysis_json.get("choices", [{}])[0].get("message", {}).get("content", "")
-                            if analysis_text:
-                                set_result_md(lambda prev: prev + "\n---\n## Expert Analysis\n" + analysis_text.strip())
-                        except Exception as e:
-                            debug(f"[DEBUG] Error during expert analysis AI call: {e}")
-                        # --- Query AI again for game performance estimates ---
-                        try:
-                            build_summary = ", ".join([f"{part}: {info.get('name','Unknown')}" for part, info in build.items()])
-                            games_list = games.strip() if games.strip() else None
-                            if games_list:
-                                perf_prompt = (
-                                    "You are a PC gaming expert. Given a build, "
-                                    "estimate how games would run on it."
-                                    "For each game, estimate the expected settings (e.g., low/medium/high/ultra), resolution, and FPS. "
-                                    "If a game is not in your knowledge base, say so. "
-                                    "Add a disclaimer that these are AI-generated estimates and may not be accurate."
-                                )
-                                perf_response = requests.post(
-                                    "https://ai.hackclub.com/chat/completions",
-                                    json={
-                                        "messages": [
-                                            {"role": "system", "content": perf_prompt},
-                                            {"role": "user", "content": f"Given this build: {build_summary}, and these games: {games_list}, estimate how they would run on this PC."}
-                                        ],
-                                        "max_tokens": 300
-                                    },
-                                    headers={"Content-Type": "application/json"},
-                                    timeout=40
-                                )
-                                perf_json = perf_response.json()
-                                perf_text = perf_json.get("choices", [{}])[0].get("message", {}).get("content", "")
-                                if perf_text:
-                                    # Ensure each '- ' is on its own line for Markdown
-                                    perf_text_md = re.sub(r'(?<!\n)- ', '\n- ', perf_text)
-                                    set_result_md(lambda prev: prev + "\n---\n## Game Performance Estimates\n" + perf_text_md.strip())
-                        except Exception as e:
-                            debug(f"[DEBUG] Error during game performance AI call: {e}")
-                        set_loading(False)
-                        debug("[DEBUG] Done. Build and analysis shown to user.")
-                        return
-                    else:
-                        last_missing = missing
-                        debug(f"[DEBUG] Will retry for missing part: {missing}")
-                        continue
-                else:
-                    debug(f"[DEBUG] AI HTTP error: {response.status_code}")
-                    set_error(f"Error: {response.status_code}")
+                payload = {
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": user_prefs}
+                    ],
+                    "max_tokens": 400
+                }
+                raw_json = await ai_post("https://ai.hackclub.com/chat/completions", payload, timeout=60)
+                text = raw_json.get("choices", [{}])[0].get("message", {}).get("content", "")
+                debug(f"[PCPartPicker][AI raw response]:\n{text}")
+                if not text.strip():
+                    debug("[DEBUG] AI response text is empty!")
+                    set_error("AI returned an empty response. Try again.")
                     break
+                # Use non-greedy regex with DOTALL to extract the first JSON object
+                matches = list(re.finditer(r"\{.*?\}", text, re.DOTALL))
+                debug(f"[DEBUG] Regex matches found: {len(matches)}")
+                if len(matches) > 1:
+                    debug(f"[DEBUG] Warning: Multiple JSON objects found in AI response. Using the first one.")
+                match = matches[0] if matches else None
+                debug(f"[DEBUG] Regex match: {match}")
+                if not match:
+                    debug("[DEBUG] No JSON object found in AI response.")
+                    set_error("AI did not return a JSON object. Try again.")
+                    with open("ai_debug.log", "a") as f:
+                        f.write(f"\n[NO JSON] {datetime.datetime.now().isoformat()}\nPrompt:\n{prompt}\nAI raw text:\n{text}\n\n")
+                    break
+                json_str = match.group(0)
+                debug(f"[DEBUG] Extracted JSON string (to be parsed):\n{json_str}")
+                try:
+                    data = json.loads(json_str.replace("'", '"'))
+                    debug(f"[DEBUG] Parsed JSON: {data}")
+                except Exception as e:
+                    debug(f"[DEBUG] JSON parse error: {e}")
+                    debug(f"[DEBUG] Problematic string: {json_str}")
+                    with open("ai_debug.log", "a") as f:
+                        f.write(f"\n[JSON ERROR] {datetime.datetime.now().isoformat()}\nPrompt:\n{prompt}\nAI raw text:\n{text}\nExtracted JSON string:\n{json_str}\nError: {e}\n\n")
+                    set_error(f"AI JSON parse error: {e}")
+                    break
+                build = {}
+                missing = None
+                for part, name in data.items():
+                    debug(f"[DEBUG] Matching {part}: {name}")
+                    match = smart_find_best_match(name, datasets.get(part, []))
+                    if not match:
+                        match = find_best_match(name, datasets.get(part, []))
+                    if match:
+                        debug(f"[DEBUG] Found match for {part}: {match.get('name')}")
+                        build[part] = match
+                    else:
+                        debug(f"[DEBUG] No match for {part}: {name}")
+                        missing = part
+                        break
+                if not missing:
+                    debug("[DEBUG] All parts matched. Rendering markdown.")
+                    # Calculate total price in EUR, USD, and user currency
+                    total_eur = 0.0
+                    total_usd = 0.0
+                    total_user = 0.0
+                    for part, info in build.items():
+                        if info.get('price'):
+                            price_eur = round(convert_to_eur(info['price'], 'usd'), 2)
+                            price_user = round(convert_from_eur(price_eur, currency), 2)
+                            price_usd = info['price']
+                            total_eur += price_eur
+                            total_usd += price_usd
+                            total_user += price_user
+                    md = f"# Your PC Build\n\n"
+                    for part, info in build.items():
+                        md += f"**{part.upper()}**: {info.get('name', 'Unknown')}\n"
+                        if info.get('price'):
+                            price_eur = round(convert_to_eur(info['price'], 'usd'), 2)
+                            price_user = round(convert_from_eur(price_eur, currency), 2)
+                            md += f"- Price: {price_user} {currency.upper()} (original: ${info['price']} USD, €{price_eur} EUR)\n"
+                        if info.get('brand'):
+                            md += f"- Brand: {info['brand']}\n"
+                        if info.get('specs'):
+                            md += f"- Specs: {info['specs']}\n"
+                        md += "\n"
+                    md += f"**Total Price:** {round(total_user,2)} {currency.upper()} (original: ${round(total_usd,2)} USD, €{round(total_eur,2)} EUR)\n\n"
+                    md += "---\n"
+                    md += "## Tips & Recommendations\n"
+                    md += (
+                        "- Double-check compatibility before buying.\n"
+                        "- Prices and availability may have changed since 2024.\n"
+                        "- If you want to upgrade, consider increasing your budget or performance level.\n"
+                    )
+                    set_result_md(md)
+                    # --- Query AI again for expert analysis ---
+                    try:
+                        build_summary = ", ".join([f"{part}: {info.get('name','Unknown')}" for part, info in build.items()])
+                        analysis_prompt = (
+                            "You are a PC building expert. Given a build, "
+                            "provide a short analysis of potential bottlenecks, system balance, upgrade advice, and any expert opinions. State everything is according to you, an AI, not any bottlenech calculators and so on."
+                            "Be concise and helpful."
+                        )
+                        analysis_payload = {
+                            "messages": [
+                                {"role": "system", "content": analysis_prompt},
+                                {"role": "user", "content": build_summary}
+                            ],
+                            "max_tokens": 250
+                        }
+                        analysis_json = await ai_post("https://ai.hackclub.com/chat/completions", analysis_payload, timeout=40)
+                        analysis_text = analysis_json.get("choices", [{}])[0].get("message", {}).get("content", "")
+                        if analysis_text:
+                            set_result_md(lambda prev: prev + "\n---\n## Expert Analysis\n" + analysis_text.strip())
+                    except Exception as e:
+                        debug(f"[DEBUG] Error during expert analysis AI call: {e}")
+                    # --- Query AI again for game performance estimates ---
+                    try:
+                        build_summary = ", ".join([f"{part}: {info.get('name','Unknown')}" for part, info in build.items()])
+                        games_list = games.strip() if games.strip() else None
+                        if games_list:
+                            perf_prompt = (
+                                "You are a PC gaming expert. Given a build, "
+                                "estimate how games would run on it. "
+                                "For each game, estimate the expected settings (e.g., low/medium/high/ultra), resolution, and FPS. "
+                                "If a game is not in your knowledge base, say so. "
+                                "Add a disclaimer that these are AI-generated estimates and may not be accurate."
+                            )
+                            perf_payload = {
+                                "messages": [
+                                    {"role": "system", "content": perf_prompt},
+                                    {"role": "user", "content": f"Build: {build_summary}, Games: {games_list}."}
+                                ],
+                                "max_tokens": 300
+                            }
+                            perf_json = await ai_post("https://ai.hackclub.com/chat/completions", perf_payload, timeout=40)
+                            perf_text = perf_json.get("choices", [{}])[0].get("message", {}).get("content", "")
+                            if perf_text:
+                                # Ensure each '- ' is on its own line for Markdown
+                                perf_text_md = re.sub(r'(?<!\n)- ', '\n- ', perf_text)
+                                set_result_md(lambda prev: prev + "\n---\n## Game Performance Estimates\n" + perf_text_md.strip())
+                    except Exception as e:
+                        debug(f"[DEBUG] Error during game performance AI call: {e}")
+                    set_loading(False)
+                    debug("[DEBUG] Done. Build and analysis shown to user.")
+                    return
+                else:
+                    last_missing = missing
+                    debug(f"[DEBUG] Will retry for missing part: {missing}")
+                    continue
             except Exception as e:
                 debug(f"[DEBUG] Exception during AI call: {e}")
-                debug(e.__traceback__)
-                debug(e.__cause__)
                 set_error(f"Error: {e}")
                 break
         if not result_md:
             debug("[DEBUG] Could not find a compatible build after several tries.")
             set_result_md("Could not find a compatible build after several tries. Please adjust your preferences and try again.")
         set_loading(False)
+
+    def handle_submit_click(event=None):
+        asyncio.create_task(handle_submit(event))
 
     # Fetch currency list on mount
     def fetch_currencies():
@@ -420,20 +407,21 @@ def PCPartPicker():
     use_effect(fetch_currencies, [])
 
     # Fetch exchange rates on mount and when currency changes
-    def fetch_exchange_rates():
+    async def fetch_exchange_rates():
         try:
-            resp = requests.get("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.json", timeout=10)
-            if resp.status_code == 200:
-                data = resp.json()
-                rates = data.get("eur", {})
-                set_exchange_rates(rates)
-                if DEBUG_MODE:
-                    print(f"[DEBUG] Fetched exchange rates")
-            else:
-                set_exchange_rates({"usd": 1.09, "eur": 1.0})
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.json", timeout=10) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        rates = data.get("eur", {})
+                        set_exchange_rates(rates)
+                        if DEBUG_MODE:
+                            print(f"[DEBUG] Fetched exchange rates")
+                    else:
+                        set_exchange_rates({"usd": 1.09, "eur": 1.0})
         except Exception as e:
             set_exchange_rates({"usd": 1.09, "eur": 1.0})
-    use_effect(fetch_exchange_rates, [])
+    use_effect(lambda: asyncio.create_task(fetch_exchange_rates()), [currency])
 
     # Budget input with currency dropdown
     def budget_input():
@@ -523,7 +511,7 @@ def PCPartPicker():
         return opts
 
     # Handle form submission
-    def handle_submit(event):
+    async def handle_submit(event=None):
         if loading:
             debug("[DEBUG] Submit ignored: already loading.")
             return  # Prevent double-clicks
@@ -552,7 +540,6 @@ def PCPartPicker():
             f"Games: {games_str}\n"
         )
         debug(f"[PCPartPicker] {datetime.datetime.now().isoformat()}\nUser preferences (AI gets EUR):\n{user_prefs}")
-        ai_response = None
         tries = 0
         max_tries = 6
         last_missing = None
@@ -572,177 +559,151 @@ def PCPartPicker():
                            f"Here is a snippet of the {last_missing} database (prices in EUR):\n{snippet_str}\n")
             debug(f"[DEBUG] Prompt sent to AI (length={len(prompt)}):\n{prompt}")
             try:
-                response = requests.post(
-                    "https://ai.hackclub.com/chat/completions",
-                    json={
-                        "messages": [
-                            {"role": "system", "content": SYSTEM_PROMPT},
-                            {"role": "user", "content": user_prefs}
-                        ],
-                        "max_tokens": 400
-                    },
-                    headers={"Content-Type": "application/json"},
-                    timeout=60
-                )
-                debug(f"[DEBUG] AI response: {response}")
-                debug(f"[DEBUG] AI response headers: {response.headers}")
-                debug(f"[DEBUG] AI HTTP status: {response.status_code}")
-                raw_json = response.json()
-                debug(f"[DEBUG] Raw response JSON: {raw_json}")
-                if response.status_code == 200:
-                    text = raw_json.get("choices", [{}])[0].get("message", {}).get("content", "")
-                    debug(f"[PCPartPicker][AI raw response]:\n{text}")
-                    if not text.strip():
-                        debug("[DEBUG] AI response text is empty!")
-                        set_error("AI returned an empty response. Try again.")
-                        break
-                    # Use non-greedy regex with DOTALL to extract the first JSON object
-                    matches = list(re.finditer(r"\{.*?\}", text, re.DOTALL))
-                    debug(f"[DEBUG] Regex matches found: {len(matches)}")
-                    if len(matches) > 1:
-                        debug(f"[DEBUG] Warning: Multiple JSON objects found in AI response. Using the first one.")
-                    match = matches[0] if matches else None
-                    debug(f"[DEBUG] Regex match: {match}")
-                    if not match:
-                        debug("[DEBUG] No JSON object found in AI response.")
-                        set_error("AI did not return a JSON object. Try again.")
-                        with open("ai_debug.log", "a") as f:
-                            f.write(f"\n[NO JSON] {datetime.datetime.now().isoformat()}\nPrompt:\n{prompt}\nAI raw text:\n{text}\n\n")
-                        break
-                    json_str = match.group(0)
-                    debug(f"[DEBUG] Extracted JSON string (to be parsed):\n{json_str}")
-                    try:
-                        data = json.loads(json_str.replace("'", '"'))
-                        debug(f"[DEBUG] Parsed JSON: {data}")
-                    except Exception as e:
-                        debug(f"[DEBUG] JSON parse error: {e}")
-                        debug(f"[DEBUG] Problematic string: {json_str}")
-                        with open("ai_debug.log", "a") as f:
-                            f.write(f"\n[JSON ERROR] {datetime.datetime.now().isoformat()}\nPrompt:\n{prompt}\nAI raw text:\n{text}\nExtracted JSON string:\n{json_str}\nError: {e}\n\n")
-                        set_error(f"AI JSON parse error: {e}")
-                        break
-                    build = {}
-                    missing = None
-                    for part, name in data.items():
-                        debug(f"[DEBUG] Matching {part}: {name}")
-                        match = smart_find_best_match(name, datasets.get(part, []))
-                        if not match:
-                            match = find_best_match(name, datasets.get(part, []))
-                        if match:
-                            debug(f"[DEBUG] Found match for {part}: {match.get('name')}")
-                            build[part] = match
-                        else:
-                            debug(f"[DEBUG] No match for {part}: {name}")
-                            missing = part
-                            break
-                    if not missing:
-                        debug("[DEBUG] All parts matched. Rendering markdown.")
-                        # Calculate total price in EUR, USD, and user currency
-                        total_eur = 0.0
-                        total_usd = 0.0
-                        total_user = 0.0
-                        for part, info in build.items():
-                            if info.get('price'):
-                                price_eur = round(convert_to_eur(info['price'], 'usd'), 2)
-                                price_user = round(convert_from_eur(price_eur, currency), 2)
-                                price_usd = info['price']
-                                total_eur += price_eur
-                                total_usd += price_usd
-                                total_user += price_user
-                        md = f"# Your PC Build\n\n"
-                        for part, info in build.items():
-                            md += f"**{part.upper()}**: {info.get('name', 'Unknown')}\n"
-                            if info.get('price'):
-                                price_eur = round(convert_to_eur(info['price'], 'usd'), 2)
-                                price_user = round(convert_from_eur(price_eur, currency), 2)
-                                md += f"- Price: {price_user} {currency.upper()} (original: ${info['price']} USD, €{price_eur} EUR)\n"
-                            if info.get('brand'):
-                                md += f"- Brand: {info['brand']}\n"
-                            if info.get('specs'):
-                                md += f"- Specs: {info['specs']}\n"
-                            md += "\n"
-                        md += f"**Total Price:** {round(total_user,2)} {currency.upper()} (original: ${round(total_usd,2)} USD, €{round(total_eur,2)} EUR)\n\n"
-                        md += "---\n"
-                        md += "## Tips & Recommendations\n"
-                        md += (
-                            "- Double-check compatibility before buying.\n"
-                            "- Prices and availability may have changed since 2024.\n"
-                            "- If you want to upgrade, consider increasing your budget or performance level.\n"
-                        )
-                        set_result_md(md)
-                        # --- Query AI again for expert analysis ---
-                        try:
-                            build_summary = ", ".join([f"{part}: {info.get('name','Unknown')}" for part, info in build.items()])
-                            analysis_prompt = (
-                                "You are a PC building expert. Given a build, "
-                                "provide a short analysis of potential bottlenecks, system balance, and any expert opinions (e.g., bottleneck calculator, upgrade advice). "
-                                "Be concise and helpful."
-                            )
-                            analysis_response = requests.post(
-                                "https://ai.hackclub.com/chat/completions",
-                                json={
-                                    "messages": [
-                                        {"role": "system", "content": analysis_prompt},
-                                        {"role": "user", "content": build_summary}
-                                    ],
-                                    "max_tokens": 250
-                                },
-                                headers={"Content-Type": "application/json"},
-                                timeout=40
-                            )
-                            analysis_json = analysis_response.json()
-                            analysis_text = analysis_json.get("choices", [{}])[0].get("message", {}).get("content", "")
-                            if analysis_text:
-                                set_result_md(lambda prev: prev + "\n---\n## Expert Analysis\n" + analysis_text.strip())
-                        except Exception as e:
-                            debug(f"[DEBUG] Error during expert analysis AI call: {e}")
-                        # --- Query AI again for game performance estimates ---
-                        try:
-                            build_summary = ", ".join([f"{part}: {info.get('name','Unknown')}" for part, info in build.items()])
-                            games_list = games.strip() if games.strip() else None
-                            if games_list:
-                                perf_prompt = (
-                                    "You are a PC gaming expert. Given a build, "
-                                    "estimate how games would run on it. "
-                                    "For each game, estimate the expected settings (e.g., low/medium/high/ultra), resolution, and FPS. "
-                                    "If a game is not in your knowledge base, say so. "
-                                    "Add a disclaimer that these are AI-generated estimates and may not be accurate."
-                                )
-                                perf_response = requests.post(
-                                    "https://ai.hackclub.com/chat/completions",
-                                    json={
-                                        "messages": [
-                                            {"role": "system", "content": perf_prompt},
-                                            {"role": "user", "content": f"Build: {build_summary}, Games: {games_list}."}
-                                        ],
-                                        "max_tokens": 300
-                                    },
-                                    headers={"Content-Type": "application/json"},
-                                    timeout=40
-                                )
-                                perf_json = perf_response.json()
-                                perf_text = perf_json.get("choices", [{}])[0].get("message", {}).get("content", "")
-                                if perf_text:
-                                    # Ensure each '- ' is on its own line for Markdown
-                                    perf_text_md = re.sub(r'(?<!\n)- ', '\n- ', perf_text)
-                                    set_result_md(lambda prev: prev + "\n---\n## Game Performance Estimates\n" + perf_text_md.strip())
-                        except Exception as e:
-                            debug(f"[DEBUG] Error during game performance AI call: {e}")
-                        set_loading(False)
-                        debug("[DEBUG] Done. Build and analysis shown to user.")
-                        return
-                    else:
-                        last_missing = missing
-                        debug(f"[DEBUG] Will retry for missing part: {missing}")
-                        continue
-                else:
-                    debug(f"[DEBUG] AI HTTP error: {response.status_code}")
-                    set_error(f"Error: {response.status_code}")
+                payload = {
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": user_prefs}
+                    ],
+                    "max_tokens": 400
+                }
+                raw_json = await ai_post("https://ai.hackclub.com/chat/completions", payload, timeout=60)
+                text = raw_json.get("choices", [{}])[0].get("message", {}).get("content", "")
+                debug(f"[PCPartPicker][AI raw response]:\n{text}")
+                if not text.strip():
+                    debug("[DEBUG] AI response text is empty!")
+                    set_error("AI returned an empty response. Try again.")
                     break
+                # Use non-greedy regex with DOTALL to extract the first JSON object
+                matches = list(re.finditer(r"\{.*?\}", text, re.DOTALL))
+                debug(f"[DEBUG] Regex matches found: {len(matches)}")
+                if len(matches) > 1:
+                    debug(f"[DEBUG] Warning: Multiple JSON objects found in AI response. Using the first one.")
+                match = matches[0] if matches else None
+                debug(f"[DEBUG] Regex match: {match}")
+                if not match:
+                    debug("[DEBUG] No JSON object found in AI response.")
+                    set_error("AI did not return a JSON object. Try again.")
+                    with open("ai_debug.log", "a") as f:
+                        f.write(f"\n[NO JSON] {datetime.datetime.now().isoformat()}\nPrompt:\n{prompt}\nAI raw text:\n{text}\n\n")
+                    break
+                json_str = match.group(0)
+                debug(f"[DEBUG] Extracted JSON string (to be parsed):\n{json_str}")
+                try:
+                    data = json.loads(json_str.replace("'", '"'))
+                    debug(f"[DEBUG] Parsed JSON: {data}")
+                except Exception as e:
+                    debug(f"[DEBUG] JSON parse error: {e}")
+                    debug(f"[DEBUG] Problematic string: {json_str}")
+                    with open("ai_debug.log", "a") as f:
+                        f.write(f"\n[JSON ERROR] {datetime.datetime.now().isoformat()}\nPrompt:\n{prompt}\nAI raw text:\n{text}\nExtracted JSON string:\n{json_str}\nError: {e}\n\n")
+                    set_error(f"AI JSON parse error: {e}")
+                    break
+                build = {}
+                missing = None
+                for part, name in data.items():
+                    debug(f"[DEBUG] Matching {part}: {name}")
+                    match = smart_find_best_match(name, datasets.get(part, []))
+                    if not match:
+                        match = find_best_match(name, datasets.get(part, []))
+                    if match:
+                        debug(f"[DEBUG] Found match for {part}: {match.get('name')}")
+                        build[part] = match
+                    else:
+                        debug(f"[DEBUG] No match for {part}: {name}")
+                        missing = part
+                        break
+                if not missing:
+                    debug("[DEBUG] All parts matched. Rendering markdown.")
+                    # Calculate total price in EUR, USD, and user currency
+                    total_eur = 0.0
+                    total_usd = 0.0
+                    total_user = 0.0
+                    for part, info in build.items():
+                        if info.get('price'):
+                            price_eur = round(convert_to_eur(info['price'], 'usd'), 2)
+                            price_user = round(convert_from_eur(price_eur, currency), 2)
+                            price_usd = info['price']
+                            total_eur += price_eur
+                            total_usd += price_usd
+                            total_user += price_user
+                    md = f"# Your PC Build\n\n"
+                    for part, info in build.items():
+                        md += f"**{part.upper()}**: {info.get('name', 'Unknown')}\n"
+                        if info.get('price'):
+                            price_eur = round(convert_to_eur(info['price'], 'usd'), 2)
+                            price_user = round(convert_from_eur(price_eur, currency), 2)
+                            md += f"- Price: {price_user} {currency.upper()} (original: ${info['price']} USD, €{price_eur} EUR)\n"
+                        if info.get('brand'):
+                            md += f"- Brand: {info['brand']}\n"
+                        if info.get('specs'):
+                            md += f"- Specs: {info['specs']}\n"
+                        md += "\n"
+                    md += f"**Total Price:** {round(total_user,2)} {currency.upper()} (original: ${round(total_usd,2)} USD, €{round(total_eur,2)} EUR)\n\n"
+                    md += "---\n"
+                    md += "## Tips & Recommendations\n"
+                    md += (
+                        "- Double-check compatibility before buying.\n"
+                        "- Prices and availability may have changed since 2024.\n"
+                        "- If you want to upgrade, consider increasing your budget or performance level.\n"
+                    )
+                    set_result_md(md)
+                    # --- Query AI again for expert analysis ---
+                    try:
+                        build_summary = ", ".join([f"{part}: {info.get('name','Unknown')}" for part, info in build.items()])
+                        analysis_prompt = (
+                            "You are a PC building expert. Given a build, "
+                            "provide a short analysis of potential bottlenecks, system balance, upgrade advice, and any expert opinions. State everything is according to you, an AI, not any bottlenech calculators and so on."
+                            "Be concise and helpful."
+                        )
+                        analysis_payload = {
+                            "messages": [
+                                {"role": "system", "content": analysis_prompt},
+                                {"role": "user", "content": build_summary}
+                            ],
+                            "max_tokens": 250
+                        }
+                        analysis_json = await ai_post("https://ai.hackclub.com/chat/completions", analysis_payload, timeout=40)
+                        analysis_text = analysis_json.get("choices", [{}])[0].get("message", {}).get("content", "")
+                        if analysis_text:
+                            set_result_md(lambda prev: prev + "\n---\n## Expert Analysis\n" + analysis_text.strip())
+                    except Exception as e:
+                        debug(f"[DEBUG] Error during expert analysis AI call: {e}")
+                    # --- Query AI again for game performance estimates ---
+                    try:
+                        build_summary = ", ".join([f"{part}: {info.get('name','Unknown')}" for part, info in build.items()])
+                        games_list = games.strip() if games.strip() else None
+                        if games_list:
+                            perf_prompt = (
+                                "You are a PC gaming expert. Given a build, "
+                                "estimate how games would run on it. "
+                                "For each game, estimate the expected settings (e.g., low/medium/high/ultra), resolution, and FPS. "
+                                "If a game is not in your knowledge base, say so. "
+                                "Add a disclaimer that these are AI-generated estimates and may not be accurate."
+                            )
+                            perf_payload = {
+                                "messages": [
+                                    {"role": "system", "content": perf_prompt},
+                                    {"role": "user", "content": f"Build: {build_summary}, Games: {games_list}."}
+                                ],
+                                "max_tokens": 300
+                            }
+                            perf_json = await ai_post("https://ai.hackclub.com/chat/completions", perf_payload, timeout=40)
+                            perf_text = perf_json.get("choices", [{}])[0].get("message", {}).get("content", "")
+                            if perf_text:
+                                # Ensure each '- ' is on its own line for Markdown
+                                perf_text_md = re.sub(r'(?<!\n)- ', '\n- ', perf_text)
+                                set_result_md(lambda prev: prev + "\n---\n## Game Performance Estimates\n" + perf_text_md.strip())
+                    except Exception as e:
+                        debug(f"[DEBUG] Error during game performance AI call: {e}")
+                    set_loading(False)
+                    debug("[DEBUG] Done. Build and analysis shown to user.")
+                    return
+                else:
+                    last_missing = missing
+                    debug(f"[DEBUG] Will retry for missing part: {missing}")
+                    continue
             except Exception as e:
                 debug(f"[DEBUG] Exception during AI call: {e}")
-                debug(e.__traceback__)
-                debug(e.__cause__)
                 set_error(f"Error: {e}")
                 break
         if not result_md:
@@ -816,10 +777,10 @@ def PCPartPicker():
                 html.button(
                     {
                         "className": f"btn btn-gradient{' btn-disabled' if loading or parts_loading else ''}",
-                        "onClick": handle_submit,
+                        "onClick": handle_submit_click if not (loading or parts_loading) else None,
                         "disabled": loading or parts_loading
                     },
-                    "Get Recommendations" if not loading else "Generating..."
+                    "Generating..." if loading else "Get Recommendations"
                 ),
             ),
             # --- Output on the right (desktop), below on mobile ---

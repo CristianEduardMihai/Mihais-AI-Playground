@@ -1,6 +1,5 @@
 from reactpy import component, html, use_state
 import requests
-import json
 import markdown
 
 @component
@@ -9,6 +8,7 @@ def RecipeMaker():
     health_level, set_health_level = use_state("balanced")
     servings, set_servings = use_state("2")
     recipe_html, set_recipe_html = use_state("")
+    loading, set_loading = use_state(False)
 
     cooking_methods = [
         "Frying", "Baking", "Boiling", "Microwave", "Grilling", "Air Fryer"
@@ -24,73 +24,79 @@ def RecipeMaker():
             set_selected_methods(lambda prev: [m for m in prev if m != value])
 
     def handle_generate_recipe(event):
+        set_loading(True)
         set_recipe_html("")  # Clear previous output
-        try:
-            methods_str = ", ".join(selected_methods) if selected_methods else "any method"
-            prompt = (
-                "You are a helpful chef AI. "
-                "Output ONLY the recipe in Markdown format, with no extra comments, explanations, or preamble. "
-                "Do not include any text outside the Markdown recipe. "
-                "Assume the user also has common ingredients like sugar, salt, and flour.\n"
-                "Do not use any other cooking methods outside of the specified ones. If no method is possible, or if the ingredients are obviously for a salad or similar, you may use a no-cook recipe as a last resort.\n"
-                "If the ingredients make sense as a main dish and a side (for example, chicken and potatoes as a main, cabbage and lemon as a salad), you may split them into a main and a side dish, and describe both in the recipe.\n"
-                "Explain the recipe in detail, including cooking times and methods, do not cheap down on words.\n"
-                "You don't have to use all the ingredients.\n\n"
-                "Follow the provided template exactly:\n\n"
-                "# Recipe Title\n\n"
-                "## Ingredients\n"
-                "- ingredient 1\n"
-                "- ingredient 2\n\n"
-                "## Instructions\n"
-                "1. Step one\n"
-                "2. Step two\n\n"
-                "## Nutrition (per serving / per 100g)\n"
-                "| Nutrient     | per serving | per 100g |\n"
-                "|--------------|-------------|----------|\n"
-                "| Calories     |             |          |\n"
-                "| Protein      |             |          |\n"
-                "| Carbs        |             |          |\n"
-                "| Fat          |             |          |\n"
-                "*Note: Nutritional values are approximate and AI generated.*\n\n"
-                "## Alergens\n"
-                "- allergen 1\n"
-                "- allergen 2\n\n"
-                "\n\n"
-                
-                "Fill in each section accordingly, using bullet lists and numbered steps exactly as above. "
-            )
-
-            response = requests.post(
-                "https://ai.hackclub.com/chat/completions",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": prompt},
-                        {
-                            "role": "user", "content": (
-                            f"Use these ingredients: {ingredients}\n"
-                            f"Allowed cooking methods: {methods_str}."
-                            f"Health level: {health_level}\n"
-                            f"Servings: {servings}\n\n"
-                            )
-                        }
-                    ]
-                },
-                timeout=60
-            )
-            if response.status_code != 200:
-                raise RuntimeError(f"AI model returned {response.status_code}")
-
-            data = response.json()
-            md = data["choices"][0]["message"]["content"]
-
-            html_content = markdown.markdown(md, extensions=["tables"])
-            set_recipe_html(f"<div class='markdown-body'>{html_content}</div>")
-
-        except Exception as e:
-            set_recipe_html(f"<p style='color:red'>Error: {e}</p>")
+        import threading
+        def run_async():
+            import asyncio
+            import aiohttp
+            async def do_request():
+                try:
+                    methods_str = ", ".join(selected_methods) if selected_methods else "any method"
+                    prompt = (
+                        "You are a helpful chef AI. "
+                        "Output ONLY the recipe in Markdown format, with no extra comments, explanations, or preamble. "
+                        "Do not include any text outside the Markdown recipe. "
+                        "Assume the user also has common ingredients like sugar, salt, and flour.\n"
+                        "Do not use any other cooking methods outside of the specified ones. If no method is possible, or if the ingredients are obviously for a salad or similar, you may use a no-cook recipe as a last resort.\n"
+                        "If the ingredients make sense as a main dish and a side (for example, chicken and potatoes as a main, cabbage and lemon as a salad), you may split them into a main and a side dish, and describe both in the recipe.\n"
+                        "Explain the recipe in detail, including cooking times and methods, do not cheap down on words.\n"
+                        "You don't have to use all the ingredients.\n\n"
+                        "Follow the provided template exactly:\n\n"
+                        "# Recipe Title\n\n"
+                        "## Ingredients\n"
+                        "- ingredient 1\n"
+                        "- ingredient 2\n\n"
+                        "## Instructions\n"
+                        "1. Step one\n"
+                        "2. Step two\n\n"
+                        "## Nutrition (per serving / per 100g)\n"
+                        "| Nutrient     | per serving | per 100g |\n"
+                        "|--------------|-------------|----------|\n"
+                        "| Calories     |             |          |\n"
+                        "| Protein      |             |          |\n"
+                        "| Carbs        |             |          |\n"
+                        "| Fat          |             |          |\n"
+                        "*Note: Nutritional values are approximate and AI generated.*\n\n"
+                        "## Alergens\n"
+                        "- allergen 1\n"
+                        "- allergen 2\n\n"
+                        "\n\n"
+                        "Fill in each section accordingly, using bullet lists and numbered steps exactly as above. "
+                    )
+                    async with aiohttp.ClientSession() as session:
+                        async with session.post(
+                            "https://ai.hackclub.com/chat/completions",
+                            headers={"Content-Type": "application/json"},
+                            json={
+                                "messages": [
+                                    {
+                                        "role": "system",
+                                        "content": prompt},
+                                    {
+                                        "role": "user", "content": (
+                                        f"Use these ingredients: {ingredients}\n"
+                                        f"Allowed cooking methods: {methods_str}."
+                                        f"Health level: {health_level}\n"
+                                        f"Servings: {servings}\n\n"
+                                        )
+                                    }
+                                ]
+                            },
+                            timeout=aiohttp.ClientTimeout(total=60)
+                        ) as response:
+                            if response.status != 200:
+                                raise RuntimeError(f"AI model returned {response.status}")
+                            data = await response.json()
+                    md = data["choices"][0]["message"]["content"]
+                    html_content = markdown.markdown(md, extensions=["tables"])
+                    set_recipe_html(f"<div class='markdown-body'>{html_content}</div>")
+                except Exception as e:
+                    set_recipe_html(f"<p style='color:red'>Error: {e}</p>")
+                finally:
+                    set_loading(False)
+            asyncio.run(do_request())
+        threading.Thread(target=run_async, daemon=True).start()
 
     from components.common.config import CACHE_SUFFIX
     return html.div(
@@ -160,8 +166,12 @@ def RecipeMaker():
             ),
             # Generate button
             html.button(
-                {"className": "btn btn-gradient", "onClick": handle_generate_recipe},
-                "Generate Recipe"
+                {
+                    "className": f"btn btn-gradient{' disabled' if loading else ''}",
+                    "onClick": handle_generate_recipe if not loading else None,
+                    "disabled": loading
+                },
+                "Generating..." if loading else "Generate Recipe"
             ),
             # Output + Save as PDF
             html.div(

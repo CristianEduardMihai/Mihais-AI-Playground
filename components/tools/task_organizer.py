@@ -1,6 +1,7 @@
 from reactpy import component, html, use_state
 import threading, time
-import requests
+import aiohttp
+import asyncio
 import json
 import random
 import string
@@ -13,7 +14,7 @@ def debug_print(*args, **kwargs):
         print("[DEBUG]", *args, **kwargs)
 
 
-def call_ai_schedule(tasks):
+async def call_ai_schedule(tasks):
     debug_print("call_ai_schedule called with tasks:", tasks)
     debug_print("---- USER INPUT ----")
     debug_print(json.dumps(tasks, indent=2, ensure_ascii=False))
@@ -32,20 +33,20 @@ def call_ai_schedule(tasks):
     ]
     try:
         debug_print("Sending request to AI endpoint with payload:", json.dumps(tasks, indent=2, ensure_ascii=False))
-        resp = requests.post(
-            "https://ai.hackclub.com/chat/completions",
-            headers={"Content-Type": "application/json"},
-            json={
-                "messages": [
-                    {"role": "system", "content": "\n".join(instructions)},
-                    {"role": "user", "content": json.dumps(tasks)}
-                ]
-            },
-            timeout=60
-        )
-        debug_print("AI endpoint response status:", resp.status_code)
-        debug_print("AI endpoint response body:", resp.text)
-        ai_raw = resp.json()["choices"][0]["message"]["content"]
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                "https://ai.hackclub.com/chat/completions",
+                headers={"Content-Type": "application/json"},
+                json={
+                    "messages": [
+                        {"role": "system", "content": "\n".join(instructions)},
+                        {"role": "user", "content": json.dumps(tasks)}
+                    ]
+                },
+                timeout=aiohttp.ClientTimeout(total=60)
+            ) as resp:
+                debug_print("AI endpoint response status:", resp.status)
+                ai_raw = (await resp.json())["choices"][0]["message"]["content"]
         ai_clean = ai_raw.strip()
         if ai_clean.startswith("```"):
             ai_clean = ai_clean.lstrip("`\n ")
@@ -71,7 +72,7 @@ def generate_ics(organized_tasks, tzid, user_timezone=None):
     # Use detected user_timezone if available, else fallback to UTC
     tz = user_timezone or 'UTC'
     debug_print(f"[ICS] Called generate_ics with tzid={tzid}, user_timezone={user_timezone} (using: {tz})")
-    print(f"[DEBUG] [TZ-DETECT] Using timezone for ICS: {tz}")
+    debug_print(f"[TZ-DETECT] Using timezone for ICS: {tz}")
     import uuid
     from datetime import datetime, date, timedelta
     from zoneinfo import ZoneInfo
@@ -180,12 +181,12 @@ def TaskOrganizer():
         debug_print("handle_organize called")
         set_loading(True)
         set_error("")
-        def ai_schedule():
+        async def ai_schedule():
             debug_print("ai_schedule thread started")
-            time.sleep(0.7)
+            await asyncio.sleep(0.7)
             debug_print("User tasks:", tasks)
             try:
-                scheduled = call_ai_schedule(tasks)
+                scheduled = await call_ai_schedule(tasks)
                 debug_print("AI scheduled tasks:", scheduled)
                 set_organized_tasks(scheduled)
             except Exception as e:
@@ -194,7 +195,7 @@ def TaskOrganizer():
                 debug_print("Error in ai_schedule:", e)
             set_loading(False)
             debug_print("ai_schedule thread finished")
-        threading.Thread(target=ai_schedule, daemon=True).start()
+        asyncio.create_task(ai_schedule())
 
     def handle_save_to_link(_):
         debug_print("handle_save_to_link called")
@@ -407,37 +408,39 @@ def TaskOrganizer():
         set_timezone_ai_loading(True)
         set_timezone_ai_error("")
         # Call AI endpoint to resolve timezone
-        try:
-            prompt = f"Given the user input '{val}', return the best matching IANA timezone name (e.g. Europe/Moscow, America/New_York). Only return the timezone name, nothing else. If ambiguous, pick the most likely for a city or region."
-            resp = requests.post(
-                "https://ai.hackclub.com/chat/completions",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "messages": [
-                        {"role": "system", "content": "You are a helpful assistant that maps user input to IANA timezone names."},
-                        {"role": "user", "content": prompt}
-                    ]
-                },
-                timeout=20
-            )
-            ai_raw = resp.json()["choices"][0]["message"]["content"].strip()
-            # Clean up any code block formatting
-            if ai_raw.startswith("`"):
-                ai_raw = ai_raw.lstrip("`\n ")
-            if ai_raw.endswith("`"):
-                ai_raw = ai_raw.rstrip("`\n ")
-            # Only take the first line, in case
-            tz = ai_raw.split("\n")[0].strip()
-            if tz:
-                set_user_timezone(tz)
-                set_timezone_ai_error("")
-                debug_print(f"[ReactPy] AI resolved timezone input '{val}' to: {tz}")
-            else:
-                set_timezone_ai_error("Could not resolve to a valid timezone.")
-        except Exception as ex:
-            set_timezone_ai_error(f"AI error: {ex}")
-        set_timezone_ai_loading(False)
-
+        async def resolve_timezone():
+            try:
+                prompt = f"Given the user input '{val}', return the best matching IANA timezone name (e.g. Europe/Moscow, America/New_York). Only return the timezone name, nothing else. If ambiguous, pick the most likely for a city or region."
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(
+                        "https://ai.hackclub.com/chat/completions",
+                        headers={"Content-Type": "application/json"},
+                        json={
+                            "messages": [
+                                {"role": "system", "content": "You are a helpful assistant that maps user input to IANA timezone names."},
+                                {"role": "user", "content": prompt}
+                            ]
+                        },
+                        timeout=aiohttp.ClientTimeout(total=20)
+                    ) as resp:
+                        ai_raw = (await resp.json())["choices"][0]["message"]["content"].strip()
+                # Clean up any code block formatting
+                if ai_raw.startswith("`"):
+                    ai_raw = ai_raw.lstrip("`\n ")
+                if ai_raw.endswith("`"):
+                    ai_raw = ai_raw.rstrip("`\n ")
+                # Only take the first line, in case
+                tz = ai_raw.split("\n")[0].strip()
+                if tz:
+                    set_user_timezone(tz)
+                    set_timezone_ai_error("")
+                    debug_print(f"[ReactPy] AI resolved timezone input '{val}' to: {tz}")
+                else:
+                    set_timezone_ai_error("Could not resolve to a valid timezone.")
+            except Exception as ex:
+                set_timezone_ai_error(f"AI error: {ex}")
+            set_timezone_ai_loading(False)
+        asyncio.create_task(resolve_timezone())
     from components.common.config import CACHE_SUFFIX
     return html.div(
         {},

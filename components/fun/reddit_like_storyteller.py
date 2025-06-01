@@ -42,61 +42,81 @@ def RedditLikeStoryteller():
     audio_url, set_audio_url = use_state("")
     audio_loading, set_audio_loading = use_state(False)
     audio_error, set_audio_error = use_state("")
+    generate_comments, set_generate_comments = use_state(True)
 
     def handle_generate_story(_event=None):
         set_loading(True)
         set_error("")
         set_story_html("")
-        try:
-            system_prompt = (
-                "You are a creative Reddit storyteller AI. "
-                "Write a story in the style of the given subreddit, and if any, given theme. "
-                "Format it as a Reddit post, with a title, body, and (if appropriate) comments or responses. "
-                "Make the names of the comments and users realistic, but do not use real Reddit usernames. "
-                "Stay true to the tone, tropes, and conventions of the selected subreddit. "
-                "Output only the story in Markdown, no extra commentary, explanations, or preamble. "
-                "Do not include any text outside the Markdown story. "
-                "Make a decently long story, but not too long. "
-                "Add engaging comments or responses if the subreddit typically has them. "
-                "Stay true to the subreddit style. " \
-                "For the comments, use the format: - **u/username** comment text. "
-                "If the subreddit is r/TwoSentenceHorror, make it exactly two sentences. "
-                "If the subreddit is r/AITA, include a verdict at the end (YTA, NTA, ESH, NAH)."
-            )
-            user_prompt = (
-                f"Write a story in the style of {subreddit}. "
-                f"Theme: {theme.strip() or 'Any'}."
-            )
-            resp = requests.post(
-                "https://ai.hackclub.com/chat/completions",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ]
-                },
-                timeout=60
-            )
-            resp.raise_for_status()
-            md = resp.json()["choices"][0]["message"]["content"]
-            html_content = markdown.markdown(md, extensions=["tables", "nl2br"])
-
-            # Tidy up Reddit-style comment lists
-            html_content = re.sub(r'<li>\s*([*•])\s*u/', r'<li>u/', html_content)
-            html_content = re.sub(r'(?:<br\s*/?>)?\s*[*•]\s*(u/\w+)', r'<li>\1', html_content)
-
-            # If raw MD had comment lines, append them as a UL
-            comments = re.findall(r'^[*•]\s*(u/\w+.*)$', md, re.MULTILINE)
-            if comments:
-                comments_html = "<ul>" + "".join(f"<li>{c}</li>" for c in comments) + "</ul>"
-                html_content += comments_html
-
-            set_story_html(f"<div class='markdown-body'>{html_content}</div>")
-        except Exception as e:
-            set_error(str(e))
-        finally:
-            set_loading(False)
+        def run_async():
+            import asyncio
+            import aiohttp
+            async def do_request():
+                try:
+                    if generate_comments:
+                        system_prompt = (
+                            "You are a creative Reddit storyteller AI. "
+                            "Write a story in the style of the given subreddit, and if any, given theme. "
+                            "Include engaging comments or responses if the subreddit typically has them. "
+                            "Format it as a Reddit post, with a title, body, and (if appropriate) comments or responses. "
+                            "Make the names of the comments and users realistic, but do not use real Reddit usernames. "
+                            "Stay true to the tone, tropes, and conventions of the selected subreddit. "
+                            "Output only the story in Markdown, no extra commentary, explanations, or preamble. "
+                            "Do not include any text outside the Markdown story. "
+                            "Make a decently long story, but not too long. "
+                            "Add engaging comments or responses if the subreddit typically has them. "
+                            "Stay true to the subreddit style. "
+                            "For the comments, use the format: - **u/username** comment text. "
+                            "If the subreddit is r/TwoSentenceHorror, make it exactly two sentences. "
+                            "If the subreddit is r/AITA, include a verdict at the end (YTA, NTA, ESH, NAH)."
+                        )
+                    else:
+                        system_prompt = (
+                            "You are a creative Reddit storyteller AI. "
+                            "Write a story in the style of the given subreddit, and if any, given theme. "
+                            "Do NOT include any comments or responses, only the main story body. "
+                            "Format it as a Reddit post, with a title and body only. "
+                            "Make the story realistic and true to the tone, tropes, and conventions of the selected subreddit. "
+                            "Output only the story in Markdown, no extra commentary, explanations, or preamble. "
+                            "Do not include any text outside the Markdown story. "
+                            "Make a decently long story, but not too long. "
+                            "If the subreddit is r/TwoSentenceHorror, make it exactly two sentences. "
+                            "If the subreddit is r/AITA, include a verdict at the end (YTA, NTA, ESH, NAH)."
+                        )
+                    user_prompt = (
+                        f"Write a story in the style of {subreddit}. "
+                        f"Theme: {theme.strip() or 'Any'}."
+                    )
+                    async with aiohttp.ClientSession() as session:
+                        async with session.post(
+                            "https://ai.hackclub.com/chat/completions",
+                            headers={"Content-Type": "application/json"},
+                            json={
+                                "messages": [
+                                    {"role": "system", "content": system_prompt},
+                                    {"role": "user", "content": user_prompt},
+                                ]
+                            },
+                            timeout=aiohttp.ClientTimeout(total=60)
+                        ) as resp:
+                            resp.raise_for_status()
+                            data = await resp.json()
+                    md = data["choices"][0]["message"]["content"]
+                    html_content = markdown.markdown(md, extensions=["tables", "nl2br"])
+                    html_content = re.sub(r'<li>\s*([*•])\s*u/', r'<li>u/', html_content)
+                    html_content = re.sub(r'(?:<br\s*/?>)?\s*[*•]\s*(u/\w+)', r'<li>\1', html_content)
+                    comments = re.findall(r'^[*•]\s*(u/\w+.*)$', md, re.MULTILINE)
+                    if comments:
+                        comments_html = "<ul>" + "".join(f"<li>{c}</li>" for c in comments) + "</ul>"
+                        html_content += comments_html
+                    set_story_html(f"<div class='markdown-body'>{html_content}</div>")
+                except Exception as e:
+                    set_error(str(e))
+                finally:
+                    set_loading(False)
+            asyncio.run(do_request())
+        import threading
+        threading.Thread(target=run_async, daemon=True).start()
 
     def extract_story_text(md: str) -> str:
         """Strip out comments/verdicts for plain narration to TTS."""
@@ -130,57 +150,60 @@ def RedditLikeStoryteller():
         set_audio_loading(True)
         set_audio_error("")
         set_audio_url("")
-        try:
-            temp_dir = os.path.join("static", "assets", "tts_temp")
-            os.makedirs(temp_dir, exist_ok=True)
-            # Prepare text
-            soup = BeautifulSoup(story_html, "html.parser")
-            text = soup.get_text("\n").strip()
-            if not text:
-                set_audio_error("No story text to synthesize.")
-                set_audio_loading(False)
-                return
-            # Generate unique filename by using a timestamp
-            ts = int(time.time() * 1000)
-            wav_path = os.path.join(temp_dir, f"tts_story_{ts}.wav")
-            # Piper binary and model paths
-            if system == "windows":
-                piper_bin = os.path.join(piper_bin_dir, "piper.exe")
-            else:
-                piper_bin = os.path.join(piper_bin_dir, "piper")
-            import subprocess
+        import threading
+        def run_piper():
             try:
-                result = subprocess.run(
-                    [piper_bin, "--model", voice_model, "--config", voice_config, "--output_file", wav_path],
-                    input=text.encode("utf-8"),
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    timeout=60
-                )
-                if result.returncode != 0:
-                    set_audio_error(f"Piper error: {result.stderr.decode('utf-8')}")
+                temp_dir = os.path.join("static", "assets", "tts_temp")
+                os.makedirs(temp_dir, exist_ok=True)
+                # Prepare text
+                soup = BeautifulSoup(story_html, "html.parser")
+                text = soup.get_text("\n").strip()
+                if not text:
+                    set_audio_error("No story text to synthesize.")
                     set_audio_loading(False)
                     return
+                # Generate unique filename by using a timestamp
+                ts = int(time.time() * 1000)
+                wav_path = os.path.join(temp_dir, f"tts_story_{ts}.wav")
+                # Piper binary and model paths
+                if system == "windows":
+                    piper_bin = os.path.join(piper_bin_dir, "piper.exe")
+                else:
+                    piper_bin = os.path.join(piper_bin_dir, "piper")
+                import subprocess
+                try:
+                    result = subprocess.run(
+                        [piper_bin, "--model", voice_model, "--config", voice_config, "--output_file", wav_path],
+                        input=text.encode("utf-8"),
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        timeout=60
+                    )
+                    if result.returncode != 0:
+                        set_audio_error(f"Piper error: {result.stderr.decode('utf-8')}")
+                        set_audio_loading(False)
+                        return
+                except Exception as e:
+                    set_audio_error(f"Piper execution failed: {e}")
+                    set_audio_loading(False)
+                    return
+                # Set audio URL for playback, but check file exists and is non-empty
+                import time as _time
+                for _ in range(10):  # Wait up to 1s for file to be written
+                    if os.path.exists(wav_path) and os.path.getsize(wav_path) > 1000:
+                        break
+                    _time.sleep(0.1)
+                if not os.path.exists(wav_path) or os.path.getsize(wav_path) == 0:
+                    set_audio_error("Audio file was not created or is empty.")
+                else:
+                    # Add a small delay to ensure file is ready before setting URL
+                    _time.sleep(0.15)
+                    rel_url = f"/static/assets/tts_temp/tts_story_{ts}.wav"
+                    set_audio_url(rel_url)
             except Exception as e:
-                set_audio_error(f"Piper execution failed: {e}")
-                set_audio_loading(False)
-                return
-            # Set audio URL for playback, but check file exists and is non-empty
-            import time as _time
-            for _ in range(10):  # Wait up to 1s for file to be written
-                if os.path.exists(wav_path) and os.path.getsize(wav_path) > 1000:
-                    break
-                _time.sleep(0.1)
-            if not os.path.exists(wav_path) or os.path.getsize(wav_path) == 0:
-                set_audio_error("Audio file was not created or is empty.")
-            else:
-                # Add a small delay to ensure file is ready before setting URL
-                _time.sleep(0.15)
-                rel_url = f"/static/assets/tts_temp/tts_story_{ts}.wav"
-                set_audio_url(rel_url)
-        except Exception as e:
-            set_audio_error(f"Audio generation failed: {e}")
-        set_audio_loading(False)
+                set_audio_error(f"Audio generation failed: {e}")
+            set_audio_loading(False)
+        threading.Thread(target=run_piper, daemon=True).start()
 
     from components.common.config import CACHE_SUFFIX
     return html.div(
@@ -220,6 +243,18 @@ def RedditLikeStoryteller():
                     ]
                 )
             ),
+            html.div(
+                {"className": "form-group"},
+                html.label({"for": "generate-comments"},
+                    html.input({
+                        "id": "generate-comments",
+                        "type": "checkbox",
+                        "checked": generate_comments,
+                        "onChange": lambda e: set_generate_comments(e["target"]["checked"])
+                    }),
+                    " Include comments (if subreddit style supports them)"
+                )
+            ),
             # Button area: show Generate Story or Generate Audio depending on state
             html.div(
                 {"className": "button-area"},
@@ -228,28 +263,30 @@ def RedditLikeStoryteller():
                 )
                 and html.button(
                     {
-                        "className": "btn btn-gradient",
-                        "onClick": handle_generate_story,
+                        "className": f"btn btn-gradient{' disabled' if loading or not subreddit else ''}",
+                        "onClick": handle_generate_story if not (loading or not subreddit) else None,
                         "disabled": loading or not subreddit
                     },
-                    loading and "Generating…" or "Generate Story"
+                    "Generating…" if loading else "Generate Story"
                 )
                 or (
                     story_html and not loading
                 )
                 and html.button(
                     {
-                        "className": "btn btn-blue-gradient",
-                        "onClick": handle_generate_audio,
-                        "disabled": audio_loading
+                        "className": f"btn btn-blue-gradient{' disabled' if audio_loading or audio_url else ''}",
+                        "onClick": handle_generate_audio if not (audio_loading or audio_url) else None,
+                        "disabled": audio_loading or audio_url
                     },
-                    audio_loading and "Generating Audio…" or "🔊 Generate Audio"
+                    "⚙️Generating Audio…" if audio_loading else (
+                        "🔊 Generate Audio" if not audio_url else "🔊 Audio Ready"
+                    )
                 )
             ),
             # Audio player and error, above the story markdown
             (audio_loading or audio_url or audio_error) and html.div(
                 {"className": "audio-area"},
-                audio_loading and html.div({"className": "audio-loading"}, "Generating audio…") or None,
+                audio_loading and html.div({"className": "audio-loading"}, "") or None,
                 audio_error and html.p({"style": {"color": "red"}}, audio_error) or None,
                 audio_url and html.audio({
                     "controls": True,

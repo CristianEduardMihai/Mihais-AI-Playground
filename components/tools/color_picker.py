@@ -1,6 +1,7 @@
 from reactpy import component, html, use_state
-import requests
+import aiohttp
 import json
+import asyncio
 
 @component
 def AIColorPicker():
@@ -14,7 +15,7 @@ def AIColorPicker():
     color_meanings, set_color_meanings = use_state([])
     import time
 
-    def handle_generate_palette(event):
+    async def handle_generate_palette(event=None):
         # Limit the number of colors to 12 for safety
         try:
             n = int(num_colors)
@@ -40,36 +41,37 @@ def AIColorPicker():
                 "For each color, provide a very short (1 phrase) meaning or feeling it represents, in the 'meanings' array, same order as 'colors'. "
                 "Do not include any text outside the JSON object."
             )
-            response = requests.post(
-                "https://ai.hackclub.com/chat/completions",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "messages": [
-                        {"role": "system", "content": prompt},
-                        {"role": "user", "content": 
-                            f"Project description: {description}\n"
-                            f"Number of colors: {n}\n"}
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://ai.hackclub.com/chat/completions",
+                    headers={"Content-Type": "application/json"},
+                    json={
+                        "messages": [
+                            {"role": "system", "content": prompt},
+                            {"role": "user", "content": f"Project description: {description}\nNumber of colors: {n}\n"}
                         ]
-                },
-                timeout=60
-            )
-            if response.status_code != 200:
-                raise RuntimeError(f"AI model returned {response.status_code}")
-
-            data = response.json()
-            content = data["choices"][0]["message"]["content"].strip()
-            import re
-            match = re.search(r'\{.*\}', content, re.DOTALL)
-            if not match:
-                raise ValueError("No JSON found in AI response.")
-            json_str = match.group(0)
-            palette_data = json.loads(json_str)
-            set_palette(palette_data.get("colors", []))
-            set_ai_message(palette_data.get("message", ""))
-            set_color_meanings(palette_data.get("meanings", []))
+                    },
+                    timeout=60
+                ) as response:
+                    if response.status != 200:
+                        raise RuntimeError(f"AI model returned {response.status}")
+                    data = await response.json()
+                    content = data["choices"][0]["message"]["content"].strip()
+                    import re
+                    match = re.search(r'\{.*\}', content, re.DOTALL)
+                    if not match:
+                        raise ValueError("No JSON found in AI response.")
+                    json_str = match.group(0)
+                    palette_data = json.loads(json_str)
+                    set_palette(palette_data.get("colors", []))
+                    set_ai_message(palette_data.get("message", ""))
+                    set_color_meanings(palette_data.get("meanings", []))
         except Exception as e:
             set_error(f"Error: {e}")
         set_loading(False)
+
+    def handle_generate_palette_click(event=None):
+        asyncio.create_task(handle_generate_palette())
 
     def handle_swatch_click(idx, color):
         try:
@@ -151,10 +153,10 @@ def AIColorPicker():
             html.button(
                 {
                     "className": "btn btn-gradient",
-                    "onClick": handle_generate_palette,
+                    "onClick": handle_generate_palette_click if not loading else None,
                     "disabled": loading or not description or not num_colors
                 },
-                "Generate Palette"
+                "Generating..." if loading else "Generate Palette"
             ),
             html.div(
                 {"className": "palette-output"},

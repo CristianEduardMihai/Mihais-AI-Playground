@@ -27,7 +27,7 @@ def CharacterChat():
         set_error("")
         set_chat(lambda c: c + [("You", msg)])
         try:
-            # Compose prompt for AI
+            import aiohttp
             char_data = CHAR_MAP[selected_show]["characters"][selected_char]
             system_prompt = (
                 f"You are roleplaying as {selected_char.capitalize()} from {selected_show.title()}. {char_data['personality_modifiers']} Stay in character."
@@ -37,20 +37,21 @@ def CharacterChat():
                 "Respond in short-sized messages, and use emojis where appropriate."
             )
             user_prompt = msg
-            import requests
-            resp = requests.post(
-                "https://ai.hackclub.com/chat/completions",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ]
-                },
-                timeout=60
-            )
-            resp.raise_for_status()
-            reply = resp.json()["choices"][0]["message"]["content"]
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://ai.hackclub.com/chat/completions",
+                    headers={"Content-Type": "application/json"},
+                    json={
+                        "messages": [
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt},
+                        ]
+                    },
+                    timeout=aiohttp.ClientTimeout(total=60)
+                ) as resp:
+                    resp.raise_for_status()
+                    data = await resp.json()
+            reply = data["choices"][0]["message"]["content"]
             set_chat(lambda c: c + [(selected_char, reply)])
         except Exception as e:
             set_error(f"AI error: {e}")

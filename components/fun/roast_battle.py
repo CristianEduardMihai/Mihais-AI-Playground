@@ -15,10 +15,10 @@ def BotVsBotRoastBattle():
     task_ref = use_ref(None)
 
     async def roast_battle(cancel_ref):
+        import aiohttp
         set_chat([])
         set_error("")
         set_is_typing(True)
-
         bot1 = "Bot Alpha"
         bot2 = "Bot Beta"
         system_msg = {
@@ -34,12 +34,10 @@ def BotVsBotRoastBattle():
             )
         }
         history = []
-
         for turn in range(20):
             if cancel_ref.current:
                 break
             bot = [bot1, bot2][turn % 2]
-            # build context from prior roasts
             context = [
                 {"role": "assistant" if spk == bot else "user", "content": msg}
                 for spk, msg in history
@@ -49,21 +47,22 @@ def BotVsBotRoastBattle():
                 "Do not repeat previous jokes. Keep it clever, clean, and punchy."
             )
             payload = [system_msg] + context + [{"role": "user", "content": prompt}]
-
             try:
                 if cancel_ref.current:
                     break
                 set_is_typing(True)
-                resp = requests.post(
-                    "https://ai.hackclub.com/chat/completions",
-                    json={"messages": payload, "max_tokens": 120},
-                    headers={"Content-Type": "application/json"},
-                    timeout=60,
-                )
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(
+                        "https://ai.hackclub.com/chat/completions",
+                        json={"messages": payload, "max_tokens": 120},
+                        headers={"Content-Type": "application/json"},
+                        timeout=aiohttp.ClientTimeout(total=60),
+                    ) as resp:
+                        resp.raise_for_status()
+                        data = await resp.json()
                 if cancel_ref.current:
                     break
-                resp.raise_for_status()
-                roast = resp.json()["choices"][0]["message"]["content"].strip()
+                roast = data["choices"][0]["message"]["content"].strip()
                 set_chat(lambda c: c + [(bot, roast)])
                 history.append((bot, roast))
                 await asyncio.sleep(3.5 + 1.2 * (turn % 2))
@@ -73,7 +72,6 @@ def BotVsBotRoastBattle():
                     set_error(f"Error: {e}")
                     set_is_typing(False)
                 break
-
         set_is_typing(False)
         set_started(False)
 
@@ -138,11 +136,11 @@ def BotVsBotRoastBattle():
             # start button
             html.button(
                 {
-                    "className": "btn btn-gradient",
-                    "onClick": handle_start,
+                    "className": f"btn btn-gradient{' disabled' if started or not topic.strip() else ''}",
+                    "onClick": handle_start if not (started or not topic.strip()) else None,
                     "disabled": started or not topic.strip(),
                 },
-                "Start Roast Battle",
+                ("Battle Started" if started else "Start Roast Battle")
             ),
 
             html.div(

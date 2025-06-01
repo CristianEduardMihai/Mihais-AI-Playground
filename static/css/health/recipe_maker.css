@@ -279,3 +279,17 @@ a.btn, a.btn-gradient, a.btn-home {
     display: inline-block;
   }
 }
+
+/* Disabled styles for buttons */
+.btn.disabled,
+.btn[disabled],
+.btn-gradient.disabled,
+.btn-gradient[disabled] {
+  opacity: 0.55;
+  filter: grayscale(0.35) brightness(1.08);
+  cursor: not-allowed !important;
+  pointer-events: none;
+  /* background and color not overridden, so gradient shows through */
+  box-shadow: none !important;
+  border: none !important;
+}

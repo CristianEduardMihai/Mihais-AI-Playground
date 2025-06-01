@@ -1,5 +1,4 @@
 from reactpy import component, html, use_state
-import requests
 import markdown
 
 @component
@@ -13,44 +12,52 @@ def CoderProfile():
         set_loading(True)
         set_result_md("")
         set_error("")
-        prompt = (
-            "You are a playful code analyst. "
-            "Given a user's code (max 300 lines), analyze their coding style and habits. "
-            "Write a fun, friendly coder profile in Markdown. "
-            "Include bullet lists for strengths, quirks, and fun insights. "
-            "Add a playful summary at the end. "
-            "Use emojis, but don't overdo it. "
-            "Do not repeat the code or its comments directly. "
-            "Keep in mind that this code is just a snippet of their work. "
-            "Do not analyze the code literally or focus on technical details. "
-            "Instead, infer personality traits, habits, and possible preferences from the code. "
-            "Use second person perspective (you, your). "
-            "Be creative and interpretive, not literal. "
-            "Keep it positive and fun!"
-        )
-        try:
-            resp = requests.post(
-                "https://ai.hackclub.com/chat/completions",
-                json={
-                    "messages": [
-                        {"role": "system", "content": prompt},
-                        {"role": "user", "content": f"User's code (max 300 lines):\n{code[:12000]}"},
-                    ],
-                    "max_tokens": 350
-                },
-                headers={"Content-Type": "application/json"},
-                timeout=40
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-            if text:
-                text = text.replace("\n*", "\n\n*").replace("\n-", "\n\n-")
-            set_result_md(text)
-        except Exception as e:
-            set_error(f"Error: {e}")
-        finally:
-            set_loading(False)
+        import threading
+        def run_async():
+            import asyncio
+            import aiohttp
+            async def do_request():
+                prompt = (
+                    "You are a playful code analyst. "
+                    "Given a user's code (max 300 lines), analyze their coding style and habits. "
+                    "Write a fun, friendly coder profile in Markdown. "
+                    "Include bullet lists for strengths, quirks, and fun insights. "
+                    "Add a playful summary at the end. "
+                    "Use emojis, but don't overdo it. "
+                    "Do not repeat the code or its comments directly. "
+                    "Keep in mind that this code is just a snippet of their work. "
+                    "Do not analyze the code literally or focus on technical details. "
+                    "Instead, infer personality traits, habits, and possible preferences from the code. "
+                    "Use second person perspective (you, your). "
+                    "Be creative and interpretive, not literal. "
+                    "Keep it positive and fun!"
+                )
+                try:
+                    async with aiohttp.ClientSession() as session:
+                        async with session.post(
+                            "https://ai.hackclub.com/chat/completions",
+                            json={
+                                "messages": [
+                                    {"role": "system", "content": prompt},
+                                    {"role": "user", "content": f"User's code (max 300 lines):\n{code[:12000]}"},
+                                ],
+                                "max_tokens": 350
+                            },
+                            headers={"Content-Type": "application/json"},
+                            timeout=aiohttp.ClientTimeout(total=40)
+                        ) as resp:
+                            resp.raise_for_status()
+                            data = await resp.json()
+                    text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                    if text:
+                        text = text.replace("\n*", "\n\n*").replace("\n-", "\n\n-")
+                    set_result_md(text)
+                except Exception as e:
+                    set_error(f"Error: {e}")
+                finally:
+                    set_loading(False)
+            asyncio.run(do_request())
+        threading.Thread(target=run_async, daemon=True).start()
 
     from components.common.config import CACHE_SUFFIX
     return html.div(
