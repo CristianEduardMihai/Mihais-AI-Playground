@@ -82,12 +82,12 @@ def CharacterChat():
         return None
 
     # Fix: Use class instead of className for HTML attributes
-    from components.common.config import GITHUB_ACTIONS_RUN
-    #print("GITHUB_ACTIONS_RUN is", GITHUB_ACTIONS_RUN)
+    from components.common.config import CACHE_SUFFIX
+    #print("CACHE_SUFFIX is", CACHE_SUFFIX)
     return html.div(
         {},
         html.div({"class": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": f"/static/css/fun/character_chat.css?v={GITHUB_ACTIONS_RUN}"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/fun/character_chat.css?v={CACHE_SUFFIX}"}),
         html.div(
             {"class": "home-btn-row"},
             html.a({"href": "/", "class": "btn btn-gradient"}, "🏠 Home")

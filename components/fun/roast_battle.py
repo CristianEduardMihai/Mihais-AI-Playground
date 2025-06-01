@@ -96,14 +96,14 @@ def BotVsBotRoastBattle():
         []
     )
 
-    from components.common.config import GITHUB_ACTIONS_RUN
+    from components.common.config import CACHE_SUFFIX
     return html.div(
         {},
         # background blur
         html.div({"className": "background-gradient-blur"}),
 
         # stylesheet
-        html.link({"rel": "stylesheet", "href": f"/static/css/fun/roast_battle.css?v={GITHUB_ACTIONS_RUN}"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/fun/roast_battle.css?v={CACHE_SUFFIX}"}),
 
         # navbar
         html.nav(

@@ -1,9 +1,16 @@
-disable_css_cache = True  # Set to False to allow browser to cache CSS (GITHUB_ACTIONS_RUN = 'STABLE')
-GITHUB_ACTIONS_RUN = None
+# Cache mode: 'STABLE', 'ACTIONS', or 'DEV'
+# DEV mode is for development purposes and will not use cache. The suffix will be the current timestamp.
+CACHE_MODE = 'ACTIONS'  # Change to 'STABLE', 'ACTIONS', or 'DEV' as needed
+CACHE_SUFFIX = None
 
-def set_github_actions_run(run_number=None):
-    global GITHUB_ACTIONS_RUN
-    if not disable_css_cache:
-        GITHUB_ACTIONS_RUN = "STABLE"
+def set_CACHE_SUFFIX(run_number=None):
+    global CACHE_SUFFIX
+    if CACHE_MODE == 'STABLE':
+        CACHE_SUFFIX = 'STABLE'
+    elif CACHE_MODE == 'ACTIONS':
+        CACHE_SUFFIX = run_number
+    elif CACHE_MODE == 'DEV':
+        import time
+        CACHE_SUFFIX = str(int(time.time()))
     else:
-        GITHUB_ACTIONS_RUN = run_number
+        CACHE_SUFFIX = run_number

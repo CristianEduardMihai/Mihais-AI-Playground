@@ -232,10 +232,10 @@ def HTML5PortfolioBuilder():
         set_show_json_export(False)
         set_json_export_text("")
 
-    from components.common.config import GITHUB_ACTIONS_RUN
+    from components.common.config import CACHE_SUFFIX
     return html.div(
         {},
-        html.link({"rel": "stylesheet", "href": f"/static/css/tools/HTML5_portfolio_builder.css?v={GITHUB_ACTIONS_RUN}"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/tools/HTML5_portfolio_builder.css?v={CACHE_SUFFIX}"}),
         html.nav({"className": "navbar"}, html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")),
         html.div(
             {"className": "portfolio-builder"},

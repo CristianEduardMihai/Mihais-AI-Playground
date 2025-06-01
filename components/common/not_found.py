@@ -2,11 +2,11 @@ from reactpy import component, html
 
 @component
 def NotFound():
-    from components.common.config import GITHUB_ACTIONS_RUN
+    from components.common.config import CACHE_SUFFIX
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": f"/static/css/common/not_found.css?v={GITHUB_ACTIONS_RUN}"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/common/not_found.css?v={CACHE_SUFFIX}"}),
         html.div({"className": "notfound-container"},
             html.h1({"className": "notfound-title"}, "404"),
             html.h2({"className": "notfound-subtitle"}, "Page Not Found"),

@@ -113,11 +113,11 @@ def AIColorPicker():
             ]
         )
 
-    from components.common.config import GITHUB_ACTIONS_RUN
+    from components.common.config import CACHE_SUFFIX
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": f"/static/css/tools/color_picker.css?v={GITHUB_ACTIONS_RUN}"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/tools/color_picker.css?v={CACHE_SUFFIX}"}),
         html.nav(
             {"className": "navbar"},
             html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")

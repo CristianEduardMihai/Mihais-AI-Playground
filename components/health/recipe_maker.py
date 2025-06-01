@@ -92,12 +92,12 @@ def RecipeMaker():
         except Exception as e:
             set_recipe_html(f"<p style='color:red'>Error: {e}</p>")
 
-    from components.common.config import GITHUB_ACTIONS_RUN
+    from components.common.config import CACHE_SUFFIX
     return html.div(
         {},
         # External CSS and background
         html.div({"className": "background-gradient-blur"}),
-        html.link({"rel": "stylesheet", "href": f"/static/css/health/recipe_maker.css?v={GITHUB_ACTIONS_RUN}"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/health/recipe_maker.css?v={CACHE_SUFFIX}"}),
         html.nav(
             {"className": "navbar"},
             html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")

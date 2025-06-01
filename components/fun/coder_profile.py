@@ -52,10 +52,10 @@ def CoderProfile():
         finally:
             set_loading(False)
 
-    from components.common.config import GITHUB_ACTIONS_RUN
+    from components.common.config import CACHE_SUFFIX
     return html.div(
         {"className": "coder-profile"},
-        html.link({"rel": "stylesheet", "href": f"/static/css/fun/coder_profile.css?v={GITHUB_ACTIONS_RUN}"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/fun/coder_profile.css?v={CACHE_SUFFIX}"}),
         html.div({"className": "background-gradient-blur"}),
         html.nav(
             {"className": "navbar"},
