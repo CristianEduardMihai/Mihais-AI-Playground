@@ -190,6 +190,28 @@ body * {
   border: none !important;
 }
 
+/* Custom styles for topic input */
+.form-group .topic-input {
+  font-size: 1.25rem;
+  padding: 1em 0.9em;
+  width: 100%;
+  max-width: 20rem;
+  border-radius: 1.2em;
+  border: 1.5px solid #b97ffb;
+  background: rgba(255,255,255,0.85);
+  margin: 0.7em auto 1.2em auto;
+  box-shadow: 0 2px 8px rgba(123,47,242,0.08);
+  outline: none;
+  transition: border 0.18s, box-shadow 0.18s;
+  color: #5a1a7a;
+  font-weight: 500;
+}
+.form-group .topic-input:focus {
+  border: 2px solid #7b2ff2;
+  box-shadow: 0 0 0 2px #f357a833, 0 2px 8px rgba(123,47,242,0.13);
+  background: #fff;
+}
+
 /* Responsive tweaks for chat */
 @media (max-width: 1000px) {
   .roast-battle.chat-style {
