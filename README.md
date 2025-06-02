@@ -35,6 +35,7 @@ Built for the [Hack Club](https://hackclub.com/) Neighborhood Hackatron, Mihai's
 - **Interview Prep Assistant 🎤**: Prepare for your next job interview with AI-generated questions and tips.
 - **HTML5 Portfolio Builder 🖼️**: Create a beautiful HTML5 portfolio to showcase your work, with AI assistance.
 - **Task Organizer 📅**: Organize your tasks and calendars with AI assistance.
+- **Trip Planner ✈️**: Plan your next trip with AI-generated itineraries and recommendations(and cute flight route images :D).
 
 #### Fun 🤖
 - **Bot Vs Bot Roast Battle 🔥**: Watch two AI bots engage in a hilarious roast battle!

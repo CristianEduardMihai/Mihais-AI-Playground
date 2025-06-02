@@ -8,7 +8,7 @@ import random
 import string
 from components.common import generate_flightroute
 
-DEBUG_MODE = True  # Set to True to enable debug logging
+DEBUG_MODE = False  # Set to True to enable debug logging
 
 def debug_log(*args):
     if DEBUG_MODE:
