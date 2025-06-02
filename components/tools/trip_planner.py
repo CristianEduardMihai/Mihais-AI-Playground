@@ -47,6 +47,7 @@ def TripPlanner():
         debug_log("User prefs:", prefs)
         # Always provide the current date to the AI
         current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        debug_log("Current date: schedule-block", current_date)
         prompt = """
         You are a travel assistant. Given the user's preferences below, suggest the best destination(s) and a sample itinerary.
         Your job is to pick the best destination(s) for the user, not just plan a trip to a given city.
@@ -59,9 +60,40 @@ def TripPlanner():
           "destination_city": "",
           "destination_country": "",
           "route": ["IATA1", "IATA2", ...],
-          "daily_plan": ["Day 1: ...", "Day 2: ...", ...],
+          "daily_plan": [
+            {
+              "label": "Day 1-3",
+              "title": "Tokyo Arrival & Exploration",
+              "activities": [
+                "Arrive in Tokyo",
+                "Visit Senso-ji Temple",
+                "Explore Akihabara",
+                "Try local ramen shops"
+              ]
+            },
+            {
+              "label": "Day 4-7",
+              "title": "Kyoto Temples & Culture",
+              "activities": [
+                "Take bullet train to Kyoto",
+                "Tour Fushimi Inari Shrine",
+                "Walk the Philosopher's Path",
+                "Enjoy a traditional tea ceremony"
+              ]
+            },
+            ...
+          ],
           "explanation": ""
         }
+
+        IMPORTANT:
+        - For trips longer than 7 days, group days into ranges (e.g. 'Day 1-5', 'Day 6-10') in the label field, but always keep the label on a single line (no newlines).
+        - For long trips (10+ days), provide at least one daily_plan entry per 2-3 days, so a 20-day trip should have at least 7-10 daily_plan entries.
+        - Each daily_plan entry must have a 'label' (e.g. 'Day 1-3'), a short 'title' summarizing the main theme or highlight, and an 'activities' array of short, capitalized phrases (one per activity).
+        - Do NOT use newlines or line breaks in the label or title fields.
+        - Make the daily_plan as detailed as possible, with plenty of activities and variety.
+        - Write the explanation field in the second person (use 'you', 'your', 'yours').
+        - If you suggest the user to fly to a city/region in the daily_plan, always include the corresponding airport's IATA code in the route list, in the correct order.
         """
         debug_log("AI prompt:", prompt)
         try:
@@ -100,7 +132,19 @@ def TripPlanner():
             if match:
                 json_str = match.group(0)
                 debug_log("Extracted JSON string:", json_str)
-                result = json.loads(json_str)
+                # Remove illegal trailing commas before ] or }
+                json_str = re.sub(r',\s*([\]}])', r'\1', json_str)
+                # Fix invalid backslash escapes (e.g. \, 	, etc) by replacing single backslashes not part of \\ or \", with \\.
+                # This will make the string safe for json.loads
+                def fix_invalid_escapes(s):
+                    # Replace single backslashes not followed by \\, ", /, b, f, n, r, t, u
+                    return re.sub(r'(?<!\\)\\(?![\\"/bfnrtu])', r'\\\\', s)
+                json_str = fix_invalid_escapes(json_str)
+                try:
+                    result = json.loads(json_str)
+                except Exception as e:
+                    debug_log("JSON decode error after trailing comma and escape fix:", e)
+                    raise
             else:
                 raise ValueError("No JSON object found in AI response")
             debug_log("Parsed AI result:", result)
@@ -163,12 +207,13 @@ def TripPlanner():
         # Remove 'Day X:' prefix if present
         if ':' in day_str:
             day_str = day_str.split(':', 1)[1].strip()
-        # Replace ' and ', ' then ', '&' with '.' for easier splitting
+        # Replace ' and ', ' then ', '&', and newlines with '.' for easier splitting
         s = re.sub(r"\b(and|then|&|, and|, then)\b", ".", day_str, flags=re.IGNORECASE)
+        s = s.replace('\n', '. ')
         # Split on period, semicolon, or comma
         parts = re.split(r"[\.;,]", s)
         # Remove empty and strip
-        return [p.strip() for p in parts if p.strip()]
+        return [p.strip() for p in parts if p.strip() and len(p.strip()) > 2]
 
     # For each render, shuffle colors and emojis for randomness
     shuffled_colors = COLORS[:]
@@ -236,28 +281,25 @@ def TripPlanner():
             ai_error and html.div({"className": "error-message"}, ai_error) or None,
             ai_result and html.div({"className": "schedule-list"},
                 *[
-                    (lambda color, emoji: html.div({
+                    html.div({
                         "className": "schedule-block schedule-task",
                         "key": f"day-{i}",
-                        "style": {"borderLeft": f"6px solid {color}"}
+                        "style": {"borderLeft": f"6px solid {shuffled_colors[i % len(shuffled_colors)]}"}
                     },
                         html.div({"className": "block-header"},
-                            html.span({"className": "block-icon task"}, emoji),
-                            html.span({"className": "block-type"}, f"Day {i+1}"),
-                            html.span({"className": "block-title"}, day.split(':')[0] if ':' in day else day)
+                            html.span({"className": "block-icon task"}, shuffled_emojis[i % len(shuffled_emojis)]),
+                            html.span({"className": "block-type"}, day.get("label", f"Day {i+1}")),
+                            html.span({"className": "block-title"}, day.get("title", ""))
                         ),
                         html.ul({},
-                            *[html.li({}, activity) for activity in split_activities(day)]
+                            *[html.li({}, activity) for activity in day.get("activities", [])]
                         )
-                    ))(
-                        shuffled_colors[i % len(shuffled_colors)],
-                        shuffled_emojis[i % len(shuffled_emojis)]
                     )
                     for i, day in enumerate(ai_result.get("daily_plan", []) if isinstance(ai_result, dict) else [])
-                ],
+                ]
             ) or None,
             ai_result and ai_result.get("explanation") and html.div({"className": "explanation-block", "style": {"marginTop": "1.5em", "background": "#f4faff", "borderRadius": "6px", "padding": "1.1em", "color": "#1a237e", "fontSize": "1.08em"}},
-                html.b("Why this trip?"), ai_result["explanation"]
+                html.b("Why this trip?"), html.br(), ai_result["explanation"]
             ) or None,
             route_img_url and html.div({"style": {"marginTop": "2em"}},
                 html.h4("Flight Route"),

@@ -39,7 +39,7 @@ for scale in ("110m", "50m", "10m"):
 #  DEBUG LOGGER
 # ───────────────────────────────────────────────────────────────────────────────
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 def debug_log(*args):
     if DEBUG_MODE:
