@@ -1,0 +1,200 @@
+body {
+  background: radial-gradient(circle at 20% 30%, #0a6dab 0%, transparent 60%),
+              radial-gradient(circle at 80% 70%, #41b0e0 0%, transparent 60%),
+              linear-gradient(120deg, #0a6dab 0%, #41b0e0 100%);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.trip-planner {
+  background: rgba(255,255,255,0.404);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.10);
+  padding: 2rem;
+  margin: 3rem auto;
+  max-width: 900px;
+  width: calc(100vw - 6rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: calc(100vh - 6rem);
+  height: auto;
+  justify-content: flex-start;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  justify-content: center;
+}
+
+input[type="text"], input[type="number"] {
+  width: 100%;
+  max-width: 320px;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  box-sizing: border-box;
+}
+
+.btn {
+  width: 100%;
+  font-size: 1.2rem;
+  padding: 1.2rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  margin-top: 1rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  font-weight: bold;
+  background: linear-gradient(90deg, #41b0e0 0%, #0a6dab 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(10,109,171,0.08), 0 1.5px 4px rgba(65,176,224,0.10);
+}
+.btn:hover, .btn:focus {
+  background: linear-gradient(90deg, #0a6dab 0%, #41b0e0 100%);
+  box-shadow: 0 4px 16px rgba(10,109,171,0.15), 0 3px 8px rgba(65,176,224,0.18);
+  transform: translateY(-2px) scale(1.04);
+  text-decoration: none;
+}
+
+.btn-gradient {
+  background: linear-gradient(90deg, #41b0e0 0%, #0a6dab 100%);
+  color: #fff;
+  border-radius: 999px;
+  margin-bottom: 1.5rem;
+}
+.btn-gradient:hover, .btn-gradient:focus {
+  background: linear-gradient(90deg, #0a6dab 0%, #41b0e0 100%);
+  box-shadow: 0 4px 16px rgba(10,109,171,0.15), 0 3px 8px rgba(65,176,224,0.18);
+  transform: translateY(-2px) scale(1.04);
+  text-decoration: none;
+}
+
+.error-message {
+  color: #0a3b5e;
+  background: #eaf6ff;
+  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  margin: 1rem 0 0.5rem 0;
+  font-size: 1.05rem;
+  width: 100%;
+  text-align: left;
+}
+
+.interview-output {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  min-height: 0;
+  height: 100%;
+  margin-top: 2rem;
+  background: #f4faff;
+  border-radius: 6px;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  text-align: left;
+  overflow: hidden;
+}
+
+@media (max-width: 1000px) {
+  .trip-planner {
+    background: rgba(255,255,255,0.404);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    border-radius: 0;
+    box-shadow: none;
+    font-size: 2.4rem;
+    padding: 5vw;
+    margin: 0;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100vw;
+  }
+  .form-group {
+    margin-bottom: 4vw;
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2vw;
+  }
+  input[type="text"], input[type="number"] {
+    font-size: 2.2rem;
+    padding: 3vw;
+    margin-bottom: 3vw;
+    min-height: 3.5rem;
+    width: 100%;
+    max-width: 100%;
+  }
+  .btn {
+    width: 100%;
+    font-size: 4vw;
+    padding: 4vw;
+    border-radius: 1vw;
+    display: inline-block;
+    background: linear-gradient(90deg, #41b0e0 0%, #0a6dab 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(10,109,171,0.08), 0 1.5px 4px rgba(65,176,224,0.10);
+  }
+  .btn-gradient {
+    width: 100%;
+    text-align: center;
+    font-size: 4.5vw;
+    margin-bottom: 3vw;
+    padding: 4vw 0;
+    border-radius: 0;
+  }
+  .interview-output {
+    font-size: 2.2rem;
+    padding: 4vw;
+    margin-top: 4vw;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 500px) {
+  .trip-planner {
+    padding: 1rem 0.5rem;
+    font-size: 1rem;
+    min-height: 100vh;
+  }
+  .form-group {
+    text-align: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1vw;
+  }
+  input[type="text"], input[type="number"] {
+    font-size: 1.1rem;
+    padding: 0.7rem;
+    min-height: 2.5rem;
+    width: 100%;
+    max-width: 100%;
+  }
+  .btn {
+    font-size: 1.1rem;
+    padding: 0.7rem;
+  }
+  .interview-output {
+    font-size: 1rem;
+    padding: 0.7rem;
+  }
+}

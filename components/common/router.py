@@ -11,6 +11,7 @@ from components.tools.color_picker import AIColorPicker
 from components.tools.interview_prep import InterviewPrep
 from components.tools.HTML5_portfolio_builder import HTML5PortfolioBuilder
 from components.tools.task_organizer import TaskOrganizer
+from components.tools.trip_planner import TripPlanner
 from components.fun.roast_battle import BotVsBotRoastBattle
 from components.fun.personality_quiz import PersonalityQuiz
 from components.fun.reddit_like_storyteller import RedditLikeStoryteller
@@ -32,6 +33,7 @@ def RootRouter():
         route("/tools/interview-prep", InterviewPrep()),
         route("/tools/html5-portfolio-builder", HTML5PortfolioBuilder()),
         route("/tools/task-organizer", TaskOrganizer()),
+        route("/tools/trip-planner", TripPlanner()),
         route("/fun/roast-battle", BotVsBotRoastBattle()),
         route("/fun/personality-quiz", PersonalityQuiz()),
         route("/fun/reddit-like-storyteller", RedditLikeStoryteller()),

@@ -8,20 +8,23 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from cartopy.feature import NaturalEarthFeature
 from pyproj import Geod
+from pathlib import Path
 
 # ───────────────────────────────────────────────────────────────────────────────
 #  CONFIGURATION: set Cartopy data directory and force-download of NE assets
 # ───────────────────────────────────────────────────────────────────────────────
 
-CARTOPY_DATA_DIR =   "../../server-assets/persistent/cartopy"
-AIRPORT_CACHE_FILE = "../../server-assets/persistent/airport_cache.json"
+# Use project-root-relative paths for assets
+BASE_DIR = Path(__file__).resolve().parent.parent.parent  # points to project root
+CARTOPY_DATA_DIR = BASE_DIR / "server-assets/persistent/cartopy"
+AIRPORT_CACHE_FILE = BASE_DIR / "server-assets/persistent/airport_cache.json"
 
 # Ensure the directories exist
 os.makedirs(CARTOPY_DATA_DIR, exist_ok=True)
-os.makedirs(os.path.dirname(AIRPORT_CACHE_FILE), exist_ok=True)
+os.makedirs(AIRPORT_CACHE_FILE.parent, exist_ok=True)
 
 # Point Cartopy to use this directory
-cartopy.config["data_dir"] = CARTOPY_DATA_DIR
+cartopy.config["data_dir"] = str(CARTOPY_DATA_DIR)
 
 # Force-download of Natural Earth features at multiple resolutions (so that
 # on the first run, all required shapefiles are pulled into CARTOPY_DATA_DIR).
@@ -33,6 +36,12 @@ for scale in ("110m", "50m", "10m"):
 # ───────────────────────────────────────────────────────────────────────────────
 #  ASYNC AIRPORT COORDINATE CACHING
 # ───────────────────────────────────────────────────────────────────────────────
+
+DEBUG_MODE = True  # Add this at the top or near imports
+
+def debug_log(*args):
+    if DEBUG_MODE:
+        print("[generate_flightroute DEBUG]", *args)
 
 async def async_get_airport_coordinates(iata_code, cache_file=AIRPORT_CACHE_FILE, session=None):
     """
@@ -54,11 +63,17 @@ async def async_get_airport_coordinates(iata_code, cache_file=AIRPORT_CACHE_FILE
     # Otherwise, geocode via Nominatim (async)
     url = f"https://nominatim.openstreetmap.org/search?q={iata_code}+Airport&format=json&limit=1"
     headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+    debug_log(f"Requesting {url} with headers: {headers}")
     close_session = False
     if session is None:
         session = aiohttp.ClientSession()
         close_session = True
     async with session.get(url, headers=headers) as resp:
+        debug_log(f"Nominatim response status: {resp.status}, content-type: {resp.headers.get('Content-Type')}")
+        if resp.status == 403:
+            text = await resp.text()
+            debug_log(f"403 Forbidden response body: {text[:200]}")
+            raise Exception(f"Nominatim 403 Forbidden for {url}")
         data = await resp.json()
     if close_session:
         await session.close()
