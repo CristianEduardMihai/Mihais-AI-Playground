@@ -4,7 +4,6 @@ aiohttp==3.12.6
 markdown==3.8
 beautifulsoup4==4.13.4
 pyperclip==1.9.0
-fast-flights==2.2
 matplotlib==3.10.3
 cartopy==0.24.1
 geopy==2.4.1

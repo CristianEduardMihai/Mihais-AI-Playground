@@ -1,11 +1,11 @@
 from reactpy import component, html, use_state
 import asyncio
 import aiohttp
-import markdown
-import os
 import json
+import datetime
 import re
 import random
+import string
 from components.common import generate_flightroute
 
 DEBUG_MODE = True  # Set to True to enable debug logging
@@ -19,12 +19,11 @@ def TripPlanner():
     # State for user trip preferences
     prefs, set_prefs = use_state({
         "departure_city": "",   # e.g. Bucharest
-        "departure_country": "", # e.g. Romania
         "month": "",            # e.g. October
         "climate": "",           # e.g. warm, mild, hot, cold
         "duration": "",         # e.g. 5 days
         "budget": "",           # e.g. 1000 EUR per person
-        "people": 1,
+        "people": "",
         "interests": "",        # e.g. beach, wine, hiking, culture
         "goal": "",             # e.g. relax on the beach, visit famous wine regions, city break, explore nature
     })
@@ -38,36 +37,31 @@ def TripPlanner():
         debug_log(f"Input change: {field} = {value}")
         set_prefs(lambda prev: {**prev, field: value})
 
-    async def call_ai_trip_plan():
-        debug_log("call_ai_trip_plan: started")
+    async def call_ai_trip_plan(retry_count=0):
+        debug_log("call_ai_trip_plan: started, retry_count=", retry_count)
         set_ai_loading(True)
         set_ai_error("")
         set_ai_result("")
         set_route_img_url("")
         set_suggested_route([])
         debug_log("User prefs:", prefs)
-        prompt = f"""
+        # Always provide the current date to the AI
+        current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        prompt = """
         You are a travel assistant. Given the user's preferences below, suggest the best destination(s) and a sample itinerary.
         Your job is to pick the best destination(s) for the user, not just plan a trip to a given city.
         For each destination, find the most popular airport (do not ask the user for IATA codes, use your own knowledge. Make sure they're right.).
         Suggest a realistic flight route (as a list of IATA codes, but infer them yourself from the cities/countries).
-        
-        IMPORTANT: When creating the flight route:
-        - If there's just one destination (e.g., Bucharest to Barcelona), list it as [OTP, BCN]
-        - If there are multiple destinations (e.g., Bucharest → NYC → Vancouver), make it a round trip by adding the departure airport at the end: [OTP, JFK, YVR, OTP]
-        
         Use the fast-flights library to check for real-world direct/cheap routes if possible.
         Output your answer as a JSON object in the following format (do not include any text outside the code block):
 
-        {{
+        {
           "destination_city": "",
           "destination_country": "",
           "route": ["IATA1", "IATA2", ...],
           "daily_plan": ["Day 1: ...", "Day 2: ...", ...],
           "explanation": ""
-        }}
-
-        User preferences: {json.dumps(prefs, ensure_ascii=False)}
+        }
         """
         debug_log("AI prompt:", prompt)
         try:
@@ -78,8 +72,8 @@ def TripPlanner():
                     headers={"Content-Type": "application/json"},
                     json={
                         "messages": [
-                            {"role": "system", "content": "You are a helpful travel planner."},
-                            {"role": "user", "content": prompt}
+                            {"role": "system", "content": prompt},
+                            {"role": "user", "content": f"Current date(YYY-MM-DD): {current_date}\nUser preferences: {json.dumps(prefs, ensure_ascii=False)}"}
                         ]
                     },
                     timeout=aiohttp.ClientTimeout(total=60)
@@ -90,7 +84,7 @@ def TripPlanner():
                     ai_raw = raw_json["choices"][0]["message"]["content"]
             ai_clean = ai_raw.strip()
             debug_log("AI cleaned response (pre-strip):", ai_clean)
-            # Remove code block wrappers (```json ... ``` or ``` ... ```)
+            # Remove code block wrappers (```json ... ``` or ``` ... ```
             if ai_clean.startswith("```json"):
                 ai_clean = ai_clean[7:]
             if ai_clean.startswith("```"):
@@ -115,17 +109,35 @@ def TripPlanner():
             # Generate flight route image if route is present
             if result.get("route"):
                 debug_log("Generating route image for:", result["route"])
-                await generate_route_image(result["route"])
+                try:
+                    await generate_route_image(result["route"])
+                except Exception as e:
+                    debug_log("Exception in generate_route_image (retry logic):", e)
+                    # If the error is about airport not found, retry up to 3 times
+                    if ("airport" in str(e).lower() and "not found" in str(e).lower() and retry_count < 2):
+                        set_ai_error(f"Flight route image error: {e} (retrying...)")
+                        await call_ai_trip_plan(retry_count=retry_count+1)
+                        return
+                    else:
+                        set_ai_error(f"Flight route image error: {e}")
         except Exception as e:
             debug_log("Exception in call_ai_trip_plan:", e)
-            set_ai_error(f"AI error: {e}")
+            # If the error is about airport not found, retry up to 3 times
+            if ("airport" in str(e).lower() and "not found" in str(e).lower() and retry_count < 2):
+                set_ai_error(f"AI error: {e} (retrying...)")
+                await call_ai_trip_plan(retry_count=retry_count+1)
+                return
+            else:
+                set_ai_error(f"AI error: {e}")
         set_ai_loading(False)
         debug_log("call_ai_trip_plan: finished")
 
     async def generate_route_image(route):
-        filename = f"/static/assets/flight_routes_temp/flight_route_{os.getpid()}.png"
-        debug_log(f"generate_route_image: filename={filename}, route={route}")
+        filename = f"/static/assets/flight_routes_temp/flight_route_{''.join(random.choices(string.ascii_uppercase + string.digits, k=12))}.png"
         try:
+            if route and isinstance(route, list) and len(route) > 0:
+                route = route + [route[0]]
+            debug_log(f"generate_route_image: filename={filename}, route={route}")
             await generate_flightroute.create_clean_route_map(route, f".{filename}", extra_lon_margin=0.30, extra_lat_margin=0.70, npts=50)
             set_route_img_url(filename)
             debug_log(f"Route image generated and set: {filename}")
@@ -156,7 +168,7 @@ def TripPlanner():
         # Split on period, semicolon, or comma
         parts = re.split(r"[\.;,]", s)
         # Remove empty and strip
-        return [p.strip().capitalize() for p in parts if p.strip()]
+        return [p.strip() for p in parts if p.strip()]
 
     # For each render, shuffle colors and emojis for randomness
     shuffled_colors = COLORS[:]
@@ -172,19 +184,16 @@ def TripPlanner():
             html.h2("AI Trip Planner"),
             html.div({"className": "form-group"},
                 html.input({
-                    "type": "text", "placeholder": "Departure city (e.g. Bucharest)",
+                    "type": "text", "placeholder": "Departure city* (e.g. Bucharest)",
                     "value": prefs["departure_city"],
-                    "onBlur": lambda e: handle_input("departure_city", e["target"]["value"])
+                    "onBlur": lambda e: handle_input("departure_city", e["target"]["value"]),
+                    "required": True
                 }),
                 html.input({
-                    "type": "text", "placeholder": "Departure country (e.g. Romania)",
-                    "value": prefs["departure_country"],
-                    "onBlur": lambda e: handle_input("departure_country", e["target"]["value"])
-                }),
-                html.input({
-                    "type": "text", "placeholder": "When do you want to go? (e.g. October)",
+                    "type": "text", "placeholder": "When?*",
                     "value": prefs["month"],
-                    "onBlur": lambda e: handle_input("month", e["target"]["value"])
+                    "onBlur": lambda e: handle_input("month", e["target"]["value"]),
+                    "required": True
                 }),
                 html.input({
                     "type": "text", "placeholder": "Preferred climate (e.g. warm, mild, hot, cold)",
@@ -192,7 +201,7 @@ def TripPlanner():
                     "onBlur": lambda e: handle_input("climate", e["target"]["value"])
                 }),
                 html.input({
-                    "type": "text", "placeholder": "Trip duration (e.g. 5 days)",
+                    "type": "text", "placeholder": "Trip duration",
                     "value": prefs["duration"],
                     "onBlur": lambda e: handle_input("duration", e["target"]["value"])
                 }),
@@ -202,9 +211,9 @@ def TripPlanner():
                     "onBlur": lambda e: handle_input("budget", e["target"]["value"])
                 }),
                 html.input({
-                    "type": "number", "placeholder": "Number of people", "min": 1,
+                    "type": "text", "placeholder": "Number of people",
                     "value": prefs["people"],
-                    "onBlur": lambda e: handle_input("people", int(e["target"]["value"]))
+                    "onBlur": lambda e: handle_input("people", e["target"]["value"])
                 }),
                 html.input({
                     "type": "text", "placeholder": "Interests (e.g. beach, wine, hiking, culture)",
@@ -217,7 +226,11 @@ def TripPlanner():
                     "onBlur": lambda e: handle_input("goal", e["target"]["value"])
                 }),
             ),
-            html.button({"className": "btn btn-gradient", "onClick": handle_submit, "disabled": ai_loading},
+            html.button({
+                "className": f"btn btn-gradient{' btn-disabled' if ai_loading or not prefs['departure_city'] or not prefs['month'] else ''}",
+                "onClick": handle_submit,
+                "disabled": ai_loading or not prefs["departure_city"] or not prefs["month"]
+            },
                 "Suggest Trip" if not ai_loading else "Planning..."
             ),
             ai_error and html.div({"className": "error-message"}, ai_error) or None,
@@ -241,7 +254,10 @@ def TripPlanner():
                         shuffled_emojis[i % len(shuffled_emojis)]
                     )
                     for i, day in enumerate(ai_result.get("daily_plan", []) if isinstance(ai_result, dict) else [])
-                ]
+                ],
+            ) or None,
+            ai_result and ai_result.get("explanation") and html.div({"className": "explanation-block", "style": {"marginTop": "1.5em", "background": "#f4faff", "borderRadius": "6px", "padding": "1.1em", "color": "#1a237e", "fontSize": "1.08em"}},
+                html.b("Why this trip?"), ai_result["explanation"]
             ) or None,
             route_img_url and html.div({"style": {"marginTop": "2em"}},
                 html.h4("Flight Route"),

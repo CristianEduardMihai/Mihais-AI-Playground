@@ -81,6 +81,14 @@ input[type="text"], input[type="number"] {
   text-decoration: none;
 }
 
+.btn-disabled {
+  background: linear-gradient(90deg, #41b0e0 0%, #0a6dab 100%) !important;
+  color: #e6e6e6 !important;
+  opacity: 0.92;
+  filter: grayscale(0.13) brightness(1.01);
+  cursor: not-allowed !important;
+}
+
 .error-message {
   color: #0a3b5e;
   background: #eaf6ff;
