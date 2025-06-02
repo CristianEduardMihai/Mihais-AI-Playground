@@ -3,6 +3,7 @@ server-assets/persistent/*.db
 server-assets/persistent/cartopy/
 server-assets/persistent/airport_cache.json
 components/common/config.py
+/static/assets/flight_routes_temp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

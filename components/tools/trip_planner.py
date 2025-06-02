@@ -5,6 +5,7 @@ import markdown
 import os
 import json
 import re
+import random
 from components.common import generate_flightroute
 
 DEBUG_MODE = True  # Set to True to enable debug logging
@@ -48,10 +49,24 @@ def TripPlanner():
         prompt = f"""
         You are a travel assistant. Given the user's preferences below, suggest the best destination(s) and a sample itinerary.
         Your job is to pick the best destination(s) for the user, not just plan a trip to a given city.
-        For each destination, find the most popular airport (do not ask the user for IATA codes, use your own knowledge or search).
+        For each destination, find the most popular airport (do not ask the user for IATA codes, use your own knowledge. Make sure they're right.).
         Suggest a realistic flight route (as a list of IATA codes, but infer them yourself from the cities/countries).
+        
+        IMPORTANT: When creating the flight route:
+        - If there's just one destination (e.g., Bucharest to Barcelona), list it as [OTP, BCN]
+        - If there are multiple destinations (e.g., Bucharest → NYC → Vancouver), make it a round trip by adding the departure airport at the end: [OTP, JFK, YVR, OTP]
+        
         Use the fast-flights library to check for real-world direct/cheap routes if possible.
-        Output JSON with: destination_city, destination_country, route (list of IATA codes), daily_plan (list of day summaries), and a short explanation of why you chose this destination.
+        Output your answer as a JSON object in the following format (do not include any text outside the code block):
+
+        {{
+          "destination_city": "",
+          "destination_country": "",
+          "route": ["IATA1", "IATA2", ...],
+          "daily_plan": ["Day 1: ...", "Day 2: ...", ...],
+          "explanation": ""
+        }}
+
         User preferences: {json.dumps(prefs, ensure_ascii=False)}
         """
         debug_log("AI prompt:", prompt)
@@ -108,10 +123,10 @@ def TripPlanner():
         debug_log("call_ai_trip_plan: finished")
 
     async def generate_route_image(route):
-        filename = f"/static/assets/flight_route_{os.getpid()}.png"
+        filename = f"/static/assets/flight_routes_temp/flight_route_{os.getpid()}.png"
         debug_log(f"generate_route_image: filename={filename}, route={route}")
         try:
-            await generate_flightroute.create_clean_route_map(route, f".{filename}", extra_margin=0.2)
+            await generate_flightroute.create_clean_route_map(route, f".{filename}", extra_lon_margin=0.30, extra_lat_margin=0.70, npts=50)
             set_route_img_url(filename)
             debug_log(f"Route image generated and set: {filename}")
         except Exception as e:
@@ -124,6 +139,31 @@ def TripPlanner():
 
     # UI
     from components.common.config import CACHE_SUFFIX
+    # Color palette and emoji list for schedule blocks
+    COLORS = [
+        "#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999", "#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02",
+    ]
+    EMOJIS = [
+        "🗓️", "✈️", "🌍", "🏖️", "🏙️", "🧳", "🎒", "🚗", "🚆", "🚢", "🏞️", "🌄", "🏰", "🎡", "🍽️", "🎉", "🗺️", "📸", "🏝️", "🏔️", "🌆"
+    ]
+
+    def split_activities(day_str):
+        # Remove 'Day X:' prefix if present
+        if ':' in day_str:
+            day_str = day_str.split(':', 1)[1].strip()
+        # Replace ' and ', ' then ', '&' with '.' for easier splitting
+        s = re.sub(r"\b(and|then|&|, and|, then)\b", ".", day_str, flags=re.IGNORECASE)
+        # Split on period, semicolon, or comma
+        parts = re.split(r"[\.;,]", s)
+        # Remove empty and strip
+        return [p.strip().capitalize() for p in parts if p.strip()]
+
+    # For each render, shuffle colors and emojis for randomness
+    shuffled_colors = COLORS[:]
+    shuffled_emojis = EMOJIS[:]
+    random.shuffle(shuffled_colors)
+    random.shuffle(shuffled_emojis)
+
     return html.div(
         {},
         html.link({"rel": "stylesheet", "href": f"/static/css/tools/trip_planner.css?v={CACHE_SUFFIX}"}),
@@ -132,12 +172,12 @@ def TripPlanner():
             html.h2("AI Trip Planner"),
             html.div({"className": "form-group"},
                 html.input({
-                    "type": "text", "placeholder": "Your departure city (e.g. Bucharest)",
+                    "type": "text", "placeholder": "Departure city (e.g. Bucharest)",
                     "value": prefs["departure_city"],
                     "onBlur": lambda e: handle_input("departure_city", e["target"]["value"])
                 }),
                 html.input({
-                    "type": "text", "placeholder": "Your country (optional)",
+                    "type": "text", "placeholder": "Departure country (e.g. Romania)",
                     "value": prefs["departure_country"],
                     "onBlur": lambda e: handle_input("departure_country", e["target"]["value"])
                 }),
@@ -181,12 +221,27 @@ def TripPlanner():
                 "Suggest Trip" if not ai_loading else "Planning..."
             ),
             ai_error and html.div({"className": "error-message"}, ai_error) or None,
-            ai_result and html.div({"className": "interview-output"},
-                html.h3(f"Destination: {ai_result.get('destination','')}") if isinstance(ai_result, dict) else None,
-                html.ul({}, *[
-                    html.li({}, day) for day in (ai_result.get("daily_plan", []) if isinstance(ai_result, dict) else [])
-                ]),
-                html.p({}, ai_result.get("explanation", "")) if isinstance(ai_result, dict) else None,
+            ai_result and html.div({"className": "schedule-list"},
+                *[
+                    (lambda color, emoji: html.div({
+                        "className": "schedule-block schedule-task",
+                        "key": f"day-{i}",
+                        "style": {"borderLeft": f"6px solid {color}"}
+                    },
+                        html.div({"className": "block-header"},
+                            html.span({"className": "block-icon task"}, emoji),
+                            html.span({"className": "block-type"}, f"Day {i+1}"),
+                            html.span({"className": "block-title"}, day.split(':')[0] if ':' in day else day)
+                        ),
+                        html.ul({},
+                            *[html.li({}, activity) for activity in split_activities(day)]
+                        )
+                    ))(
+                        shuffled_colors[i % len(shuffled_colors)],
+                        shuffled_emojis[i % len(shuffled_emojis)]
+                    )
+                    for i, day in enumerate(ai_result.get("daily_plan", []) if isinstance(ai_result, dict) else [])
+                ]
             ) or None,
             route_img_url and html.div({"style": {"marginTop": "2em"}},
                 html.h4("Flight Route"),

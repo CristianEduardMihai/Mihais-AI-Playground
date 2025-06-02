@@ -110,6 +110,74 @@ input[type="text"], input[type="number"] {
   overflow: hidden;
 }
 
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.schedule-block {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(171,10,10,0.07);
+  padding: 1.1rem 1.2rem 0.9rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-left: 6px solid #e06441;
+  transition: box-shadow 0.18s, border 0.18s;
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  box-sizing: border-box;
+}
+.schedule-block.schedule-prep { border-left-color: #1a237e; }
+.schedule-block.schedule-task { border-left-color: #e06441; }
+.schedule-block.schedule-rest { border-left-color: #43a047; }
+
+.block-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.3rem;
+}
+.block-icon {
+  font-size: 1.5rem;
+  margin-right: 0.2rem;
+  opacity: 0.85;
+}
+.block-icon.prep { color: #1a237e; }
+.block-icon.task { color: #e06441; }
+.block-icon.rest { color: #43a047; }
+.block-type {
+  font-weight: bold;
+  font-size: 1.08rem;
+  color: #444;
+  margin-right: 0.5rem;
+}
+.block-title {
+  font-size: 1.13rem;
+  color: #ab0a0a;
+  font-weight: 600;
+}
+.block-details {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.2rem;
+  font-size: 1.01rem;
+  color: #555;
+}
+.block-time, .block-duration {
+  background: #f4f4f9;
+  border-radius: 4px;
+  padding: 0.18rem 0.7rem;
+  font-size: 0.98em;
+  margin-right: 0.2rem;
+}
+
+
 @media (max-width: 1000px) {
   .trip-planner {
     background: rgba(255,255,255,0.404);
@@ -168,6 +236,11 @@ input[type="text"], input[type="number"] {
     width: 100%;
     box-sizing: border-box;
   }
+  .schedule-block {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
 }
 
 @media (max-width: 500px) {
@@ -196,5 +269,10 @@ input[type="text"], input[type="number"] {
   .interview-output {
     font-size: 1rem;
     padding: 0.7rem;
+  }
+  .schedule-block {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 }

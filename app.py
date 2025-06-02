@@ -21,32 +21,40 @@ def debug_print(*args, **kwargs):
 
 debug_print("app.py loaded, DEBUG_MODE is", DEBUG_MODE)
 
-# ─── TTS Cleanup Config ─────────────────────────────────────────────
-dir_path = "static/assets/tts_temp"
+# ─── Cleanup Config ─────────────────────────────────────────────
 MAX_AGE_SECONDS = 60 * 60  # 1 hour
 CLEANUP_INTERVAL = 60 * 60  # 1 hour
 
-def cleanup_old_wavs():
-    if os.path.exists(dir_path):
-        now = time.time()
-        removed = 0
-        for f in os.listdir(dir_path):
-            fpath = os.path.join(dir_path, f)
-            if os.path.isfile(fpath) and f.endswith('.wav'):
-                try:
-                    if now - os.path.getmtime(fpath) > MAX_AGE_SECONDS:
-                        os.remove(fpath)
-                        removed += 1
-                except Exception:
-                    pass
-        if removed:
-            print(f"Cleaned up {removed} old .wav files in {dir_path}.")
-    else:
-        print(f"{dir_path} does not exist, no cleanup needed.")
+def cleanup_temp_files():
+    temp_dirs = [
+        "static/assets/tts_temp",
+        "static/assets/flight_routes_temp"
+    ]
+    MAX_AGE_SECONDS = 60 * 60  # 1 hour
+    removed_total = 0
+    for dir_path in temp_dirs:
+        if os.path.exists(dir_path):
+            now = time.time()
+            removed = 0
+            for f in os.listdir(dir_path):
+                fpath = os.path.join(dir_path, f)
+                if os.path.isfile(fpath) and (f.endswith('.wav') or f.endswith('.png')):
+                    try:
+                        if now - os.path.getmtime(fpath) > MAX_AGE_SECONDS:
+                            os.remove(fpath)
+                            removed += 1
+                    except Exception:
+                        pass
+            if removed:
+                print(f"Cleaned up {removed} old temp files in {dir_path}.")
+            removed_total += removed
+        else:
+            print(f"{dir_path} does not exist, no cleanup needed.")
+    return removed_total
 
 async def periodic_cleanup():
     while True:
-        cleanup_old_wavs()
+        cleanup_temp_files()
         await asyncio.sleep(CLEANUP_INTERVAL)
 
 # ─── Lifespan for FastAPI Startup/Shutdown ─────────────────────────
