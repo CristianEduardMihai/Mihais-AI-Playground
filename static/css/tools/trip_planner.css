@@ -240,6 +240,60 @@ input[type="text"], input[type="number"] {
   color: #1a237e;
 }
 
+.explanation-block {
+  margin-top: 1.5em;
+  background: #f4faff;
+  border-radius: 6px;
+  padding: 1.1em;
+  color: #1a237e;
+  font-size: 1.08em;
+}
+
+.route-image-block {
+  margin-top: 2em;
+}
+
+.route-image {
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #8883;
+}
+
+/* Fullscreen route image modal overrides */
+.route-image-modal-content {
+  background: none;
+  box-shadow: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+.route-image-modal-img {
+  max-width: 90vw;
+  max-height: 80vh;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px #0006;
+}
+.route-image-modal-close {
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  background: #fff;
+  border-radius: 50%;
+  width: 2.2em;
+  height: 2.2em;
+  box-shadow: 0 2px 8px #0002;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #0a6dab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
 @media (max-width: 1000px) {
   .trip-planner {
     background: rgba(255,255,255,0.404);

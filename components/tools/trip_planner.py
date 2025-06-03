@@ -33,6 +33,8 @@ def TripPlanner():
     suggested_route, set_suggested_route = use_state([])
     # Modal state for details popup
     details_modal, set_details_modal = use_state({"open": False, "label": "", "details": ""})
+    # Modal state for route image popup
+    route_img_modal, set_route_img_modal = use_state({"open": False})
 
     def handle_input(field, value):
         debug_log(f"Input change: {field} = {value}")
@@ -213,18 +215,6 @@ def TripPlanner():
         "🗓️", "✈️", "🌍", "🏖️", "🏙️", "🧳", "🎒", "🚗", "🚆", "🚢", "🏞️", "🌄", "🏰", "🎡", "🍽️", "🎉", "🗺️", "📸", "🏝️", "🏔️", "🌆"
     ]
 
-    def split_activities(day_str):
-        # Remove 'Day X:' prefix if present
-        if ':' in day_str:
-            day_str = day_str.split(':', 1)[1].strip()
-        # Replace ' and ', ' then ', '&', and newlines with '.' for easier splitting
-        s = re.sub(r"\b(and|then|&|, and|, then)\b", ".", day_str, flags=re.IGNORECASE)
-        s = s.replace('\n', '. ')
-        # Split on period, semicolon, or comma
-        parts = re.split(r"[\.;,]", s)
-        # Remove empty and strip
-        return [p.strip() for p in parts if p.strip() and len(p.strip()) > 2]
-
     # For each render, shuffle colors and emojis for randomness
     shuffled_colors = COLORS[:]
     shuffled_emojis = EMOJIS[:]
@@ -290,7 +280,7 @@ def TripPlanner():
             ),
             ai_error and html.div({"className": "error-message"}, ai_error) or None,
             ai_result and html.div({"className": "schedule-list"},
-                html.div({"className": "schedule-tip"}, "Tip: Click any day block for more details!"),
+                html.div({"className": "schedule-tip"}, "Tip: Click any day block/flight route for more details!"),
                 *[
                     (lambda day=day, i=i: html.div({
                         "className": "schedule-block schedule-task",
@@ -327,12 +317,30 @@ def TripPlanner():
                     html.div({"className": "modal-details"}, details_modal["details"])
                 )
             ) or None,
-            ai_result and ai_result.get("explanation") and html.div({"className": "explanation-block", "style": {"marginTop": "1.5em", "background": "#f4faff", "borderRadius": "6px", "padding": "1.1em", "color": "#1a237e", "fontSize": "1.08em"}},
+            ai_result and ai_result.get("explanation") and html.div({"className": "explanation-block"},
                 html.b("Why this trip?"), html.br(), ai_result["explanation"]
             ) or None,
-            route_img_url and html.div({"style": {"marginTop": "2em"}},
+            route_img_url and html.div({"className": "route-image-block"},
                 html.h4("Flight Route"),
-                html.img({"src": route_img_url, "style": {"maxWidth": "100%", "borderRadius": "8px", "boxShadow": "0 2px 8px #8883"}})
+                html.img({
+                    "src": route_img_url,
+                    "className": "route-image",
+                    "style": {"cursor": "pointer"},
+                    "onClick": lambda e: set_route_img_modal({"open": True})
+                })
+            ) or None,
+            # Modal popup for route image fullscreen
+            route_img_modal["open"] and html.div({"className": "modal-overlay", "onClick": lambda e: set_route_img_modal({"open": False})},
+                html.div({"className": "route-image-modal-content", "onClick": lambda e: e.stopPropagation()},
+                    html.img({
+                        "src": route_img_url,
+                        "className": "route-image-modal-img"
+                    }),
+                    html.button({
+                        "onClick": lambda e: set_route_img_modal({"open": False}),
+                        "className": "route-image-modal-close"
+                    }, "×")
+                )
             ) or None
         )
     )
