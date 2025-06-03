@@ -1,7 +1,8 @@
-FROM python:3.13.3-bullseye
+FROM cristianeduardmihai/mihais-ai-playground:environment
 
 WORKDIR /app
 
+# Just to be sure we have the latest dependencies
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
