@@ -65,8 +65,7 @@ input[type="number"] {
 }
 
 .btn,
-.btn-gradient,
-.btn-home {
+.btn-gradient {
   width: 100%;
   font-size: 1.2rem;
   padding: 1.2rem;
@@ -84,8 +83,7 @@ input[type="number"] {
 }
 
 .btn:hover, .btn:focus,
-.btn-gradient:hover, .btn-gradient:focus,
-.btn-home:hover, .btn-home:focus {
+.btn-gradient:hover, .btn-gradient:focus {
   background: linear-gradient(90deg, #ab0a0a 0%, #e06441 100%);
   box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
   transform: translateY(-2px) scale(1.04);

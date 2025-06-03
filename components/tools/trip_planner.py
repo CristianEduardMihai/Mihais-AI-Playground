@@ -223,8 +223,9 @@ def TripPlanner():
 
     return html.div(
         {},
+        html.link({"rel": "stylesheet", "href": f"/static/css/common/global.css?v={CACHE_SUFFIX}"}),
         html.link({"rel": "stylesheet", "href": f"/static/css/tools/trip_planner.css?v={CACHE_SUFFIX}"}),
-        html.nav({"className": "navbar"}, html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")),
+        html.nav({"className": "global-home-btn-row"}, html.a({"href": "/", "className": "global-home-btn"}, "🏠 Home")),
         html.div({"className": "trip-planner"},
             html.h2("AI Trip Planner"),
             html.div({"className": "form-group"},
@@ -331,7 +332,7 @@ def TripPlanner():
             ) or None,
             # Modal popup for route image fullscreen
             route_img_modal["open"] and html.div({"className": "modal-overlay", "onClick": lambda e: set_route_img_modal({"open": False})},
-                html.div({"className": "route-image-modal-content", "onClick": lambda e: e.stopPropagation()},
+                html.div({"className": "route-image-modal-content", "onClick": lambda e: (e.stop_propagation() if hasattr(e, 'stop_propagation') else None)},
                     html.img({
                         "src": route_img_url,
                         "className": "route-image-modal-img"

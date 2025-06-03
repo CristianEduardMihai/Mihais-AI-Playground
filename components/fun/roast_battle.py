@@ -96,19 +96,10 @@ def BotVsBotRoastBattle():
     from components.common.config import CACHE_SUFFIX
     return html.div(
         {},
-        # background blur
         html.div({"className": "background-gradient-blur"}),
-
-        # stylesheet
+        html.link({"rel": "stylesheet", "href": f"/static/css/common/global.css?v={CACHE_SUFFIX}"}),
         html.link({"rel": "stylesheet", "href": f"/static/css/fun/roast_battle.css?v={CACHE_SUFFIX}"}),
-
-        # navbar
-        html.nav(
-            {"className": "navbar"},
-            html.a({"href": "/", "className": "btn btn-home"}, "🏠 Home"),
-        ),
-
-        # main container
+        html.nav({"className": "global-home-btn-row"}, html.a({"href": "/", "className": "global-home-btn"}, "🏠 Home")),
         html.div(
             {"className": "roast-battle chat-style"},
             html.h2("Bot Vs Bot AI Roast Battle"),

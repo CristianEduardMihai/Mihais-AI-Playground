@@ -32,27 +32,6 @@ body * {
   box-shadow: 0 2px 8px rgba(123,47,242,0.08), 0 1.5px 4px rgba(243,87,168,0.10);
 }
 
-/* Gradient (Home) */
-.btn-home {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
-  color: #fff;
-  border-radius: 999px;
-  margin-bottom: 1.2rem;
-  max-width: 40rem;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.btn-home:hover, .btn-home:focus {
-  background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
-  box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
-  transform: translateY(-2px) scale(1.04);
-  text-decoration: none;
-}
-
 /* Gradient */
 .btn-gradient {
   display: flex;

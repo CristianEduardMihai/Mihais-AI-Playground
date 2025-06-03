@@ -93,7 +93,6 @@ textarea {
   color: #fff;
 }
 
-/* Gradient (Home) */
 .btn-gradient {
   display: flex;
   align-items: center;
@@ -110,7 +109,7 @@ textarea {
   text-decoration: none;
 }
 
-a.btn, a.btn-gradient, a.btn-home {
+a.btn, a.btn-gradient {
   text-decoration: none !important;
 }
 

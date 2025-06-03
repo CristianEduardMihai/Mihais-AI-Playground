@@ -28,16 +28,6 @@ body * {
   opacity: 0.55;
 }
 
-.navbar {
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  background: none;
-  box-shadow: none;
-}
-
 .btn-gradient {
   display: flex;
   align-items: center;

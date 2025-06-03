@@ -82,13 +82,10 @@ def PersonalityQuiz():
     from components.common.config import CACHE_SUFFIX
     return html.div(
         {"className": "personality-quiz"},
+        html.link({"rel": "stylesheet", "href": f"/static/css/common/global.css?v={CACHE_SUFFIX}"}),
         html.link({"rel": "stylesheet", "href": f"/static/css/fun/personality_quiz.css?v={CACHE_SUFFIX}"}),
         html.div({"className": "background-gradient-blur"}),
-        html.nav(
-            {"className": "navbar"},
-            html.a({"href": "/", "className": "btn btn-home"}, "🏠 Home")
-        ),
-
+        html.nav({"className": "global-home-btn-row"}, html.a({"href": "/", "className": "global-home-btn"}, "🏠 Home")),
         html.div(
             {"className": "form"},
             html.h2({"style": {"textAlign": "center", "color": "purple"}}, "AI Personality Quiz"),

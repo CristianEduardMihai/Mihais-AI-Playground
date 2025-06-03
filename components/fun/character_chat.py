@@ -96,11 +96,9 @@ def CharacterChat():
     return html.div(
         {},
         html.div({"class": "background-gradient-blur"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/common/global.css?v={CACHE_SUFFIX}"}),
         html.link({"rel": "stylesheet", "href": f"/static/css/fun/character_chat.css?v={CACHE_SUFFIX}"}),
-        html.div(
-            {"class": "home-btn-row"},
-            html.a({"href": "/", "class": "btn btn-gradient"}, "🏠 Home")
-        ),
+        html.nav({"className": "global-home-btn-row"}, html.a({"href": "/", "className": "global-home-btn"}, "🏠 Home")),
         html.div(
             {"class": "character-chat chat-style"},
             html.h2("Character Chat"),

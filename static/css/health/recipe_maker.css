@@ -96,8 +96,6 @@ input[type="number"] {
   background: #30ba40;
   color: #e1fc56;
 }
-
-/* Gradient (Home) */
 .btn-gradient {
   display: flex;
   align-items: center;
@@ -114,7 +112,7 @@ input[type="number"] {
   text-decoration: none;
 }
 
-a.btn, a.btn-gradient, a.btn-home {
+a.btn, a.btn-gradient {
   text-decoration: none !important;
 }
 

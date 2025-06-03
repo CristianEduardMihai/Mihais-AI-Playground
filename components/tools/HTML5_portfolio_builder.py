@@ -210,8 +210,9 @@ def HTML5PortfolioBuilder():
     from components.common.config import CACHE_SUFFIX
     return html.div(
         {},
+        html.link({"rel": "stylesheet", "href": f"/static/css/common/global.css?v={CACHE_SUFFIX}"}),
         html.link({"rel": "stylesheet", "href": f"/static/css/tools/HTML5_portfolio_builder.css?v={CACHE_SUFFIX}"}),
-        html.nav({"className": "navbar"}, html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")),
+        html.nav({"className": "global-home-btn-row"}, html.a({"href": "/", "className": "global-home-btn"}, "🏠 Home")),
         html.div(
             {"className": "portfolio-builder"},
             html.h2("HTML5 Portfolio Builder"),

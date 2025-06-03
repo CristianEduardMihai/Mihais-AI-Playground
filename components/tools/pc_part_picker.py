@@ -742,11 +742,9 @@ def PCPartPicker():
     return html.div(
         {},
         html.div({"className": "background-gradient-blur"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/common/global.css?v={CACHE_SUFFIX}"}),
         html.link({"rel": "stylesheet", "href": f"/static/css/tools/pc_part_picker.css?v={CACHE_SUFFIX}"}),
-        html.nav(
-            {"className": "navbar"},
-            html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")
-        ),
+        html.nav({"className": "global-home-btn-row"}, html.a({"href": "/", "className": "global-home-btn"}, "🏠 Home")),
         html.div(
             {"className": "recipe-maker"},
             html.div(

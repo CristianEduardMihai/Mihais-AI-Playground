@@ -159,8 +159,7 @@ body {
 }
 
 .btn,
-.btn-gradient,
-.btn-home {
+.btn-gradient {
     background: linear-gradient(90deg, #b388ff 0%, #3a8dde 100%);
     color: #fff;
     border-radius: 999px;
@@ -182,15 +181,14 @@ body {
 }
 
 .btn:hover, .btn:focus,
-.btn-gradient:hover, .btn-gradient:focus,
-.btn-home:hover, .btn-home:focus {
+.btn-gradient:hover, .btn-gradient:focus {
     background: linear-gradient(90deg, #3a8dde 0%, #b388ff 100%);
     box-shadow: 0 4px 16px rgba(123,47,242,0.15), 0 3px 8px rgba(243,87,168,0.18);
     transform: translateY(-2px) scale(1.04);
     text-decoration: none;
 }
 
-a.btn, a.btn-gradient, a.btn-home {
+a.btn, a.btn-gradient {
     text-decoration: none !important;
 }
 

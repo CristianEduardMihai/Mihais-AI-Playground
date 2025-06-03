@@ -102,11 +102,9 @@ def RecipeMaker():
         {},
         # External CSS and background
         html.div({"className": "background-gradient-blur"}),
+        html.link({"rel": "stylesheet", "href": f"/static/css/common/global.css?v={CACHE_SUFFIX}"}),
         html.link({"rel": "stylesheet", "href": f"/static/css/health/recipe_maker.css?v={CACHE_SUFFIX}"}),
-        html.nav(
-            {"className": "navbar"},
-            html.a({"href": "/", "className": "btn btn-gradient"}, "🏠 Home")
-        ),
+        html.nav({"className": "global-home-btn-row"}, html.a({"href": "/", "className": "global-home-btn"}, "🏠 Home")),
         html.div(
             {"className": "recipe-maker"},
             html.h2("AI Recipe Maker"),

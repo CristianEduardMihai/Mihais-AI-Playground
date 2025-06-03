@@ -186,16 +186,6 @@ audio:focus {
   opacity: 0.55;
 }
 
-.navbar {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  background: none;
-  box-shadow: none;
-}
-
 @media (max-width: 1000px) {
   .reddit-storyteller {
     background: rgba(255, 255, 255, 0.404);

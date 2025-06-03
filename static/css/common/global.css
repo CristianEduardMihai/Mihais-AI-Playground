@@ -1,0 +1,55 @@
+.global-home-btn {
+  display: inline-block;
+  background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 1.2rem 2.5rem;
+  margin: 1.5rem auto 1.5rem auto;
+  box-shadow: 0 2px 8px rgba(10,109,171,0.08), 0 1.5px 4px rgba(65,176,224,0.10);
+  text-align: center;
+  text-decoration: none !important;
+  min-width: 120px;
+  max-width: 600px;
+  width: 100%;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  cursor: pointer;
+}
+
+.global-home-btn:hover,
+.global-home-btn:focus {
+  background: linear-gradient(90deg, #f357a8 0%, #7b2ff2 100%);
+  box-shadow: 0 4px 16px rgba(10,109,171,0.15), 0 3px 8px rgba(65,176,224,0.18);
+  transform: translateY(-2px) scale(1.04);
+  text-decoration: none;
+}
+
+.global-home-btn-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 1.2rem 0 0.7rem 0;
+}
+
+/* Mobile first styles */
+@media (max-width: 1000px) {
+  .global-home-btn {
+    width: 100%;
+    text-align: center;
+    font-size: 4.5vw;
+    margin-bottom: 3vw;
+    padding: 4vw 0;
+    border-radius: 0;
+    min-width: unset;
+    max-width: unset;
+  }
+}
+@media (max-width: 500px) {
+  .global-home-btn {
+    font-size: 1.5rem;
+    padding: 1.5rem 0.5rem;
+    border-radius: 0.5rem;
+  }
+}
