@@ -11,6 +11,17 @@ from cartopy.feature import NaturalEarthFeature
 from pyproj import Geod
 from pathlib import Path
 
+
+# ───────────────────────────────────────────────────────────────────────────────
+#  DEBUG LOGGER
+# ───────────────────────────────────────────────────────────────────────────────
+
+DEBUG_MODE = False
+
+def debug_log(*args):
+    if DEBUG_MODE:
+        print("[generate_flightroute DEBUG]", *args)
+
 # ───────────────────────────────────────────────────────────────────────────────
 #  CONFIGURATION: set Cartopy data directory and force-download of NE assets
 # ───────────────────────────────────────────────────────────────────────────────
@@ -19,6 +30,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 CARTOPY_DATA_DIR = BASE_DIR / "server-assets" / "persistent" / "cartopy"
 AIRPORT_CACHE_FILE = BASE_DIR / "server-assets" / "persistent" / "airport_cache.json"
+AIRPORT_PRECACHE_FILE = BASE_DIR / "server-assets" / "airport_precache.json"
 OUTPUT_DIR = BASE_DIR / "static" / "assets" / "flight_routes_temp"
 
 # Ensure the directories exist
@@ -36,16 +48,6 @@ for scale in ("110m", "50m", "10m"):
     _ = NaturalEarthFeature("physical", "coastline", scale)
 
 # ───────────────────────────────────────────────────────────────────────────────
-#  DEBUG LOGGER
-# ───────────────────────────────────────────────────────────────────────────────
-
-DEBUG_MODE = False
-
-def debug_log(*args):
-    if DEBUG_MODE:
-        print("[generate_flightroute DEBUG]", *args)
-
-# ───────────────────────────────────────────────────────────────────────────────
 #  ASYNC AIRPORT COORDINATE CACHING
 # ───────────────────────────────────────────────────────────────────────────────
 
@@ -58,7 +60,7 @@ async def async_get_airport_coordinates(
 ):
     """
     Async version: Returns (longitude, latitude) for the given IATA code. Checks local
-    JSON cache; if not found, queries Nominatim and stores the result in cache.
+    JSON cache; if not found, checks precache; if not found, queries Nominatim and stores the result in cache.
     Retries with exponential backoff on 403 errors.
     """
     # Load existing cache (or create an empty dict if file does not exist)
@@ -73,6 +75,19 @@ async def async_get_airport_coordinates(
         lon, lat = cache[iata_code]
         debug_log(f"Cache hit for {iata_code}: ({lon}, {lat})")
         return (lon, lat)
+
+    # Try the precache file if not found in persistent cache
+    if os.path.exists(AIRPORT_PRECACHE_FILE):
+        with open(AIRPORT_PRECACHE_FILE, "r") as f:
+            precache = json.load(f)
+        if iata_code in precache:
+            lon, lat = precache[iata_code]
+            debug_log(f"Precache hit for {iata_code}: ({lon}, {lat})")
+            # Save to persistent cache for future fast access
+            cache[iata_code] = [lon, lat]
+            with open(cache_file, "w") as f:
+                json.dump(cache, f, indent=2)
+            return (lon, lat)
 
     # Otherwise, query Nominatim
     url = f"https://nominatim.openstreetmap.org/search?q={iata_code}+Airport&format=json&limit=1"

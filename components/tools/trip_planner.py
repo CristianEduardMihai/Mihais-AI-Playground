@@ -5,10 +5,9 @@ import json
 import datetime
 import re
 import random
-import string
 from components.common import generate_flightroute
 
-DEBUG_MODE = False  # Set to True to enable debug logging
+DEBUG_MODE = True  # Set to True to enable debug logging
 
 def debug_log(*args):
     if DEBUG_MODE:
@@ -32,6 +31,8 @@ def TripPlanner():
     ai_result, set_ai_result = use_state("")
     route_img_url, set_route_img_url = use_state("")
     suggested_route, set_suggested_route = use_state([])
+    # Modal state for details popup
+    details_modal, set_details_modal = use_state({"open": False, "label": "", "details": ""})
 
     def handle_input(field, value):
         debug_log(f"Input change: {field} = {value}")
@@ -69,7 +70,8 @@ def TripPlanner():
                 "Visit Senso-ji Temple",
                 "Explore Akihabara",
                 "Try local ramen shops"
-              ]
+              ],
+              "details": "Expand on the activities above, providing more context, tips, and price estimates for each activity. Show price estimates in the currency entered by the user in the budget field, or default to USD if not specified. Format as a readable paragraph or bullet list."
             },
             {
               "label": "Day 4-7",
@@ -79,7 +81,8 @@ def TripPlanner():
                 "Tour Fushimi Inari Shrine",
                 "Walk the Philosopher's Path",
                 "Enjoy a traditional tea ceremony"
-              ]
+              ],
+              "details": "Expand on the activities above, providing more context, tips, and price estimates for each activity. Show price estimates in the currency entered by the user in the budget field, or default to USD if not specified. Format as a readable paragraph or bullet list."
             },
             ...
           ],
@@ -89,11 +92,14 @@ def TripPlanner():
         IMPORTANT:
         - For trips longer than 7 days, group days into ranges (e.g. 'Day 1-5', 'Day 6-10') in the label field, but always keep the label on a single line (no newlines).
         - For long trips (10+ days), provide at least one daily_plan entry per 2-3 days, so a 20-day trip should have at least 7-10 daily_plan entries.
-        - Each daily_plan entry must have a 'label' (e.g. 'Day 1-3'), a short 'title' summarizing the main theme or highlight, and an 'activities' array of short, capitalized phrases (one per activity).
+        - Each daily_plan entry must have a 'label' (e.g. 'Day 1-3'), a short 'title' summarizing the main theme or highlight, an 'activities' array of short, capitalized phrases (one per activity), and a 'details' field as described above.
         - Do NOT use newlines or line breaks in the label or title fields.
         - Make the daily_plan as detailed as possible, with plenty of activities and variety.
         - Write the explanation field in the second person (use 'you', 'your', 'yours').
         - If you suggest the user to fly to a city/region in the daily_plan, always include the corresponding airport's IATA code in the route list, in the correct order.
+        - Do not use just capital letters for the activities, use proper capitalization (e.g. 'Visit Senso-ji Temple', not 'VISIT SENSO-JI TEMPLE').
+        - If a budget is absurd (ex: 1000 EUR for a 2-week trip), suggest a more realistic budget based on the destination and activities.
+        - If some fields are empty, take a guess based on the other fields. For example, if the user doesn't specify climate but mentions beach, assume warm or tropical climate. Tell them to the user in the explanation or details field.
         """
         debug_log("AI prompt:", prompt)
         try:
@@ -131,10 +137,9 @@ def TripPlanner():
             match = re.search(r"\{[\s\S]*\}", ai_clean)
             if match:
                 json_str = match.group(0)
-                debug_log("Extracted JSON string:", json_str)
                 # Remove illegal trailing commas before ] or }
                 json_str = re.sub(r',\s*([\]}])', r'\1', json_str)
-                # Fix invalid backslash escapes (e.g. \, 	, etc) by replacing single backslashes not part of \\ or \", with \\.
+                # Fix invalid backslash escapes (e.g. \, \t, etc) by replacing single backslashes not part of \\ or \", with \\.
                 # This will make the string safe for json.loads
                 def fix_invalid_escapes(s):
                     # Replace single backslashes not followed by \\, ", /, b, f, n, r, t, u
@@ -177,7 +182,12 @@ def TripPlanner():
         debug_log("call_ai_trip_plan: finished")
 
     async def generate_route_image(route):
-        filename = f"/static/assets/flight_routes_temp/flight_route_{''.join(random.choices(string.ascii_uppercase + string.digits, k=12))}.png"
+        # Use route IATA codes for filename
+        if route and isinstance(route, list) and len(route) > 0:
+            route_codes = '-'.join([str(code) for code in route])
+            filename = f"/static/assets/flight_routes_temp/route_{route_codes}.png"
+        else:
+            filename = f"/static/assets/flight_routes_temp/route_UNKNOWN.png"
         try:
             if route and isinstance(route, list) and len(route) > 0:
                 route = route + [route[0]]
@@ -280,11 +290,22 @@ def TripPlanner():
             ),
             ai_error and html.div({"className": "error-message"}, ai_error) or None,
             ai_result and html.div({"className": "schedule-list"},
+                html.div({"className": "schedule-tip"}, "Tip: Click any day block for more details!"),
                 *[
-                    html.div({
+                    (lambda day=day, i=i: html.div({
                         "className": "schedule-block schedule-task",
                         "key": f"day-{i}",
-                        "style": {"borderLeft": f"6px solid {shuffled_colors[i % len(shuffled_colors)]}"}
+                        "style": {"borderLeft": f"6px solid {shuffled_colors[i % len(shuffled_colors)]}"},
+                        "onClick": lambda e, day=day, i=i: (
+                            debug_log(f"Modal open for day index {i}, label={day.get('label')}, details={day.get('details')}, activities={day.get('activities')}"),
+                            set_details_modal({
+                                "open": True,
+                                "label": day.get("label") or f"Day {i+1}",
+                                "details": day.get("details") if day.get("details") not in (None, "", [], {}) else (
+                                    f"Activities: {', '.join(day.get('activities', []))}" if day.get('activities') else "No details available."
+                                )
+                            })
+                        )[1]
                     },
                         html.div({"className": "block-header"},
                             html.span({"className": "block-icon task"}, shuffled_emojis[i % len(shuffled_emojis)]),
@@ -294,9 +315,17 @@ def TripPlanner():
                         html.ul({},
                             *[html.li({}, activity) for activity in day.get("activities", [])]
                         )
-                    )
+                    ))()
                     for i, day in enumerate(ai_result.get("daily_plan", []) if isinstance(ai_result, dict) else [])
                 ]
+            ) or None,
+            # Modal popup for details
+            details_modal["open"] and html.div({"className": "modal-overlay"},
+                html.div({"className": "modal-content"},
+                    html.button({"onClick": lambda e: set_details_modal({"open": False, "label": "", "details": ""}), "className": "modal-close-btn"}, "×"),
+                    html.h3({}, "Detailed View"),
+                    html.div({"className": "modal-details"}, details_modal["details"])
+                )
             ) or None,
             ai_result and ai_result.get("explanation") and html.div({"className": "explanation-block", "style": {"marginTop": "1.5em", "background": "#f4faff", "borderRadius": "6px", "padding": "1.1em", "color": "#1a237e", "fontSize": "1.08em"}},
                 html.b("Why this trip?"), html.br(), ai_result["explanation"]
