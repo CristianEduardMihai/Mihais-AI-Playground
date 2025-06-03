@@ -27,6 +27,6 @@ jobs:
         with:
           context: .
           platforms: linux/arm64
-          file: ./Dockerfile
+          file: ./Dockerfile_env
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/mihais-ai-playground:environment
