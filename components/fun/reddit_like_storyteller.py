@@ -6,8 +6,27 @@ from bs4 import BeautifulSoup
 import re
 import os
 import time
-#import reactpy
-#reactpy.config.REACTPY_DEBUG_MODE.current = True
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+#  DEBUG LOGGER
+# ───────────────────────────────────────────────────────────────────────────────
+
+try:
+    from components.common.config import DEBUG_MODE, REACTPY_DEBUG_MODE
+    if REACTPY_DEBUG_MODE:
+        import reactpy
+        reactpy.config.REACTPY_DEBUG_MODE.current = True
+        print("[reddit_like_storyteller.py DEBUG] REACTPY_DEBUG_MODE imported from config.py, using value:", REACTPY_DEBUG_MODE)
+    if DEBUG_MODE:
+        print("[reddit_like_storyteller.py DEBUG] DEBUG_MODE imported from config.py, using value:", DEBUG_MODE)
+except ImportError:
+    DEBUG_MODE = False
+    print("Warning: DEBUG_MODE not imported from config.py, using default value False.")
+
+def debug_log(*args):
+    if DEBUG_MODE:
+        print("[reddit_like_storyteller.py DEBUG]", *args)
 
 # Popular story-based subreddits and their descriptions
 STORY_SUBREDDITS = {

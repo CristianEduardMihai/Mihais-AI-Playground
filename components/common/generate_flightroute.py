@@ -16,11 +16,21 @@ from pathlib import Path
 #  DEBUG LOGGER
 # ───────────────────────────────────────────────────────────────────────────────
 
-DEBUG_MODE = False
+try:
+    from components.common.config import DEBUG_MODE, REACTPY_DEBUG_MODE
+    if REACTPY_DEBUG_MODE:
+        import reactpy
+        reactpy.config.REACTPY_DEBUG_MODE.current = True
+        print("[generate_flightroute.py DEBUG] REACTPY_DEBUG_MODE imported from config.py, using value:", REACTPY_DEBUG_MODE)
+    if DEBUG_MODE:
+        print("[generate_flightroute.py DEBUG] DEBUG_MODE imported from config.py, using value:", DEBUG_MODE)
+except ImportError:
+    DEBUG_MODE = False
+    print("Warning: DEBUG_MODE not imported from config.py, using default value False.")
 
 def debug_log(*args):
     if DEBUG_MODE:
-        print("[generate_flightroute DEBUG]", *args)
+        print("[generate_flightroute.py DEBUG]", *args)
 
 # ───────────────────────────────────────────────────────────────────────────────
 #  CONFIGURATION: set Cartopy data directory and force-download of NE assets

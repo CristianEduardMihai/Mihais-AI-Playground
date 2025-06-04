@@ -13,13 +13,21 @@ from components.common.router import RootRouter
 import components.common.calendar_db as calendar_db
 from components.common.config import CACHE_SUFFIX, set_CACHE_SUFFIX
 
-DEBUG_MODE = False  # Set to True to enable verbose debug output
+# ───────────────────────────────────────────────────────────────────────────────
+#  DEBUG LOGGER
+# ───────────────────────────────────────────────────────────────────────────────
+
+try:
+    from components.common.config import DEBUG_MODE
+    if DEBUG_MODE:
+        print("[app.py DEBUG] DEBUG_MODE imported from config.py, using value:", DEBUG_MODE)
+except ImportError:
+    DEBUG_MODE = False
+    print("Warning: DEBUG_MODE not imported from config.py, using default value False.")
 
 def debug_print(*args, **kwargs):
     if DEBUG_MODE:
-        print("[DEBUG] [app.py]", *args, **kwargs)
-
-debug_print("app.py loaded, DEBUG_MODE is", DEBUG_MODE)
+        print("[app.py DEBUG]", *args, **kwargs)
 
 # ─── Cleanup Config ─────────────────────────────────────────────
 MAX_AGE_SECONDS = 60 * 60  # 1 hour

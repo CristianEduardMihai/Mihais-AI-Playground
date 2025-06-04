@@ -7,11 +7,25 @@ import re
 import random
 from components.common import generate_flightroute
 
-DEBUG_MODE = True  # Set to True to enable debug logging
+# ───────────────────────────────────────────────────────────────────────────────
+#  DEBUG LOGGER
+# ───────────────────────────────────────────────────────────────────────────────
+
+try:
+    from components.common.config import DEBUG_MODE, REACTPY_DEBUG_MODE
+    if REACTPY_DEBUG_MODE:
+        import reactpy
+        reactpy.config.REACTPY_DEBUG_MODE.current = True
+        print("[trip_planner.py DEBUG] REACTPY_DEBUG_MODE imported from config.py, using value:", REACTPY_DEBUG_MODE)
+    if DEBUG_MODE:
+        print("[trip_planner.py DEBUG] DEBUG_MODE imported from config.py, using value:", DEBUG_MODE)
+except ImportError:
+    DEBUG_MODE = False
+    print("Warning: DEBUG_MODE not imported from config.py, using default value False.")
 
 def debug_log(*args):
     if DEBUG_MODE:
-        print("[TripPlanner DEBUG]", *args)
+        print("[trip_planner.py DEBUG]", *args)
 
 @component
 def TripPlanner():

@@ -9,7 +9,28 @@ import re
 
 DATA_PATH = "static/assets/pc_parts"
 
-DEBUG_MODE = False
+
+# ───────────────────────────────────────────────────────────────────────────────
+#  DEBUG LOGGER
+# ───────────────────────────────────────────────────────────────────────────────
+
+try:
+    from components.common.config import DEBUG_MODE, REACTPY_DEBUG_MODE
+    if REACTPY_DEBUG_MODE:
+        import reactpy
+        reactpy.config.REACTPY_DEBUG_MODE.current = True
+        print("[pc_part_picker.py DEBUG] REACTPY_DEBUG_MODE imported from config.py, using value:", REACTPY_DEBUG_MODE)
+    if DEBUG_MODE:
+        print("[pc_part_picker.py DEBUG] DEBUG_MODE imported from config.py, using value:", DEBUG_MODE)
+except ImportError:
+    DEBUG_MODE = False
+    print("Warning: DEBUG_MODE not imported from config.py, using default value False.")
+
+def debug_log(*args):
+    if DEBUG_MODE:
+        print("[pc_part_picker.py DEBUG]", *args)
+
+
 
 # Load all relevant datasets into a dict for easy lookup
 def load_json(filename):

@@ -7,18 +7,32 @@ import random
 import string
 import components.common.calendar_db as calendar_db
 
-DEBUG_MODE = False  # Set to True to enable verbose debug output
+# ───────────────────────────────────────────────────────────────────────────────
+#  DEBUG LOGGER
+# ───────────────────────────────────────────────────────────────────────────────
 
-def debug_print(*args, **kwargs):
+try:
+    from components.common.config import DEBUG_MODE, REACTPY_DEBUG_MODE
+    if REACTPY_DEBUG_MODE:
+        import reactpy
+        reactpy.config.REACTPY_DEBUG_MODE.current = True
+        print("[task_organizer.py DEBUG] REACTPY_DEBUG_MODE imported from config.py, using value:", REACTPY_DEBUG_MODE)
     if DEBUG_MODE:
-        print("[DEBUG]", *args, **kwargs)
+        print("[task_organizer.py DEBUG] DEBUG_MODE imported from config.py, using value:", DEBUG_MODE)
+except ImportError:
+    DEBUG_MODE = False
+    print("Warning: DEBUG_MODE not imported from config.py, using default value False.")
+
+def debug_log(*args):
+    if DEBUG_MODE:
+        print("[task_organizer.py DEBUG]", *args)
 
 
 async def call_ai_schedule(tasks):
-    debug_print("call_ai_schedule called with tasks:", tasks)
-    debug_print("---- USER INPUT ----")
-    debug_print(json.dumps(tasks, indent=2, ensure_ascii=False))
-    debug_print("---- END USER INPUT ----")
+    debug_log("call_ai_schedule called with tasks:", tasks)
+    debug_log("---- USER INPUT ----")
+    debug_log(json.dumps(tasks, indent=2, ensure_ascii=False))
+    debug_log("---- END USER INPUT ----")
     instructions = [
         "You are a helpful assistant for organizing a user's daily tasks into a full calendar view.",
         "Given the following list of tasks as JSON, organize them into a detailed, efficient daily schedule.",
@@ -32,7 +46,7 @@ async def call_ai_schedule(tasks):
         "Return only a JSON array of all blocks in the day's schedule, in order. No explanations or markdown.",
     ]
     try:
-        debug_print("Sending request to AI endpoint with payload:", json.dumps(tasks, indent=2, ensure_ascii=False))
+        debug_log("Sending request to AI endpoint with payload:", json.dumps(tasks, indent=2, ensure_ascii=False))
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 "https://ai.hackclub.com/chat/completions",
@@ -45,7 +59,7 @@ async def call_ai_schedule(tasks):
                 },
                 timeout=aiohttp.ClientTimeout(total=60)
             ) as resp:
-                debug_print("AI endpoint response status:", resp.status)
+                debug_log("AI endpoint response status:", resp.status)
                 ai_raw = (await resp.json())["choices"][0]["message"]["content"]
         ai_clean = ai_raw.strip()
         if ai_clean.startswith("```"):
@@ -54,25 +68,25 @@ async def call_ai_schedule(tasks):
             ai_clean = ai_clean.rstrip("`\n ")
         if ai_clean.startswith("json"):
             ai_clean = ai_clean[4:].lstrip("\n ")
-        debug_print("---- AI OUTPUT ----")
-        debug_print(ai_clean)
-        debug_print("---- END AI OUTPUT ----")
+        debug_log("---- AI OUTPUT ----")
+        debug_log(ai_clean)
+        debug_log("---- END AI OUTPUT ----")
         scheduled = json.loads(ai_clean)
         return scheduled
     except Exception as e:
-        debug_print(f"[TaskOrganizer] AI scheduling error: {e}")
+        debug_log(f"[TaskOrganizer] AI scheduling error: {e}")
         # Error will be set in the component's thread, just return empty
         return []
 
 def generate_random_id(length=16):
-    debug_print(f"Generating random ID of length {length}")
+    debug_log(f"Generating random ID of length {length}")
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
 def generate_ics(organized_tasks, tzid, user_timezone=None):
     # Use detected user_timezone if available, else fallback to UTC
     tz = user_timezone or 'UTC'
-    debug_print(f"[ICS] Called generate_ics with tzid={tzid}, user_timezone={user_timezone} (using: {tz})")
-    debug_print(f"[TZ-DETECT] Using timezone for ICS: {tz}")
+    debug_log(f"[ICS] Called generate_ics with tzid={tzid}, user_timezone={user_timezone} (using: {tz})")
+    debug_log(f"[TZ-DETECT] Using timezone for ICS: {tz}")
     import uuid
     from datetime import datetime, date, timedelta
     from zoneinfo import ZoneInfo
@@ -80,13 +94,13 @@ def generate_ics(organized_tasks, tzid, user_timezone=None):
     now = datetime.now(ZoneInfo(tz))
     events = []
     for b in organized_tasks:
-        debug_print("Processing block for ICS:", b)
+        debug_log("Processing block for ICS:", b)
         start = b.get('start_time', '08:00')
         duration = int(b.get('duration', 30))
         try:
             start_dt_naive = datetime.combine(today, datetime.strptime(start, "%H:%M").time())
         except Exception:
-            debug_print(f"Skipping event due to invalid start time: {start}")
+            debug_log(f"Skipping event due to invalid start time: {start}")
             continue
         end_dt_naive = start_dt_naive + timedelta(minutes=duration)
         summary = f"{b.get('type','Task').capitalize()}: {b.get('name', b.get('label',''))}"
@@ -111,7 +125,7 @@ def generate_ics(organized_tasks, tzid, user_timezone=None):
         f"{chr(10).join(events)}\n"
         "END:VCALENDAR"
     )
-    debug_print("Generated ICS content (with user timezone):\n", ics_content)
+    debug_log("Generated ICS content (with user timezone):\n", ics_content)
     return ics_content
 
 @component
@@ -178,27 +192,27 @@ def TaskOrganizer():
         set_tasks(lambda prev: [t for i, t in enumerate(prev) if i != idx])
 
     def handle_organize(_):
-        debug_print("handle_organize called")
+        debug_log("handle_organize called")
         set_loading(True)
         set_error("")
         async def ai_schedule():
-            debug_print("ai_schedule thread started")
+            debug_log("ai_schedule thread started")
             await asyncio.sleep(0.7)
-            debug_print("User tasks:", tasks)
+            debug_log("User tasks:", tasks)
             try:
                 scheduled = await call_ai_schedule(tasks)
-                debug_print("AI scheduled tasks:", scheduled)
+                debug_log("AI scheduled tasks:", scheduled)
                 set_organized_tasks(scheduled)
             except Exception as e:
                 set_error(f"AI scheduling error: {e}")
                 set_organized_tasks([])
-                debug_print("Error in ai_schedule:", e)
+                debug_log("Error in ai_schedule:", e)
             set_loading(False)
-            debug_print("ai_schedule thread finished")
+            debug_log("ai_schedule thread finished")
         asyncio.create_task(ai_schedule())
 
     def handle_save_to_link(_):
-        debug_print("handle_save_to_link called")
+        debug_log("handle_save_to_link called")
         set_show_link_modal(True)  # Always open modal immediately
         set_link_error("")
         # Only auto-generate a new link if 'Create New Link' is selected and no user_id
@@ -206,45 +220,45 @@ def TaskOrganizer():
             new_id = generate_random_id()
             set_user_id(new_id)
             set_calendar_url(f"/calendars/{new_id}")
-            debug_print("Auto-generated calendar link in modal:", f"/calendars/{new_id}")
+            debug_log("Auto-generated calendar link in modal:", f"/calendars/{new_id}")
             # Immediately save the current schedule to the new link if there are tasks
             if organized_tasks and len(organized_tasks) > 0:
                 ics = generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
                 try:
-                    debug_print(f"Auto-saving calendar for user_id {new_id} from modal")
+                    debug_log(f"Auto-saving calendar for user_id {new_id} from modal")
                     calendar_db.save_calendar(new_id, ics)
                     set_link_error("")
-                    debug_print(f"Calendar auto-saved for user_id {new_id} from modal")
+                    debug_log(f"Calendar auto-saved for user_id {new_id} from modal")
                 except Exception as e:
                     set_link_error(f"Failed to auto-save: {e}")
-                    debug_print(f"Failed to auto-save calendar for user_id {new_id} from modal: {e}")
+                    debug_log(f"Failed to auto-save calendar for user_id {new_id} from modal: {e}")
 
     def handle_generate_link(_):
-        debug_print("handle_generate_link called")
+        debug_log("handle_generate_link called")
         new_id = generate_random_id()
         set_user_id(new_id)
         set_calendar_url(f"/calendars/{new_id}")
-        debug_print("Generated new calendar link:", f"/calendars/{new_id}")
+        debug_log("Generated new calendar link:", f"/calendars/{new_id}")
         # Immediately save the current schedule to the new link
         if organized_tasks and len(organized_tasks) > 0:
             ics = generate_ics(organized_tasks, user_timezone or 'UTC', user_timezone or 'UTC')
             try:
-                debug_print(f"Auto-saving calendar for user_id {new_id}")
+                debug_log(f"Auto-saving calendar for user_id {new_id}")
                 calendar_db.save_calendar(new_id, ics)
                 set_link_error("")
-                debug_print(f"Calendar auto-saved for user_id {new_id}")
+                debug_log(f"Calendar auto-saved for user_id {new_id}")
             except Exception as e:
                 set_link_error(f"Failed to auto-save: {e}")
-                debug_print(f"Failed to auto-save calendar for user_id {new_id}: {e}")
+                debug_log(f"Failed to auto-save calendar for user_id {new_id}: {e}")
 
     def handle_save_and_copy(_):
-        debug_print("handle_save_and_copy called")
+        debug_log("handle_save_and_copy called")
         if not user_id:
-            debug_print("No user_id provided")
+            debug_log("No user_id provided")
             set_link_error("Please paste or generate a calendar link.")
             return
         if not organized_tasks or len(organized_tasks) == 0:
-            debug_print("No organized_tasks to save")
+            debug_log("No organized_tasks to save")
             set_link_error("No schedule to save. Please organize your day first.")
             return
         # Save the current schedule as a new or existing calendar
@@ -252,7 +266,7 @@ def TaskOrganizer():
         calendar_db.save_calendar(user_id, ics)
         set_calendar_url(f"/calendars/{user_id}")
         set_link_error("")
-        debug_print(f"Calendar saved for user_id {user_id}")
+        debug_log(f"Calendar saved for user_id {user_id}")
         # Copy the link
         handle_copy_link(f"https://mihais-ai-playground.xyz/calendars/{user_id}")
 
@@ -275,10 +289,10 @@ def TaskOrganizer():
                 try:
                     calendar_db.save_calendar(new_id, ics)
                     set_link_error("")
-                    debug_print(f"Calendar auto-saved for user_id {new_id} after switching to new link mode")
+                    debug_log(f"Calendar auto-saved for user_id {new_id} after switching to new link mode")
                 except Exception as e:
                     set_link_error(f"Failed to auto-save: {e}")
-                    debug_print(f"Failed to auto-save calendar for user_id {new_id} after switching to new link mode: {e}")
+                    debug_log(f"Failed to auto-save calendar for user_id {new_id} after switching to new link mode: {e}")
 
     def handle_link_input(e):
         val = e['target']['value'].strip()
@@ -315,7 +329,7 @@ def TaskOrganizer():
             pass
 
     # Inject JS to auto-detect timezone and set it in state
-    debug_print('[DEBUG] Injecting timezone detection JS')
+    debug_log('[DEBUG] Injecting timezone detection JS')
     timezone_script = html.script({
         "dangerouslySetInnerHTML": {
             "__html": """
@@ -344,19 +358,19 @@ def TaskOrganizer():
 
     def on_timezone_detected(event):
         tz = event['detail']
-        debug_print(f"[ReactPy] on_timezone_detected called with: {tz}")
+        debug_log(f"[ReactPy] on_timezone_detected called with: {tz}")
         print(f"[DEBUG] [TZ-DETECT] Browser detected timezone: {tz}")
         if tz:
-            debug_print(f"[ReactPy] Setting user_timezone to: {tz}")
+            debug_log(f"[ReactPy] Setting user_timezone to: {tz}")
             set_user_timezone(tz)
             set_timezone_error("")
         else:
-            debug_print("[ReactPy] Could not detect timezone, defaulting to UTC")
+            debug_log("[ReactPy] Could not detect timezone, defaulting to UTC")
             set_user_timezone("")
             set_timezone_error("Could not detect your timezone. Your browser may have blocked detection, so calendar times may be off (defaulting to UTC).")
 
     # Register event listener for timezone detection (ReactPy pattern)
-    debug_print('[DEBUG] Registering timezone-detected event listener')
+    debug_log('[DEBUG] Registering timezone-detected event listener')
     html.script({
         "dangerouslySetInnerHTML": {
             "__html": """
@@ -368,11 +382,11 @@ def TaskOrganizer():
     })
     # Attach callback to window (ReactPy pattern)
     import reactpy
-    debug_print('[DEBUG] Registering reactpyTimezoneCallback')
+    debug_log('[DEBUG] Registering reactpyTimezoneCallback')
     reactpy.hooks.use_effect(lambda: setattr(__import__('builtins'), 'reactpyTimezoneCallback', lambda tz: on_timezone_detected({'detail': tz})), [])
 
     # Show detected timezone for debugging
-    debug_print(f"[ReactPy] Current detected user_timezone state: {user_timezone}")
+    debug_log(f"[ReactPy] Current detected user_timezone state: {user_timezone}")
 
     # List of common IANA timezones (can be expanded as needed)
     COMMON_TIMEZONES = [
@@ -434,7 +448,7 @@ def TaskOrganizer():
                 if tz:
                     set_user_timezone(tz)
                     set_timezone_ai_error("")
-                    debug_print(f"[ReactPy] AI resolved timezone input '{val}' to: {tz}")
+                    debug_log(f"[ReactPy] AI resolved timezone input '{val}' to: {tz}")
                 else:
                     set_timezone_ai_error("Could not resolve to a valid timezone.")
             except Exception as ex:
