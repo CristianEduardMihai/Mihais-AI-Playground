@@ -40,12 +40,23 @@ def WorkoutPlanner():
     error, set_error = use_state("")
     loading, set_loading = use_state(False)
     show_flow, set_show_flow = use_state(False)
+    weight_unit, set_weight_unit = use_state("kg")
+    height_unit, set_height_unit = use_state("cm")
 
     def handle_submit(event):
         set_loading(True)
         set_result_html("")
         set_error("")
         debug_log("Form submitted")
+        # Convert units to metric for API
+        w = float(weight) if weight else 0
+        tw = float(target_weight) if target_weight else 0
+        h = float(height) if height else 0
+        if weight_unit == "lb":
+            w = round(w * 0.453592, 2)
+            tw = round(tw * 0.453592, 2)
+        if height_unit == "in":
+            h = round(h * 2.54, 2)
         def run_async():
             async def do_request():
                 try:
@@ -93,11 +104,11 @@ def WorkoutPlanner():
                         "- Ensure tone is friendly, motivating, and actionable."
                     )
                     user_input = (
-                        f"Current weight: {weight} kg\n"
-                        f"Target weight: {target_weight} kg\n"
+                        f"Current weight: {w} kg\n"
+                        f"Target weight: {tw} kg\n"
                         f"Sex: {sex}\n"
                         f"Age: {age}\n"
-                        f"Height: {height} cm\n"
+                        f"Height: {h} cm\n"
                         f"Target date (MM/DD/YYYY): {target_date}\n"
                         f"Current date: {datetime.datetime.now().strftime('%m/%d/%Y')}\n"
                     )
@@ -123,7 +134,11 @@ def WorkoutPlanner():
                             data = await response.json()
                     md = data["choices"][0]["message"]["content"]
                     debug_log("AI raw output:", md)
-                    set_result_html(f"<div class='markdown-body'>{markdown.markdown(md)}</div>")
+                    set_result_html("")  # Clear before animating
+                    # Animate result after a short delay
+                    def animate_result():
+                        set_result_html(f"<div class='workout-output animated-fadein'><div class='markdown-body'>{markdown.markdown(md)}</div></div>")
+                    threading.Timer(0.15, animate_result).start()
                 except Exception as e:
                     debug_log("Error in do_request:", e)
                     set_error(f"Error: {e}")
@@ -131,6 +146,9 @@ def WorkoutPlanner():
                     set_loading(False)
             asyncio.run(do_request())
         threading.Thread(target=run_async, daemon=True).start()
+
+    # Determine if the form is valid (all required fields set)
+    is_form_valid = bool(weight and height and age and target_weight)
 
     return html.div(
         {},
@@ -142,12 +160,24 @@ def WorkoutPlanner():
             html.h2("AI Workout Planner"),
             html.form({"className": "workout-form"},
                 html.div({"className": "workout-form-group"},
-                    html.label({"for": "weight"}, "Current Weight (kg):"),
-                    html.input({"id": "weight", "type": "number", "min": "1", "value": weight, "onBlur": lambda e: set_weight(e["target"]["value"]), "required": True})
+                    html.label({"for": "weight"}, "Current Weight:"),
+                    html.div({"className": "input-unit-row"},
+                        html.input({"id": "weight", "type": "number", "min": "1", "value": weight, "onBlur": lambda e: set_weight(e["target"]["value"]), "required": True}),
+                        html.select({"className": "unit-select", "value": weight_unit, "onChange": lambda e: set_weight_unit(e["target"]["value"]), "aria-label": "Weight unit"},
+                            html.option({"value": "kg"}, "kg"),
+                            html.option({"value": "lb"}, "lb")
+                        )
+                    )
                 ),
                 html.div({"className": "workout-form-group"},
-                    html.label({"for": "target_weight"}, "Target Weight (kg):"),
-                    html.input({"id": "target_weight", "type": "number", "min": "1", "value": target_weight, "onBlur": lambda e: set_target_weight(e["target"]["value"]), "required": True})
+                    html.label({"for": "target_weight"}, "Target Weight:"),
+                    html.div({"className": "input-unit-row"},
+                        html.input({"id": "target_weight", "type": "number", "min": "1", "value": target_weight, "onBlur": lambda e: set_target_weight(e["target"]["value"]), "required": True}),
+                        html.select({"className": "unit-select", "value": weight_unit, "onChange": lambda e: set_weight_unit(e["target"]["value"]), "aria-label": "Target weight unit"},
+                            html.option({"value": "kg"}, "kg"),
+                            html.option({"value": "lb"}, "lb")
+                        )
+                    )
                 ),
                 html.div({"className": "workout-form-group-dropdown"},
                     html.label({"for": "sex"}, "Sex:"),
@@ -162,8 +192,14 @@ def WorkoutPlanner():
                     html.input({"id": "age", "type": "number", "min": "1", "value": age, "onBlur": lambda e: set_age(e["target"]["value"]), "required": True})
                 ),
                 html.div({"className": "workout-form-group"},
-                    html.label({"for": "height"}, "Height (cm):"),
-                    html.input({"id": "height", "type": "number", "min": "50", "value": height, "onBlur": lambda e: set_height(e["target"]["value"]), "required": True})
+                    html.label({"for": "height"}, "Height:"),
+                    html.div({"className": "input-unit-row"},
+                        html.input({"id": "height", "type": "number", "min": "50", "value": height, "onBlur": lambda e: set_height(e["target"]["value"]), "required": True}),
+                        html.select({"className": "unit-select", "value": height_unit, "onChange": lambda e: set_height_unit(e["target"]["value"]), "aria-label": "Height unit"},
+                            html.option({"value": "cm"}, "cm"),
+                            html.option({"value": "in"}, "in")
+                        )
+                    )
                 ),
                 html.div({"className": "workout-form-group"},
                     html.label({"for": "target_date"}, "Target Date:"),
@@ -174,11 +210,17 @@ def WorkoutPlanner():
                     html.input({"type": "number", "min": "0", "placeholder": "Fat mass (kg)", "value": fat_mass, "onBlur": lambda e: set_fat_mass(e["target"]["value"])}),
                     html.input({"type": "number", "min": "0", "placeholder": "Muscle mass (kg)", "value": muscle_mass, "onBlur": lambda e: set_muscle_mass(e["target"]["value"])}),
                 ),
-                html.button({"type": "button", "className": f"btn-workout-gradient{' disabled' if loading else ''}", "onClick": handle_submit, "disabled": loading},
-                    "Generating..." if loading else "Generate Plan"
+                html.button({
+                    "type": "button",
+                    "className": f"btn-workout-gradient{' disabled' if loading or not is_form_valid else ''}",
+                    "onClick": handle_submit,
+                    "disabled": loading or not is_form_valid
+                },
+                    loading and html.span({"className": "spinner"}) or None,
+                    " Generating..." if loading else "Generate Plan"
                 ),
             ),
             error and html.div({"style": {"color": "#f357a8", "marginTop": "1em"}}, error),
-            result_html and html.div({"className": "workout-output", "dangerouslySetInnerHTML": {"__html": result_html}}),
+            result_html and html.div({"dangerouslySetInnerHTML": {"__html": result_html}}),
         )
     )

@@ -32,9 +32,56 @@ body * {
   text-align: center;
 }
 
+.markdown-body {
+  text-align: left;
+}
+
 .workout-form-group {
   margin-bottom: 1.5rem;
   width: 100%;
+}
+
+.workout-form-group.unit-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.workout-form-group.unit-row label {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 0.4rem;
+  flex: none;
+  width: 100%;
+  text-align: left;
+}
+
+.input-unit-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.input-unit-row input[type="number"] {
+  width: 60%;
+  min-width: 80px;
+  max-width: 180px;
+  font-size: 1.1rem;
+  padding: 0.7rem 1rem;
+  margin: 0;
+}
+
+.input-unit-row select.unit-select {
+  width: 70px;
+  min-width: 50px;
+  max-width: 90px;
+  font-size: 1.1rem;
+  padding: 0.7rem 0.5rem;
+  margin: 0;
 }
 
 .workout-form label {
@@ -79,6 +126,28 @@ body * {
   border: 1px solid #ccc;
   font-size: 1.1rem;
   box-sizing: border-box;
+}
+
+.workout-form input[type="date"] {
+  width: 60%;
+  min-width: 120px;
+  max-width: 300px;
+  margin: 0 auto 1rem auto;
+  display: block;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1.5px solid #30ba40;
+  font-size: 1.1rem;
+  box-sizing: border-box;
+  background: linear-gradient(90deg, #e1fc56 0%, #30ba40 100%);
+  color: #222;
+  box-shadow: 0 2px 8px rgba(48,186,64,0.08), 0 1.5px 4px rgba(225,252,86,0.10);
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.workout-form input[type="date"]:focus {
+  outline: none;
+  border: 2px solid #30ba40;
+  box-shadow: 0 4px 16px rgba(48,186,64,0.15), 0 3px 8px rgba(225,252,86,0.18);
 }
 
 /* Modular Button Styles */
@@ -172,6 +241,38 @@ body * {
     width: 100%;
   }
 
+  .workout-form-group.unit-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 4vw;
+  }
+
+  .workout-form-group.unit-row label {
+    font-size: 4vw;
+    margin-bottom: 1vw;
+    width: 100%;
+    text-align: left;
+  }
+
+  .workout-form-group.unit-row input[type="number"] {
+    font-size: 3.2rem;
+    padding: 6vw;
+    min-height: 5.5rem;
+    width: 60%;
+    margin: 0;
+  }
+
+  .workout-form-group.unit-row select.unit-select {
+    font-size: 3.2rem;
+    width: 70px;
+    min-width: 60px;
+    max-width: 120px;
+    padding: 4vw 2vw;
+    margin: 0;
+  }
+
   .workout-form label {
     font-size: 4.5vw;
     margin-bottom: 1.5vw;
@@ -179,7 +280,8 @@ body * {
 
   .workout-form input[type="text"],
   .workout-form select,
-  .workout-form input[type="number"] {
+  .workout-form input[type="number"],
+  .workout-form input[type="date"] {
     font-size: 3.2rem;
     padding: 6vw;
     margin-bottom: 3vw;
@@ -236,9 +338,38 @@ body * {
     padding: 1rem 0.5rem;
     font-size: 1rem;
   }
+  .workout-form-group.unit-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  .workout-form-group.unit-row label {
+    font-size: 2.1rem;
+    margin-bottom: 0.3rem;
+    width: 100%;
+    text-align: left;
+  }
+  .workout-form-group.unit-row input[type="number"] {
+    font-size: 2.1rem;
+    padding: 2.5rem;
+    min-height: 3.2rem;
+    width: 60%;
+    margin: 0;
+  }
+  .workout-form-group.unit-row select.unit-select {
+    font-size: 2.1rem;
+    width: 70px;
+    min-width: 50px;
+    max-width: 90px;
+    padding: 1.5rem 1rem;
+    margin: 0;
+  }
   .workout-form input[type="text"],
   .workout-form select,
-  .workout-form input[type="number"] {
+  .workout-form input[type="number"],
+  .workout-form input[type="date"] {
     font-size: 2.1rem;
     padding: 2.5rem;
     min-height: 3.2rem;
@@ -264,4 +395,104 @@ body * {
   pointer-events: none;
   box-shadow: none !important;
   border: none !important;
+}
+
+.spinner {
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  border: 2.5px solid #30ba40;
+  border-top: 2.5px solid #e1fc56;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 0.5em;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animated-fadein {
+  animation: fadeInWorkoutResult 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes fadeInWorkoutResult {
+  from { opacity: 0; transform: translateY(24px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.input-unit-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  width: 60%;
+  min-width: 180px;
+  max-width: 320px;
+  margin: 0 auto 1rem auto;
+}
+.input-unit-row input[type="number"] {
+  flex: 2 1 0;
+  width: 70%;
+  min-width: 80px;
+  max-width: 160px;
+  margin: 0;
+  font-size: 1.05rem;
+  padding: 0.7rem 0.8rem;
+}
+.input-unit-row select.unit-select {
+  flex: 1 1 0;
+  width: 60px;
+  min-width: 50px;
+  max-width: 80px;
+  margin: 0;
+  font-size: 1.05rem;
+  padding: 0.7rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  box-sizing: border-box;
+}
+@media (max-width: 1000px) {
+  .input-unit-row {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    gap: 1.5vw;
+  }
+  .input-unit-row input[type="number"] {
+    font-size: 2.2rem;
+    padding: 4vw;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .input-unit-row select.unit-select {
+    font-size: 2.2rem;
+    width: 80px;
+    min-width: 50px;
+    max-width: 100px;
+    padding: 3vw 2vw;
+  }
+}
+@media (max-width: 500px) {
+  .input-unit-row {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    gap: 2vw;
+  }
+  .input-unit-row input[type="number"] {
+    font-size: 1.3rem;
+    padding: 1.5rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .input-unit-row select.unit-select {
+    font-size: 1.3rem;
+    width: 60px;
+    min-width: 40px;
+    max-width: 80px;
+    padding: 1rem 0.5rem;
+  }
 }
