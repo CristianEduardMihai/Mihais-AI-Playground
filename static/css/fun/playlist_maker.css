@@ -21,8 +21,8 @@ body * {
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   padding: 2rem;
   margin: 2rem;
-  max-width: 600px;
-  width: 90%;
+  max-width: 1200px;
+  width: 96%;
   font-family: Arial, sans-serif;
   box-sizing: border-box;
   display: flex;

@@ -70,8 +70,19 @@ def PlaylistMaker():
                         if "/playlist/" in search:
                             debug_log("Detected Spotify playlist URL")
                             playlist_songs = get_spotify_playlist_tracks(search)
+                            if not playlist_songs:
+                                debug_log("Playlist is empty or inaccessible (possibly private or invalid)")
+                                set_error("Could not access this playlist. It may be private or invalid. Please use a public playlist or try another input.")
+                                set_loading(False)
+                                return
                             ai_input = ", ".join(f"{s['title']} by {s['artist']}" for s in playlist_songs)
-                            ai_prompt = f"User inputed song:: {ai_input}."
+                            # Instruct AI to avoid recommending songs already in the playlist
+                            ai_prompt = (
+                                f"User provided a playlist containing: {ai_input}. "
+                                f"Recommend {num_songs} songs that are NOT already in this playlist. "
+                                f"You must not recommend any song that is already in the provided playlist. "
+                                f"List only new songs, not present in the user's playlist."
+                            )
                             debug_log("AI prompt for playlist:", ai_prompt)
                             songs = await ai_get_song_list(ai_prompt, int(num_songs))
                         elif "/track/" in search:
@@ -256,7 +267,7 @@ def PlaylistMaker():
                             "className": "home-info-tooltip info-btn",
                             "onClick": handle_info_click
                         }, "i"),
-                        html.label({"for": "playlist-search", "className": "playlist-label"}, "Songs/artists/playlists you like")
+                        html.label({"for": "playlist-search", "className": "playlist-label"}, "Songs/artists/playlists/theme you want")
                     ),
                     html.input({
                         "id": "playlist-search",
@@ -268,7 +279,7 @@ def PlaylistMaker():
                     })
                 ),
                 (html.div({"className": "home-info-tooltip info-tooltip-open"},
-                    "Enter an existing playlist/song link, artist/song name. You can paste a Spotify URL or just type names!"
+                    "Enter an existing playlist/song link, artist/song name, or what kind of songs you want. You can paste a Spotify URL or just type names!"
                 ) if info_open else None),
                 html.div({"className": "form-group playlist-form-row"},
                     html.label({"for": "num-songs", "className": "playlist-label"}, "How many songs?"),
@@ -296,7 +307,10 @@ def PlaylistMaker():
                         html.div({"className": "playlist-embed-row"},
                             html.iframe({
                                 "className": "playlist-embed",
+                                "style": {"borderRadius": "12px"},
                                 "src": f"https://open.spotify.com/embed/track/{song['track_id']}?utm_source=generator",
+                                "width": "100%",
+                                "height": "152",
                                 "frameBorder": "0",
                                 "allow": "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
                                 "loading": "lazy",
