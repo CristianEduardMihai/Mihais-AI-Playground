@@ -360,7 +360,7 @@ def PlaylistMaker():
                         html.div({"className": "playlist-embed-row"},
                             html.iframe({
                                 "className": "playlist-embed",
-                                "style": {"borderRadius": "12px"},
+                                "style": {"borderRadius": "12px", "width": "100%", "height": "152px"},
                                 "src": f"https://open.spotify.com/embed/track/{song['track_id']}?utm_source=generator",
                                 "width": "100%",
                                 "height": "152",
@@ -368,7 +368,8 @@ def PlaylistMaker():
                                 "allow": "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
                                 "loading": "lazy",
                                 "allowfullscreen": True
-                            })
+                            },
+                            ),
                         ) for song in results
                     ]
                 )

@@ -130,7 +130,7 @@ input[type="number"]:focus {
 .spotify-embed {
   border-radius: 12px;
   width: 100%;
-  min-height: 152px;
+  min-height: 120px;
   margin-bottom: 1.5em;
   box-shadow: 0 2px 8px #7b2ff233;
 }
@@ -142,13 +142,13 @@ input[type="number"]:focus {
   color: #7b2ff2;
   border-radius: 12px;
   box-shadow: 0 2px 8px #7b2ff211;
-  font-size: 1.08em;
-  padding: 0.7em 1.1em;
-  margin: 0.5em 0 1em 0;
+  font-size: 1.1rem;
+  padding: 0.5em 0.8em;
+  margin: 0.5em 0 0.5em 0;
   z-index: 10;
   text-align: left;
   font-weight: 500;
-  max-width: 420px;
+  max-width: 90vw;
   box-sizing: border-box;
 }
 
@@ -160,10 +160,24 @@ input[type="number"]:focus {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 0.5em;
+  gap: 0.7em;
   justify-content: flex-start;
   width: 100%;
   margin-bottom: 0;
+}
+
+.playlist-label-row .home-info-tooltip {
+  order: 0;
+  margin-right: 0.7em;
+  margin-left: 0;
+  margin-bottom: 0;
+  margin-top: 0;
+  position: static;
+  display: inline-block;
+}
+
+.playlist-label-row .playlist-label {
+  order: 1;
 }
 
 .playlist-label-group {
@@ -218,14 +232,16 @@ input[type="number"]:focus {
 }
 
 .playlist-logo {
-  max-width: 180px;
+  max-width: 220px;
+  min-width: 120px;
+  width: 30vw;
   margin-bottom: 0.5em;
 }
 
 .playlist-title {
-  font-size: 2.1rem;
+  font-size: 3.2rem;
   font-weight: 700;
-  margin-bottom: 1.2em;
+  margin-bottom: 1.5em;
   color: #7b2ff2;
   letter-spacing: 0.01em;
 }
@@ -274,6 +290,7 @@ input[type="number"]:focus {
   min-height: 152px;
   box-shadow: 0 2px 8px #7b2ff233;
   border: none;
+  font-size: 2.2rem;
 }
 
 @media (max-width: 1000px) {
@@ -322,18 +339,53 @@ input[type="number"]:focus {
     border-radius: 0;
   }
   .spotify-embed {
-    min-height: 180px;
+    min-height: 120px;
   }
   .playlist-label-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5em;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 0.7em;
+    justify-content: flex-start;
+    width: 100%;
+    margin-bottom: 0;
+  }
+  .playlist-label-row .home-info-tooltip {
+    order: 0;
+    margin-right: 0.7em;
+    margin-left: 0;
+    margin-bottom: 0;
+    margin-top: 0;
+    position: static;
+    display: inline-block;
+  }
+  .playlist-label-row .playlist-label {
+    order: 1;
   }
   .playlist-logo {
-    max-width: 120px;
+    max-width: 320px;
+    min-width: 180px;
+    width: 45vw;
   }
   .playlist-title {
-    font-size: 1.3rem;
+    font-size: 4.2rem;
+    margin-bottom: 2em;
+  }
+  .playlist-label,
+  .form-group label {
+    font-size: 3rem;
+  }
+  .home-info-tooltip {
+    font-size: 2.1rem;
+    padding: 1em 1.5em;
+    max-width: 98vw;
+  }
+  .playlist-embed {
+    width: 80% !important;
+    min-width: 0;
+    min-height: 352px !important;
+    height: 352px !important;
+    max-width: 98vw;
+    font-size: 3.2rem;
   }
 }
 @media (max-width: 500px) {
