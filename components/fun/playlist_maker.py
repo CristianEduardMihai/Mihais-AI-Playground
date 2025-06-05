@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import re
 import json
 import aiohttp
+import subprocess
 
 
 # Load Spotify credentials from .env
@@ -101,8 +102,25 @@ def PlaylistMaker():
                         else:
                             debug_log("Spotify URL but not playlist or track; treating as text input.")
                             songs = await ai_get_song_list(search, int(num_songs))
+                    elif is_youtube_playlist_url(search):
+                        debug_log("Detected YouTube playlist URL")
+                        yt_songs = get_youtube_playlist_tracks(search)
+                        if not yt_songs:
+                            debug_log("YouTube playlist is empty or inaccessible (possibly private or invalid)")
+                            set_error("Could not access this YouTube playlist. It may be private or invalid. Please use a public playlist or try another input.")
+                            set_loading(False)
+                            return
+                        ai_input = ", ".join(f"{s['title']} by {s['artist']}" if s['artist'] else s['title'] for s in yt_songs)
+                        ai_prompt = (
+                            f"User provided a YouTube playlist containing: {ai_input}. "
+                            f"Recommend {num_songs} songs that are NOT already in this playlist. "
+                            f"You must not recommend any song that is already in the provided playlist. "
+                            f"List only new songs, not present in the user's playlist."
+                        )
+                        debug_log("AI prompt for YouTube playlist:", ai_prompt)
+                        songs = await ai_get_song_list(ai_prompt, int(num_songs))
                     else:
-                        debug_log("Non-Spotify input. Feeding directly to AI.")
+                        debug_log("Non-Spotify/YouTube input. Feeding directly to AI.")
                         songs = await ai_get_song_list(search, int(num_songs))
                     debug_log("Song list to embed:", songs)
                     # 2. For each song, get Spotify track ID
@@ -166,6 +184,41 @@ def PlaylistMaker():
 
     def is_spotify_url(text):
         return 'open.spotify.com' in text
+
+    def is_youtube_playlist_url(text):
+        return (
+            'youtube.com/playlist?list=' in text or
+            'music.youtube.com/playlist?list=' in text or
+            'youtu.be/' in text and 'list=' in text
+        )
+
+    def get_youtube_playlist_tracks(playlist_url):
+        debug_log(f"Fetching YouTube playlist tracks for: {playlist_url}")
+        try:
+            # Use yt-dlp to extract playlist info as JSON
+            result = subprocess.run([
+                'yt-dlp',
+                '--flat-playlist',
+                '--print', '%(title)s - %(uploader)s',
+                '--playlist-end', '50',  # Limit to 50 tracks for performance
+                playlist_url
+            ], capture_output=True, text=True, timeout=30)
+            if result.returncode != 0:
+                debug_log("yt-dlp error:", result.stderr)
+                return []
+            lines = result.stdout.strip().split('\n')
+            tracks = []
+            for line in lines:
+                if ' - ' in line:
+                    title, artist = line.split(' - ', 1)
+                    tracks.append({'title': title.strip(), 'artist': artist.strip()})
+                else:
+                    tracks.append({'title': line.strip(), 'artist': ''})
+            debug_log(f"Found {len(tracks)} tracks in YouTube playlist")
+            return tracks
+        except Exception as e:
+            debug_log("YouTube playlist fetch error:", e)
+            return []
 
     async def ai_get_song_list(user_input, num_songs=6):
         debug_log("Using AI to parse user input:", user_input, "num_songs:", num_songs)
@@ -287,7 +340,7 @@ def PlaylistMaker():
                         "id": "num-songs",
                         "type": "number",
                         "min": "1",
-                        "max": "12",
+                        "max": "20",
                         "value": num_songs,
                         "onBlur": handle_num_songs_input,
                         "className": "playlist-num-input"
