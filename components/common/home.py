@@ -48,6 +48,7 @@ def Home():
         ],
         "health": [
             {"title": "Recipe Maker 🍳", "desc": "Input your ingredients and let AI suggest recipes. Customize how healthy the recipes should be!", "href": "/health/recipe-maker", "history": "Recipe Maker was the first module. It got a polished UI and mobile support. It was also a testbed for integrating more complex AI output into the frontend, and inspired later modules to do more with the AI's responses."},
+            {"title": "Workout Planner 🏋", "desc": "Create personalized weight loss plans with AI assistance.", "href": "/health/workout-planner", "history": "Workout Planner was added as a companion to recipe maker. It uses AI to generate personalized workout and calorie intake plans."},
         ],
         "tools": [
             {"title": "PC Part Picker 🖥️", "desc": "Get AI-generated recommendations for PC parts based on your preferences.", "href": "/tools/pc-part-picker", "history": "PC Part Picker was a milestone: it marked the project's move from simple text output to structured, actionable results. It was one of the first modules to use AI as a backend for generating complex, user-specific content."},

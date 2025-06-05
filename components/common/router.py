@@ -3,6 +3,7 @@ from reactpy_router import browser_router, route
 from components.common.home import Home
 from components.learning.language_buddy import LanguageBuddy
 from components.health.recipe_maker import RecipeMaker
+from components.health.workout_planner import WorkoutPlanner
 from components.learning.spell_check import SpellCheck
 from components.learning.translator import Translator
 from components.learning.text_summarizer import TextSummarizer
@@ -26,6 +27,7 @@ def RootRouter():
         route("/", Home()),
         route("/learning/language-buddy", LanguageBuddy()),
         route("/health/recipe-maker", RecipeMaker()),
+        route("/health/workout-planner", WorkoutPlanner()),
         route("/learning/spell-check", SpellCheck()),
         route("/learning/translator", Translator()),
         route("/learning/text-summarizer", TextSummarizer()),
