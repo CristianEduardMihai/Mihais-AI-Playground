@@ -4,7 +4,7 @@ import asyncio
 import aiohttp
 from reactpy import component, html, use_state, use_effect
 
-LANGUAGES_PATH = os.path.join(os.path.dirname(__file__), '../../static/assets/languages-en.json')
+LANGUAGES_PATH = os.path.join(os.path.dirname(__file__), '../../server-assets/languages-en.json')
 with open(LANGUAGES_PATH, encoding='utf-8') as f:
     LANGUAGES = json.load(f)
 

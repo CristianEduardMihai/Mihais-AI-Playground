@@ -418,7 +418,7 @@ def PCPartPicker():
     # Fetch currency list on mount
     def fetch_currencies():
         try:
-            with open("static/assets/currencies.json", "r", encoding="utf-8") as f:
+            with open("server-assets/currencies.json", "r", encoding="utf-8") as f:
                 data = json.load(f)
                 # data is a dict: code -> name (with flag)
                 currency_options = sorted([(k, v) for k, v in data.items()], key=lambda x: x[1].lower())

@@ -4,7 +4,7 @@ import aiohttp
 import json
 import os
 
-with open(os.path.join(os.path.dirname(__file__), "../../static/assets/language-codes.json"), encoding="utf-8") as f:
+with open(os.path.join(os.path.dirname(__file__), "../../server-assets/language-codes.json"), encoding="utf-8") as f:
     LANGUAGES = json.load(f)
 
 @component

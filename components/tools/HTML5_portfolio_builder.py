@@ -123,7 +123,7 @@ def HTML5PortfolioBuilder():
         bg1 = hexes[0] if len(hexes) > 0 else "#7b2ff2"
         bg2 = hexes[1] if len(hexes) > 1 else "#f357a8"
         accent = hexes[2] if len(hexes) > 2 else "#7b2ff2"
-        with open("static/assets/html5_portfolio_template.html", encoding="utf-8") as f:
+        with open("server-assets/html5_portfolio_template.html", encoding="utf-8") as f:
             template = f.read()
         html_out = (
             template
