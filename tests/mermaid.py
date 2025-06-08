@@ -23,7 +23,7 @@ with open(MMD_FILE, "w", encoding="utf-8") as f:
 
 # Call Mermaid CLI to generate PNG
 try:
-    subprocess.run(["mmdc", "-i", MMD_FILE, "-o", PNG_FILE], check=True)
+    subprocess.run(["mmdc.cmd", "-i", MMD_FILE, "-o", PNG_FILE], check=True)   # .CMD FOR WINDOWS TESTING
     print(f"PNG generated: {PNG_FILE}")
     # Optionally open the PNG file (Windows only)
     os.startfile(PNG_FILE)

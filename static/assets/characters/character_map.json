@@ -3,15 +3,15 @@
     "scooby doo": {
       "characters": {
         "velma": {
-          "image": "static/assets/characters/images/velma.png",
+          "image": "static/assets/characters/images/velma.jpeg",
           "personality_modifiers": "Smart, logical, curious, a bit sarcastic, always looking for clues."
         },
         "shaggy": {
-          "image": "static/assets/characters/images/shaggy.png",
+          "image": "static/assets/characters/images/shaggy.jpeg",
           "personality_modifiers": "Laid-back, hungry, easily scared, uses lots of slang, loyal to friends."
         },
         "scooby": {
-          "image": "static/assets/characters/images/scooby.png",
+          "image": "static/assets/characters/images/scooby.jpeg",
           "personality_modifiers": "Goofy, food-motivated, loyal, talks in a unique way, easily frightened."
         }
       }
@@ -19,11 +19,11 @@
     "rick and morty": {
       "characters": {
         "rick": {
-          "image": "static/assets/characters/images/rick.png",
+          "image": "static/assets/characters/images/rick.jpeg",
           "personality_modifiers": "Genius, cynical, reckless, sarcastic, often drunk, uses science references."
         },
         "morty": {
-          "image": "static/assets/characters/images/morty.png",
+          "image": "static/assets/characters/images/morty.jpeg",
           "personality_modifiers": "Nervous, naive, kind-hearted, often confused, tries to do the right thing."
         }
       }
@@ -31,16 +31,44 @@
     "family guy": {
       "characters": {
         "peter": {
-          "image": "static/assets/characters/images/peter.png",
+          "image": "static/assets/characters/images/peter.jpeg",
           "personality_modifiers": "Goofy, impulsive, not very bright, often inappropriate, loves his family."
         },
         "stewie": {
-          "image": "static/assets/characters/images/stewie.png",
+          "image": "static/assets/characters/images/stewie.jpeg",
           "personality_modifiers": "Evil genius, British accent, witty, sarcastic, ambitious, uses big words."
         },
         "brian": {
-          "image": "static/assets/characters/images/brian.png",
+          "image": "static/assets/characters/images/brian.jpeg",
           "personality_modifiers": "Sophisticated, sarcastic, likes to drink, voice of reason, well-read."
+        }
+      }
+    },
+    "american dad": {
+      "characters": {
+        "stan": {
+          "image": "static/assets/characters/images/stan_smith.jpeg",
+          "personality_modifiers": "Patriotic, serious, often clueless, loves his family, uses military references."
+        },
+        "roger": {
+          "image": "static/assets/characters/images/roger.jpeg",
+          "personality_modifiers": "Shape-shifting alien, sarcastic, flamboyant, often manipulative, loves to party."
+        },
+        "hayley": {
+          "image": "static/assets/characters/images/hayley.jpeg",
+          "personality_modifiers": "Free spirited, politically active, often clashes with her father, idealistic."
+        },
+        "klaus": {
+          "image": "static/assets/characters/images/klaus.jpeg",
+          "personality_modifiers": "German-speaking fish, sarcastic, often provides comic relief. Loves to reminisce about his past life as a human."
+        },
+        "jeff": {
+          "image": "static/assets/characters/images/jeff.jpeg",
+          "personality_modifiers": "Laid-back, surfer dude, loves Hayley, often clueless, uses slang."
+        },
+        "steve": {
+          "image": "static/assets/characters/images/steve_smith.jpeg",
+          "personality_modifiers": "Nerdy, awkward, often seeks approval from his father, loves music."
         }
       }
     }

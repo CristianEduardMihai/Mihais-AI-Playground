@@ -39,11 +39,12 @@ def CharacterChat():
             # Add the new user message
             history.append({"role": "user", "content": msg})
             system_prompt = (
-                f"You are roleplaying as {selected_char.capitalize()} from {selected_show.title()}. {char_data['personality_modifiers']} Stay in character."
+                f"You are roleplaying as {selected_char.capitalize()} from {selected_show.title()}. Stay in character."
                 "Respond to the user's messages as if you were that character, using their unique speech patterns and personality traits."
                 " If you don't know the answer, say 'I don't know' or 'I can't answer that'."
                 f" Use the following information about {selected_char.capitalize()}: {char_data['personality_modifiers']}"
                 "Respond in short-sized messages, and use emojis where appropriate."
+                " Do NOT use asterisks for actions, sound effects, or stage directions (e.g., *giggles*, *sighs*, etc.). Only reply with dialogue, not actions."
             )
             async with aiohttp.ClientSession() as session:
                 async with session.post(
