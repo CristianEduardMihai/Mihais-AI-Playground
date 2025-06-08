@@ -5,6 +5,7 @@ from components.learning.language_buddy import LanguageBuddy
 from components.health.recipe_maker import RecipeMaker
 from components.health.workout_planner import WorkoutPlanner
 from components.learning.spell_check import SpellCheck
+from components.learning.wikichat import WikiChat
 from components.learning.translator import Translator
 from components.learning.text_summarizer import TextSummarizer
 from components.tools.pc_part_picker import PCPartPicker
@@ -29,6 +30,7 @@ def RootRouter():
         route("/health/recipe-maker", RecipeMaker()),
         route("/health/workout-planner", WorkoutPlanner()),
         route("/learning/spell-check", SpellCheck()),
+        route("/learning/wikichat", WikiChat()),
         route("/learning/translator", Translator()),
         route("/learning/text-summarizer", TextSummarizer()),
         route("/tools/pc-part-picker", PCPartPicker()),

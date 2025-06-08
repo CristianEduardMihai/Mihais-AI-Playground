@@ -43,6 +43,7 @@ def Home():
         "learning": [
             {"title": "Language Buddy 🌍", "desc": "Practice your target language with an AI buddy!", "href": "/learning/language-buddy", "history": "One of the earliest modules, Language Buddy started as a simple chat wrapper for the AI. Over time, it evolved to provide more interactive and helpful feedback, reflecting the project's shift from just wrapping AI to integrating it as a true backend. This module showcases the project's original vision: making AI accessible in a fun way."},
             {"title": "Spell Check 📝", "desc": "Correct your writing, tone and much more.", "href": "/learning/spell-check", "history": "Spell Check is one of the earliest module, and does only basic correction. It benefited from early UI/UX improvements."},
+            { "title": "Wikichat 📖", "desc": "Chat with your Wikipedia articles", "href": "/learning/wikichat", "history": "Wikichat was added out of the lazyness to read an article. It fetches the article and lets you chat with it, making it easier to digest information."},
             {"title": "Translator 🌎", "desc": "Translate text between multiple languages.", "href": "/learning/translator", "history": "The Translator module was added soon after Language Buddy, leveraging AI for text translation. It was improved with better text input handling and mobile support, and was part of the batch of modules that made the site useful for practical tasks."},
             {"title": "Text Summarizer 📚", "desc": "Summarize long texts into concise summaries.", "href": "/learning/text-summarizer", "history": "Text Summarizer was introduced as the project matured, reflecting a growing focus on productivity tools. It benefited from the improved backend and UI."},
         ],
@@ -158,9 +159,9 @@ def Home():
         return html.span(
             {"className": "home-info-icon",
              "tabIndex": 0,
-             "onMouseEnter": lambda e: set_info_open(module_id),
-             "onMouseLeave": lambda e: set_info_open(None),
-             "onFocus": lambda e: set_info_open(module_id),
+             #"onMouseEnter": lambda e: set_info_open(module_id),
+             #"onMouseLeave": lambda e: set_info_open(None),
+             #"onFocus": lambda e: set_info_open(module_id),
              "onBlur": lambda e: set_info_open(None),
              "onClick": lambda e: set_info_open(module_id if info_open != module_id else None)
             },
@@ -217,7 +218,9 @@ def Home():
         html.link({"rel": "stylesheet", "href": f"/static/css/common/home.css?v={CACHE_SUFFIX}"}),
         html.header(
             html.h1("Mihai's AI Playground"),
-            html.p("Explore fun and useful AI-powered tools!")
+            html.p("Explore fun and useful AI-powered tools!"),
+            html.p({"style": {"fontSize": "1.05em", "color": "#888", "marginTop": "-0.5em", "marginBottom": "0.5em"}},
+                   "Tip: Click the ", html.span({"style": {"fontWeight": "bold"}}, "ℹ️"), " for information about the development of each module.")
         ),
         html.div(
             {"class": "home-search-tabs"},

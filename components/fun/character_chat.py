@@ -73,10 +73,6 @@ def CharacterChat():
         set_user_input("")
         asyncio.create_task(send_message(msg))
 
-    def handle_keydown(e):
-        if e.get("key") == "Enter" and not e.get("shiftKey"):
-            handle_send()
-
     def render_char_option(char, char_data):
         return html.option({"value": char}, char.capitalize())
 
