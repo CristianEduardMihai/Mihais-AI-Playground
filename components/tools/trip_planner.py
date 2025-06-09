@@ -261,7 +261,7 @@ def TripPlanner():
         - Do not use just capital letters for the activities, use proper capitalization (e.g. 'Visit Senso-ji Temple', not 'VISIT SENSO-JI TEMPLE').
         - If a budget is absurd (ex: 1000 EUR for a 2-week trip), suggest a more realistic budget based on the destination and activities.
         - If some fields are empty, take a guess based on the other fields. For example, if the user doesn't specify climate but mentions beach, assume warm or tropical climate. Tell them to the user in the explanation or details field.
-        - Suggest common layovers if you know the flight is not direct. For example, if the user wants to fly from Bucharest to San Francisco, suggest a layover in London or Frankfurt, and add those airports to the route list.
+        - VERY IMPORTANT: Suggest common layovers if you know the flight is not direct. For example, if the user wants to fly from Bucharest to San Francisco, suggest a layover in London or Frankfurt, and add those airports to the route list. Do this both for the outbound and return flights.
         - Always add the departure airport at the end of the route list, even if it's the same as the first airport. This makes it a round trip. Also suggest common layovers on the way back.
         """
         debug_log("AI prompt:", prompt)
