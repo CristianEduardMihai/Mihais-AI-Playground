@@ -37,6 +37,7 @@ def cleanup_temp_files():
     temp_dirs = [
         "static/assets/tts_temp",
         "static/assets/flight_routes_temp"
+        "static/assets/pdf_temp",
     ]
     MAX_AGE_SECONDS = 60 * 60  # 1 hour
     removed_total = 0

@@ -7,6 +7,7 @@ pyperclip==1.9.0
 spotipy==2.25.1
 yt-dlp==2025.5.22
 #mermaid-py==0.8.0
+reportlab==4.4.1
 wikipedia==1.4.0
 matplotlib==3.10.3
 cartopy==0.24.1

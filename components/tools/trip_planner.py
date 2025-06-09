@@ -5,6 +5,7 @@ import json
 import datetime
 import re
 import random
+import os
 from components.common import generate_flightroute
 
 # ───────────────────────────────────────────────────────────────────────────────
@@ -26,6 +27,130 @@ except ImportError:
 def debug_log(*args):
     if DEBUG_MODE:
         print("[trip_planner.py DEBUG]", *args)
+
+async def generate_pdf_server_side(trip_data, route_img_path=None):
+    """Generate PDF on server side and return the file path"""
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.enums import TA_CENTER
+        
+        temp_dir = "./static/assets/pdf_temp"
+        os.makedirs(temp_dir, exist_ok=True)
+        
+        random_id = random.randint(100000, 999999)
+        filename = f"Trip-{random_id}.pdf"
+        filepath = os.path.join(temp_dir, filename)
+        
+        doc = SimpleDocTemplate(filepath, pagesize=A4)
+        styles = getSampleStyleSheet()
+        
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            spaceAfter=30,
+            alignment=TA_CENTER
+        )
+        
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading2'],
+            fontSize=16,
+            spaceAfter=12,
+            spaceBefore=20
+        )
+
+        subtitle_style = ParagraphStyle(
+            'CustomSubtitle',
+            parent=styles['Heading3'],
+            fontSize=14,
+            spaceAfter=10,
+            alignment=TA_CENTER
+        )
+        
+        normal_style = styles['Normal']
+        normal_style.fontSize = 11
+        normal_style.spaceAfter = 6
+        
+        content = []
+        
+        # Title
+        content.append(Paragraph("AI Trip Plan", title_style))
+        content.append(Spacer(1, 12))
+
+        # Subtitle
+        content.append(Paragraph('<a href="https://mihais-ai-playground.xyz/">https://mihais-ai-playground.xyz/</a>', subtitle_style))
+        content.append(Spacer(1, 20))
+        
+        # Destination info
+        if trip_data.get('destination_city') and trip_data.get('destination_country'):
+            content.append(Paragraph(f"<b>Destination:</b> {trip_data['destination_city']}, {trip_data['destination_country']}", normal_style))
+        
+        # Flight route
+        if trip_data.get('route') and isinstance(trip_data['route'], list):
+            route_text = " → ".join(trip_data['route'])
+            content.append(Paragraph(f"<b>Flight Route:</b> {route_text}", normal_style))
+        
+        content.append(Spacer(1, 20))
+        
+        # Explanation
+        if trip_data.get('explanation'):
+            content.append(Paragraph("Why this trip?", heading_style))
+            content.append(Paragraph(trip_data['explanation'], normal_style))
+            content.append(Spacer(1, 20))
+        
+        # Daily plan
+        if trip_data.get('daily_plan') and isinstance(trip_data['daily_plan'], list):
+            content.append(Paragraph("Daily Itinerary", heading_style))
+            
+            for i, day in enumerate(trip_data['daily_plan']):
+                # Day header
+                day_label = day.get('label', f'Day {i+1}')
+                day_title = day.get('title', '')
+                header_text = f"{day_label}: {day_title}" if day_title else day_label
+                content.append(Paragraph(f"<b>{header_text}</b>", heading_style))
+                
+                # Activities
+                if day.get('activities') and isinstance(day['activities'], list):
+                    content.append(Paragraph("<b>Activities:</b>", normal_style))
+                    for activity in day['activities']:
+                        content.append(Paragraph(f"• {activity}", normal_style))
+                
+                # Details
+                if day.get('details'):
+                    content.append(Paragraph("<b>Details:</b>", normal_style))
+                    content.append(Paragraph(day['details'], normal_style))
+                
+                content.append(Spacer(1, 15))
+        
+        # Add flight route image if available
+        if route_img_path and os.path.exists(f".{route_img_path}"):
+            try:
+                content.append(PageBreak())
+                content.append(Paragraph("Flight Route Map", heading_style))
+                content.append(Spacer(1, 12))
+                
+                # Add the image - scale it to fit nicely on the page
+                img = Image(f".{route_img_path}", width=500, height=300)
+                content.append(img)
+                debug_log(f"Added flight route image to PDF: {route_img_path}")
+            except Exception as img_e:
+                debug_log(f"Could not add image to PDF: {img_e}")
+        
+        # Build PDF
+        doc.build(content)
+        
+        debug_log(f"PDF generated successfully: {filepath}")
+        return f"/static/assets/pdf_temp/{filename}"
+        
+    except ImportError as e:
+        debug_log(f"PDF generation failed - missing reportlab: {e}")
+        return None
+    except Exception as e:
+        debug_log(f"PDF generation failed: {e}")
+        return None
 
 @component
 def TripPlanner():
@@ -49,6 +174,10 @@ def TripPlanner():
     details_modal, set_details_modal = use_state({"open": False, "label": "", "details": ""})
     # Modal state for route image popup
     route_img_modal, set_route_img_modal = use_state({"open": False})
+    # PDF download state
+    pdf_loading, set_pdf_loading = use_state(False)
+    pdf_error, set_pdf_error = use_state("")
+    pdf_download_url, set_pdf_download_url = use_state("")
 
     def handle_input(field, value):
         debug_log(f"Input change: {field} = {value}")
@@ -138,13 +267,13 @@ def TripPlanner():
                     ai_raw = raw_json["choices"][0]["message"]["content"]
             ai_clean = ai_raw.strip()
             debug_log("AI cleaned response (pre-strip):", ai_clean)
-            # Remove code block wrappers (```json ... ``` or ``` ... ```
-            if ai_clean.startswith("```json"):
+            # Remove code block wrappers (
+            if ai_clean.startswith("json"):
                 ai_clean = ai_clean[7:]
-            if ai_clean.startswith("```"):
-                ai_clean = ai_clean.lstrip("`\n ")
-            if ai_clean.endswith("```"):
-                ai_clean = ai_clean.rstrip("`\n ")
+            if ai_clean.startswith(""):
+                ai_clean = ai_clean.lstrip("\n ")
+            if ai_clean.endswith(" "):
+                ai_clean = ai_clean.rstrip("\n ")
             if ai_clean.startswith("json"):
                 ai_clean = ai_clean[4:].lstrip("\n ")
             ai_clean = ai_clean.strip()
@@ -219,6 +348,29 @@ def TripPlanner():
         debug_log("handle_submit: user clicked Suggest Trip")
         asyncio.create_task(call_ai_trip_plan())
 
+    async def handle_pdf_download(_):
+        debug_log("handle_pdf_download: user clicked Download PDF")
+        if not (ai_result and isinstance(ai_result, dict) and ai_result.get("daily_plan")):
+            set_pdf_error("No trip data available to generate PDF")
+            return
+        
+        set_pdf_loading(True)
+        set_pdf_error("")
+        
+        try:
+            pdf_path = await generate_pdf_server_side(ai_result, route_img_url)
+            if pdf_path:
+                # Create download link and trigger download
+                debug_log(f"PDF generated at: {pdf_path}")
+                set_pdf_download_url(pdf_path)
+            else:
+                set_pdf_error("Failed to generate PDF. Make sure reportlab is installed.")
+        except Exception as e:
+            debug_log(f"PDF download error: {e}")
+            set_pdf_error(f"PDF generation failed: {e}")
+        finally:
+            set_pdf_loading(False)
+
     # UI
     from components.common.config import CACHE_SUFFIX
     # Color palette and emoji list for schedule blocks
@@ -235,10 +387,64 @@ def TripPlanner():
     random.shuffle(shuffled_colors)
     random.shuffle(shuffled_emojis)
 
+    def download_pdf_btn():
+        if not (ai_result and isinstance(ai_result, dict) and ai_result.get("daily_plan")):
+            return None
+        
+        def trigger_pdf(_):
+            debug_log("Download Trip as PDF button clicked")
+            asyncio.create_task(handle_pdf_download(_))
+        
+        return html.div({},
+            html.button({
+                "className": f"btn btn-navy{' btn-disabled' if pdf_loading else ''}",
+                "onClick": trigger_pdf,
+                "disabled": pdf_loading
+            }, "Generating PDF..." if pdf_loading else "Download Trip as PDF"),
+            pdf_error and html.div({"className": "error-message", "style": {"marginTop": "10px"}}, pdf_error) or None
+        )
+
+    def pdf_download_script():
+        """Inject JavaScript to trigger PDF download when URL is set"""
+        if not pdf_download_url:
+            return None
+        
+        script_content = f"""
+        // Create a temporary download link and click it
+        var link = document.createElement('a');
+        link.href = '{pdf_download_url}';
+        link.download = 'trip_plan.pdf';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clear the download URL after triggering
+        setTimeout(function() {{
+            var input = document.getElementById('pdf-download-clear');
+            if (input) {{
+                input.value = 'clear';
+                input.dispatchEvent(new Event('input', {{bubbles: true}}));
+            }}
+        }}, 100);
+        """
+        
+        return html.script({
+            "key": f"pdf-download-{pdf_download_url}",  # Unique key to force re-injection
+            "type": "text/javascript"
+        }, script_content)
+
     return html.div(
         {},
+        html.input({
+            "type": "hidden", 
+            "id": "pdf-download-clear", 
+            "value": "", 
+            "onInput": lambda e: set_pdf_download_url("") if e["target"]["value"] == "clear" else None
+        }),
         html.link({"rel": "stylesheet", "href": f"/static/css/common/global.css?v={CACHE_SUFFIX}"}),
         html.link({"rel": "stylesheet", "href": f"/static/css/tools/trip_planner.css?v={CACHE_SUFFIX}"}),
+        pdf_download_script(),
         html.nav({"className": "global-home-btn-row"}, html.a({"href": "/", "className": "global-home-btn"}, "🏠 Home")),
         html.div({"className": "trip-planner"},
             html.h2("AI Trip Planner"),
@@ -356,6 +562,7 @@ def TripPlanner():
                         "className": "route-image-modal-close"
                     }, "×")
                 )
-            ) or None
+            ) or None,
+            ai_result and download_pdf_btn(),
         )
     )
