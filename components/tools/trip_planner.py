@@ -131,11 +131,25 @@ async def generate_pdf_server_side(trip_data, route_img_path=None):
                 content.append(PageBreak())
                 content.append(Paragraph("Flight Route Map", heading_style))
                 content.append(Spacer(1, 12))
-                
-                # Add the image - scale it to fit nicely on the page
-                img = Image(f".{route_img_path}", width=500, height=300)
+                from reportlab.lib.utils import ImageReader
+                img_path = f".{route_img_path}"
+                img_reader = ImageReader(img_path)
+                orig_width, orig_height = img_reader.getSize()
+                max_width, max_height = 500, 300
+                aspect = orig_width / orig_height
+                if orig_width > max_width or orig_height > max_height:
+                    if (max_width / aspect) <= max_height:
+                        draw_width = max_width
+                        draw_height = max_width / aspect
+                    else:
+                        draw_width = max_height * aspect
+                        draw_height = max_height
+                else:
+                    draw_width = orig_width
+                    draw_height = orig_height
+                img = Image(img_path, width=draw_width, height=draw_height)
                 content.append(img)
-                debug_log(f"Added flight route image to PDF: {route_img_path}")
+                debug_log(f"Added flight route image to PDF: {route_img_path} (scaled to {draw_width}x{draw_height})")
             except Exception as img_e:
                 debug_log(f"Could not add image to PDF: {img_e}")
         
@@ -178,6 +192,8 @@ def TripPlanner():
     pdf_loading, set_pdf_loading = use_state(False)
     pdf_error, set_pdf_error = use_state("")
     pdf_download_url, set_pdf_download_url = use_state("")
+    # Route image loading state
+    route_img_loading, set_route_img_loading = use_state(False)
 
     def handle_input(field, value):
         debug_log(f"Input change: {field} = {value}")
@@ -245,6 +261,8 @@ def TripPlanner():
         - Do not use just capital letters for the activities, use proper capitalization (e.g. 'Visit Senso-ji Temple', not 'VISIT SENSO-JI TEMPLE').
         - If a budget is absurd (ex: 1000 EUR for a 2-week trip), suggest a more realistic budget based on the destination and activities.
         - If some fields are empty, take a guess based on the other fields. For example, if the user doesn't specify climate but mentions beach, assume warm or tropical climate. Tell them to the user in the explanation or details field.
+        - Suggest common layovers if you know the flight is not direct. For example, if the user wants to fly from Bucharest to San Francisco, suggest a layover in London or Frankfurt, and add those airports to the route list.
+        - Always add the departure airport at the end of the route list, even if it's the same as the first airport. This makes it a round trip. Also suggest common layovers on the way back.
         """
         debug_log("AI prompt:", prompt)
         try:
@@ -327,22 +345,33 @@ def TripPlanner():
         debug_log("call_ai_trip_plan: finished")
 
     async def generate_route_image(route):
-        # Use route IATA codes for filename
-        if route and isinstance(route, list) and len(route) > 0:
-            route_codes = '-'.join([str(code) for code in route])
-            filename = f"/static/assets/flight_routes_temp/route_{route_codes}.png"
-        else:
-            filename = f"/static/assets/flight_routes_temp/route_UNKNOWN.png"
+        set_route_img_loading(True)
         try:
+            # Use route IATA codes for filename
             if route and isinstance(route, list) and len(route) > 0:
-                route = route + [route[0]]
+                route_codes = '-'.join([str(code) for code in route])
+                filename = f"/static/assets/flight_routes_temp/route_{route_codes}.png"
+            else:
+                filename = f"/static/assets/flight_routes_temp/route_UNKNOWN.png"
+            # Check if file already exists
+            abs_path = f".{filename}"
+            if os.path.exists(abs_path):
+                set_route_img_url(filename)
+                debug_log(f"Route image already exists, serving: {filename}")
+                return
+            
+            # Add the departure airport at the end of the route
+            #if route and isinstance(route, list) and len(route) > 0:
+            #    route = route + [route[0]]
             debug_log(f"generate_route_image: filename={filename}, route={route}")
-            await generate_flightroute.create_clean_route_map(route, f".{filename}", extra_lon_margin=0.30, extra_lat_margin=0.70, npts=50)
+            await generate_flightroute.create_clean_route_map(route, abs_path, extra_lon_margin=0.30, extra_lat_margin=0.70, npts=50)
             set_route_img_url(filename)
             debug_log(f"Route image generated and set: {filename}")
         except Exception as e:
             debug_log("Exception in generate_route_image:", e)
             set_ai_error(f"Flight route image error: {e}")
+        finally:
+            set_route_img_loading(False)
 
     def handle_submit(_):
         debug_log("handle_submit: user clicked Suggest Trip")
@@ -371,8 +400,6 @@ def TripPlanner():
         finally:
             set_pdf_loading(False)
 
-    # UI
-    from components.common.config import CACHE_SUFFIX
     # Color palette and emoji list for schedule blocks
     COLORS = [
         "#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999", "#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02",
@@ -434,6 +461,7 @@ def TripPlanner():
             "type": "text/javascript"
         }, script_content)
 
+    from components.common.config import CACHE_SUFFIX
     return html.div(
         {},
         html.input({
@@ -550,6 +578,8 @@ def TripPlanner():
                     "onClick": lambda e: set_route_img_modal({"open": True})
                 })
             ) or None,
+            # Show loading message while route image is being generated
+            route_img_loading and html.div({"className": "route-image-loading"}, "Loading flight route...") or None,
             # Modal popup for route image fullscreen
             route_img_modal["open"] and html.div({"className": "modal-overlay", "onClick": lambda e: set_route_img_modal({"open": False})},
                 html.div({"className": "route-image-modal-content", "onClick": lambda e: (e.stop_propagation() if hasattr(e, 'stop_propagation') else None)},
